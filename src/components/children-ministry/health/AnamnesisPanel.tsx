@@ -8,7 +8,7 @@ import { useChildren } from "@/hooks/useChildrenMinistry";
 import { AnamnesisDialog } from "./AnamnesisDialog";
 
 export function AnamnesisPanel() {
-  const { children, isLoading } = useChildrenMinistry();
+  const { data: children, isLoading } = useChildren();
   const [search, setSearch] = useState("");
   const [selectedChild, setSelectedChild] = useState<{ id: string; name: string } | null>(null);
 
