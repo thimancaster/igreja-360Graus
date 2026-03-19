@@ -118,6 +118,7 @@ export function useRole() {
     userMinistries: userMinistries || [],
     hasRole,
     hasAnyRole,
+    isMasterAdmin,
     isAdmin,
     isTesoureiro,
     isPastor,
