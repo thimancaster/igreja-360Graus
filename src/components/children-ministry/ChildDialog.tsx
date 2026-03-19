@@ -74,6 +74,7 @@ export function ChildDialog({ open, onOpenChange, child }: ChildDialogProps) {
         notes: child.notes || "",
         status: child.status,
       });
+      setPhotoUrl(child.photo_url);
     } else {
       form.reset({
         full_name: "",
@@ -87,6 +88,7 @@ export function ChildDialog({ open, onOpenChange, child }: ChildDialogProps) {
         notes: "",
         status: "active",
       });
+      setPhotoUrl(null);
       setActiveTab("dados");
     }
   }, [child, form, open]);
