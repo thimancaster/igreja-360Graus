@@ -161,11 +161,10 @@ export function usePickupAuthorizations(childId: string | undefined) {
     queryFn: async () => {
       if (!childId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("pickup_authorizations")
         .select("*")
         .eq("child_id", childId)
-        .in("status", ["pending", "approved", "active"])
         .order("created_at", { ascending: false });
 
       if (error) throw error;
