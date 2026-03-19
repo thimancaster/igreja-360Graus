@@ -134,8 +134,8 @@ export default function Integracoes() {
 
       if (sessionId && user) {
         // First check if session exists and is not expired
-        const { data: session, error: sessionCheckError } = await supabase
-          (supabase as any).from('oauth_sessions')
+        const { data: session, error: sessionCheckError } = await (supabase as any)
+          .from('oauth_sessions')
           .select('id, expires_at')
           .eq('id', sessionId)
           .single();
