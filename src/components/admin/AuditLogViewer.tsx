@@ -12,13 +12,14 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 interface AuditLog {
   id: string;
-  user_id: string;
-  user_name: string | null;
+  user_id: string | null;
   action: string;
-  entity_type: string;
-  entity_count: number;
+  entity_type: string | null;
+  entity_id: string | null;
   details: Record<string, unknown> | null;
   created_at: string;
+  church_id: string;
+  ip_address: string | null;
 }
 
 const ACTION_LABELS: Record<string, string> = {
