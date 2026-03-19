@@ -32,7 +32,7 @@ const Relatorios = lazy(() => import('@/pages/Relatorios'));
 const Configuracoes = lazy(() => import('@/pages/Configuracoes'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const GerenciarUsuarios = lazy(() => import('@/pages/admin/GerenciarUsuarios'));
-const GerenciarMinisterios = lazy(() => import('@/pages/admin/GerenciarMinisterios'));
+// GerenciarMinisterios foi absorvido por GerenciarIgreja
 const GerenciarIgreja = lazy(() => import('@/pages/admin/GerenciarIgreja'));
 const GerenciarCategorias = lazy(() => import('@/pages/admin/GerenciarCategorias'));
 const GerenciarDados = lazy(() => import('@/pages/admin/GerenciarDados'));
@@ -95,7 +95,7 @@ const App: React.FC = () => {
                 <Route path="/app/relatorios" element={<ProtectedRoute><AppRoute><AppLayout><Relatorios /></AppLayout></AppRoute></ProtectedRoute>} />
                 <Route path="/app/admin" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><Admin /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
                 <Route path="/app/admin/usuarios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarUsuarios /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
-                <Route path="/app/admin/ministerios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarMinisterios /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                <Route path="/app/admin/ministerios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarIgreja /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
                 <Route path="/app/admin/igreja" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarIgreja /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
                 <Route path="/app/admin/categorias" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarCategorias /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
                 <Route path="/app/admin/dados" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarDados /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
