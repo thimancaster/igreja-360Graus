@@ -14,9 +14,20 @@ type Church = Tables<'churches'>;
 export default function ChurchConfirmation() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [church, setChurch] = useState<Church | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Safety timeout
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        logger.warn('[ChurchConfirmation] Timeout, redirecting to dashboard');
+        navigate("/app/dashboard", { replace: true });
+      }
+    }, 8000);
+    return () => clearTimeout(timeout);
+  }, [loading, navigate]);
 
   useEffect(() => {
     const fetchChurch = async () => {
