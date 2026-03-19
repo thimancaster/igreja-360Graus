@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Camera, Loader2, Trash2 } from "lucide-react";
+import { Camera, ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface PhotoUploadProps {
@@ -17,14 +17,12 @@ interface PhotoUploadProps {
 export function PhotoUpload({ currentPhotoUrl, name, folder, entityId, onPhotoUploaded, size = "lg" }: PhotoUploadProps) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const avatarSize = size === "lg" ? "h-24 w-24" : "h-16 w-16";
   const initials = name?.substring(0, 2).toUpperCase() || "??";
 
-  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const processFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       toast.error("Selecione um arquivo de imagem");
       return;
@@ -37,7 +35,7 @@ export function PhotoUpload({ currentPhotoUrl, name, folder, entityId, onPhotoUp
 
     setUploading(true);
     try {
-      const fileExt = file.name.split(".").pop();
+      const fileExt = file.name.split(".").pop() || "jpg";
       const fileName = `${folder}/${entityId || crypto.randomUUID()}-${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
@@ -57,8 +55,14 @@ export function PhotoUpload({ currentPhotoUrl, name, folder, entityId, onPhotoUp
       toast.error("Erro ao enviar foto: " + err.message);
     } finally {
       setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) await processFile(file);
+    // Reset input so same file can be re-selected
+    event.target.value = "";
   };
 
   const handleRemove = () => {
@@ -72,27 +76,51 @@ export function PhotoUpload({ currentPhotoUrl, name, folder, entityId, onPhotoUp
         <AvatarFallback className="text-lg">{initials}</AvatarFallback>
       </Avatar>
       <div className="flex flex-col gap-2">
+        {/* Hidden file inputs */}
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="user"
+          className="hidden"
+          onChange={handleFileChange}
+        />
         <input
           ref={fileInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
-          onChange={handleUpload}
+          onChange={handleFileChange}
         />
+
+        {/* Camera button - activates device camera on mobile */}
         <Button
           type="button"
           variant="outline"
           size="sm"
           disabled={uploading}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => cameraInputRef.current?.click()}
         >
           {uploading ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
           ) : (
             <Camera className="h-4 w-4 mr-2" />
           )}
-          {currentPhotoUrl ? "Trocar Foto" : "Adicionar Foto"}
+          Tirar Foto
         </Button>
+
+        {/* Gallery button */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={uploading}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <ImagePlus className="h-4 w-4 mr-2" />
+          {currentPhotoUrl ? "Trocar da Galeria" : "Escolher da Galeria"}
+        </Button>
+
         {currentPhotoUrl && (
           <Button
             type="button"
