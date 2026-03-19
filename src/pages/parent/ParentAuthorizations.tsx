@@ -176,8 +176,8 @@ export default function ParentAuthorizations() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex flex-wrap gap-2">
-                        {getTypeBadge((auth.authorization_type as any).authorization_type)}
-                        {auth.leader_approval_required && (
+                        {getTypeBadge((auth as any).authorization_type)}
+                        {(auth as any).leader_approval_required && (
                           <Badge variant="outline" className="gap-1 text-xs">
                             <Shield className="h-3 w-3" />
                             Requer Líder
