@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-type AppRole = 'admin' | 'tesoureiro' | 'pastor' | 'lider' | 'user' | 'parent';
+type AppRole = 'admin' | 'tesoureiro' | 'pastor' | 'lider' | 'user' | 'parent' | 'membro';
 
 const MASTER_ADMIN_EMAIL = 'thimancaster@hotmail.com';
 
@@ -90,6 +90,7 @@ export function useRole() {
   const isPastor = hasRole('pastor') || isMasterAdmin;
   const isLider = hasRole('lider') || isMasterAdmin;
   const isUser = hasRole('user');
+  const isMembro = hasRole('membro');
   // Parent is true if they have the role OR if they're linked as a guardian
   const isParent = hasRole('parent') || (isGuardian === true);
   
@@ -124,6 +125,7 @@ export function useRole() {
     isPastor,
     isLider,
     isUser,
+    isMembro,
     isParent,
     isPrivileged,
     isLoading,

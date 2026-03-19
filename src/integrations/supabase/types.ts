@@ -2559,7 +2559,14 @@ export type Database = {
       update_overdue_transactions: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "admin" | "tesoureiro" | "pastor" | "lider" | "user" | "parent"
+      app_role:
+        | "admin"
+        | "tesoureiro"
+        | "pastor"
+        | "lider"
+        | "user"
+        | "parent"
+        | "membro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2687,7 +2694,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "tesoureiro", "pastor", "lider", "user", "parent"],
+      app_role: [
+        "admin",
+        "tesoureiro",
+        "pastor",
+        "lider",
+        "user",
+        "parent",
+        "membro",
+      ],
     },
   },
 } as const

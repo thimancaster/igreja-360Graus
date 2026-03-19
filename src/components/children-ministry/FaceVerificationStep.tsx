@@ -39,6 +39,17 @@ async function loadModelsOnce() {
   }
 }
 
+/** Load an image with crossOrigin support for Supabase Storage URLs */
+function loadImageWithCORS(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = (e) => reject(new Error(`Failed to load image: ${url}`));
+    img.src = url;
+  });
+}
+
 type VerificationResult = "pending" | "verifying" | "match" | "no_match" | "error";
 
 interface FaceVerificationStepProps {
@@ -119,6 +130,7 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
     stopCamera();
 
     try {
+      // Load captured image
       const capturedImg = await faceapi.fetchImage(capturedDataUrl);
       const capturedDetection = await faceapi
         .detectSingleFace(capturedImg, new faceapi.TinyFaceDetectorOptions())
@@ -131,7 +143,8 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
         return;
       }
 
-      const refImg = await faceapi.fetchImage(personPhotoUrl!);
+      // Load reference image with CORS support
+      const refImg = await loadImageWithCORS(personPhotoUrl!);
       const refDetection = await faceapi
         .detectSingleFace(refImg, new faceapi.TinyFaceDetectorOptions())
         .withFaceLandmarks()
@@ -270,7 +283,7 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
               <div className="space-y-1">
                 <p className="text-xs font-medium text-center text-muted-foreground">Foto Cadastrada</p>
                 <div className="aspect-square rounded-lg overflow-hidden border-2 border-primary/30 bg-muted">
-                  <img src={personPhotoUrl!} alt={personName} className="w-full h-full object-cover" />
+                  <img src={personPhotoUrl!} alt={personName} className="w-full h-full object-cover" crossOrigin="anonymous" />
                 </div>
               </div>
               <div className="space-y-1">

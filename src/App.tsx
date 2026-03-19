@@ -56,6 +56,7 @@ const ParentEvents = lazy(() => import('@/pages/parent/ParentEvents'));
 import { ParentLayout } from '@/components/parent/ParentLayout';
 
 // Portal do Membro (unified)
+const PortalAuth = lazy(() => import('@/pages/portal/PortalAuth'));
 const PortalDashboard = lazy(() => import('@/pages/portal/PortalDashboard'));
 const PortalSchedules = lazy(() => import('@/pages/portal/PortalSchedules'));
 const PortalAnnouncements = lazy(() => import('@/pages/portal/PortalAnnouncements'));
@@ -112,6 +113,7 @@ const App: React.FC = () => {
                 <Route path="/select-church" element={<ProtectedRoute><SelectChurch /></ProtectedRoute>} />
 
                 {/* Portal do Membro (unified) */}
+                <Route path="/portal/auth" element={<PortalAuth />} />
                 <Route path="/portal" element={<ProtectedRoute><PortalLayout><PortalDashboard /></PortalLayout></ProtectedRoute>} />
                 <Route path="/portal/escalas" element={<ProtectedRoute><PortalLayout><PortalSchedules /></PortalLayout></ProtectedRoute>} />
                 <Route path="/portal/comunicados" element={<ProtectedRoute><PortalLayout><PortalAnnouncements /></PortalLayout></ProtectedRoute>} />
