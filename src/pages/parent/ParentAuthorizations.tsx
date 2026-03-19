@@ -171,40 +171,31 @@ export default function ParentAuthorizations() {
                             </CardDescription>
                           )}
                         </div>
-                        {getStatusBadge((auth as any).status)}
+                        {auth.is_used ? getStatusBadge("used") : getStatusBadge("active")}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex flex-wrap gap-2">
-                        {getTypeBadge((auth as any).authorization_type)}
-                        {(auth as any).leader_approval_required && (
-                          <Badge variant="outline" className="gap-1 text-xs">
-                            <Shield className="h-3 w-3" />
-                            Requer Líder
-                          </Badge>
+                        {auth.is_one_time ? (
+                          <Badge variant="outline" className="text-xs">Uso Único</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">Permanente</Badge>
                         )}
                       </div>
 
                       {auth.valid_until && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="h-4 w-4" />
-                          Até: {format(new Date(auth.valid_until), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                          Até: {format(new Date(auth.valid_until), "dd/MM/yyyy", { locale: ptBR })}
                         </div>
                       )}
 
-                      {(auth as any).reason && (
+                      {auth.notes && (
                         <p className="text-sm text-muted-foreground flex items-start gap-2">
                           <FileText className="h-4 w-4 shrink-0 mt-0.5" />
-                          {(auth as any).reason}
+                          {auth.notes}
                         </p>
                       )}
-
-                      <div className="flex items-center justify-between rounded-lg bg-muted p-3">
-                        <span className="text-sm font-medium">PIN:</span>
-                        <code className="rounded bg-background px-3 py-1 text-sm font-mono font-bold">
-                          {(auth as any).security_pin || '—'}
-                        </code>
-                      </div>
 
                       {!auth.is_used && (
                         <Button
