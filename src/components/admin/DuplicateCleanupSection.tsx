@@ -165,8 +165,8 @@ export function DuplicateCleanupSection() {
           status: tx.status,
           created_at: tx.created_at,
           origin: tx.origin,
-          category_name: tx.categories?.name || null,
-          ministry_name: tx.ministries?.name || null,
+          category_name: (Array.isArray(tx.categories) ? tx.categories[0]?.name : (tx as any).categories?.name) || null,
+          ministry_name: (Array.isArray(tx.ministries) ? tx.ministries[0]?.name : (tx as any).ministries?.name) || null,
         });
       }
 
