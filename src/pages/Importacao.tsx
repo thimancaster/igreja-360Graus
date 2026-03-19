@@ -260,7 +260,7 @@ export default function Importacao() {
 
       // Build deduplication sets using content hash
       const { existingHashes, existingByExternalId } = buildDeduplicationSets(
-        (existingTransactions || []) as ExistingTransactionForDupe[]
+        (existingTransactions || []) as any
       );
 
       // Extract transactions for filtering
