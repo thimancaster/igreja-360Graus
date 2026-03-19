@@ -166,13 +166,13 @@ export default function Importacao() {
 
     try {
       // Create upload record
-      const { data: uploadData, error: uploadError } = await supabase
+      const { data: uploadData, error: uploadError } = await (supabase as any)
         .from("sheet_uploads")
         .insert({
           church_id: profile.church_id,
           user_id: user.id,
-          filename: file?.name || "importacao.xlsx",
-          file_size: file?.size || 0,
+          file_name: file?.name || "importacao.xlsx",
+          original_name: file?.name || "importacao.xlsx",
           status: "Processando",
           records_imported: 0,
         })
