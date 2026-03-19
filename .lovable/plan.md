@@ -1,41 +1,50 @@
 
 
-# Plano: Melhorias de Performance no Reconhecimento Facial
+# Plano: Check-in Multiplo e Notificacoes para Responsaveis
 
-## Problemas Identificados
+## Problema
 
-1. **Descritores calculados sequencialmente** -- cada foto e processada uma por uma, bloqueando tudo
-2. **Cache perdido entre sessoes** -- ao clonar candidatos (`map(c => ({...c}))`), os descritores em cache nao sao reaproveitados
-3. **Sem escaneamento automatico** -- usuario precisa clicar "Escanear Rosto" manualmente toda vez
-4. **Canvas em resolucao total** -- processa frame na resolucao completa da camera, desnecessariamente pesado
-5. **TinyFaceDetector com opcoes padrao** -- pode ser ajustado para velocidade
+A linha 43 do `CheckInPanel.tsx` filtra criancas usando TODOS os check-ins do dia:
+```js
+const checkedInIds = new Set(todayCheckIns?.map((c: any) => c.child_id));
+```
+Isso impede re-check-in apos checkout. O filtro deve considerar apenas check-ins **sem checkout**.
 
-## Melhorias
+Alem disso, nao existe notificacao para os responsaveis quando seus filhos fazem check-in ou check-out.
 
-### 1. `faceRecognition.ts` -- Processamento paralelo + otimizacoes
+## Alteracoes
 
-- `precomputeDescriptors`: processar em lotes paralelos de 3 (em vez de 1 por vez) -- reduz tempo em ~3x
-- Adicionar opcao `inputSize` menor no `TinyFaceDetectorOptions` (160 em vez de 416) para scans ao vivo
-- Nova funcao `computeDescriptorFast` que redimensiona o canvas para 320px antes de processar
-- Manter cache global persistente entre sessoes do componente
+### 1. `CheckInPanel.tsx` -- Filtrar apenas criancas PRESENTES
 
-### 2. `FaceCheckInMode.tsx` -- Auto-scan + fluidez
+Mudar `checkedInIds` para considerar apenas check-ins onde `checked_out_at` e null:
 
-- **Auto-scan continuo**: ao ativar camera, escanear automaticamente a cada 2.5s sem precisar clicar botao
-- **Nao clonar candidatos**: passar `rawCandidates` direto para `precomputeDescriptors` para aproveitar cache
-- **Redimensionar frame** para 320px de largura antes de processar (muito mais rapido)
-- **Indicador visual de scan** sutil (borda pulsando) em vez de overlay bloqueante
-- **Botao "Parar Camera"** visivel para controle
-- Remover estado `noMatch` intermediario que trava -- manter camera rodando e mostrar feedback inline
+```js
+const checkedInIds = new Set(
+  todayCheckIns
+    ?.filter((c: any) => !c.checked_out_at)
+    .map((c: any) => c.child_id)
+);
+```
 
-### 3. Corrigir warning do console
+Mesma logica no `FaceCheckInMode` que recebe `checkedInIds` como prop.
 
-- `FaceCheckInMode` recebe ref indevidamente do `CheckInPanel` -- nao e necessario ref, apenas remover
+### 2. `useChildrenMinistry.tsx` -- Notificar responsaveis no check-in
+
+Apos inserir check-in com sucesso, buscar os responsaveis vinculados (via `child_guardians` + `guardians`) que possuem `profile_id`, e inserir uma notificacao na tabela `notifications` para cada um com detalhes (nome da crianca, evento, sala, horario).
+
+### 3. `useChildrenMinistry.tsx` -- Notificar responsaveis no check-out
+
+Apos registrar check-out, buscar responsaveis vinculados e inserir notificacao com horario de saida, quem retirou e metodo.
+
+### 4. RLS -- Permitir INSERT na tabela `notifications`
+
+Atualmente a tabela `notifications` NAO permite INSERT por usuarios autenticados. Precisamos adicionar uma policy para permitir que usuarios autenticados insiram notificacoes (necessario para o check-in criar notificacoes).
 
 ## Arquivos Afetados
 
 | Arquivo | Acao |
 |---------|------|
-| `src/lib/faceRecognition.ts` | Modificar -- paralelo, fast descriptor, inputSize |
-| `src/components/children-ministry/FaceCheckInMode.tsx` | Modificar -- auto-scan, cache, resize, UX |
+| Migration SQL | Criar -- policy INSERT em notifications |
+| `src/components/children-ministry/CheckInPanel.tsx` | Modificar -- filtro checkedInIds |
+| `src/hooks/useChildrenMinistry.tsx` | Modificar -- notificacoes no check-in e check-out |
 
