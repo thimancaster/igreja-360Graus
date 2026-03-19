@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { usePresentChildren, useChildMutations, useChildWithGuardians, useAuthorizedPickups } from "@/hooks/useChildrenMinistry";
 import { useValidPickupAuthorizations, usePickupAuthorizationMutations } from "@/hooks/useParentData";
 import { useRole } from "@/hooks/useRole";
@@ -20,11 +21,11 @@ import { FaceVerificationStep } from "./FaceVerificationStep";
 
 type PickupPerson = {
   id: string;
+  realId: string; // actual DB id for PIN verification
   name: string;
   type: "guardian" | "authorized" | "temporary";
   relationship?: string;
   requiresPin: boolean;
-  pin?: string | null;
   authorizationId?: string;
   photoUrl?: string | null;
 };
@@ -60,31 +61,31 @@ export function CheckOutPanel() {
     // Guardians who can pickup
     ...(childWithGuardians?.guardians?.filter(g => g.can_pickup).map(g => ({
       id: `guardian-${g.id}`,
+      realId: g.id,
       name: g.full_name,
       type: "guardian" as const,
       relationship: g.relationship,
-      requiresPin: !!g.access_pin,
-      pin: g.access_pin,
+      requiresPin: true, // Always require PIN verification server-side
       photoUrl: g.photo_url,
     })) || []),
     // Authorized pickups (permanent)
     ...(authorizedPickups?.filter(a => a.is_active).map(a => ({
       id: `authorized-${a.id}`,
+      realId: a.id,
       name: a.authorized_name,
       type: "authorized" as const,
       relationship: a.relationship || undefined,
       requiresPin: true,
-      pin: a.pickup_pin,
       photoUrl: a.authorized_photo,
     })) || []),
     // Temporary authorizations from parents
     ...(tempAuthorizations?.map(a => ({
       id: `temp-${a.id}`,
+      realId: a.id,
       name: a.authorized_person_name,
       type: "temporary" as const,
       relationship: (a as any).authorization_type === 'one_time' ? 'Uso Único' : 'Autorização Temporária',
       requiresPin: true,
-      pin: (a as any).security_pin || (a as any).pickup_pin,
       authorizationId: a.id,
       photoUrl: null,
     })) || []),
@@ -180,13 +181,22 @@ export function CheckOutPanel() {
       return;
     }
 
-    // Validate PIN if required
-    if (person.requiresPin && person.pin) {
+    // Validate PIN server-side if required
+    if (person.requiresPin) {
       if (!enteredPin) {
         setPinError("Digite o PIN de segurança");
         return;
       }
-      if (enteredPin !== person.pin) {
+      
+      const { data: pinResult, error: pinError } = await supabase.functions.invoke('verify-pickup-pin', {
+        body: {
+          person_type: person.type,
+          person_id: person.realId,
+          entered_pin: enteredPin,
+        },
+      });
+
+      if (pinError || !pinResult?.valid) {
         setPinError("PIN incorreto");
         return;
       }

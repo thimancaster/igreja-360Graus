@@ -60,7 +60,7 @@ export default function ParentAuthorizations() {
       authorized_person_name: data.authorized_person_name,
       authorized_person_phone: data.authorized_person_phone,
       authorized_person_document: data.authorized_person_document,
-      authorization_type: dat(a.authorization_type as any).authorization_type,
+      authorization_type: data.authorization_type,
       valid_until: data.valid_until,
       security_pin: data.security_pin,
       reason: data.reason,
