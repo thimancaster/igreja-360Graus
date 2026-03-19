@@ -171,7 +171,7 @@ export default function ParentAuthorizations() {
                             </CardDescription>
                           )}
                         </div>
-                        {getStatusBadge((auth. as any).status)}
+                        {getStatusBadge((auth as any).status)}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
