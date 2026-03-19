@@ -88,6 +88,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
       relationship: "Pai",
       access_pin: "",
       profile_id: "",
+      cpf: "",
     },
   });
 
