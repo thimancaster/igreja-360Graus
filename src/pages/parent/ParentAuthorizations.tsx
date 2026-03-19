@@ -206,7 +206,7 @@ export default function ParentAuthorizations() {
                         </code>
                       </div>
 
-                      {(auth. as any).status !== 'used' && (auth. as any).status !== 'cancelled' && (auth. as any).status !== 'expired' && (
+                      {!auth.is_used && (
                         <Button
                           variant="destructive"
                           size="sm"
