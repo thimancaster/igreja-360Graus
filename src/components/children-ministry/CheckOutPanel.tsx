@@ -495,16 +495,16 @@ export function CheckOutPanel() {
                 </div>
               )}
 
-              {/* PIN Validation - only show if face not rejected */}
-              {selectedPerson?.requiresPin && faceVerified !== "rejected" && (
+              {/* PIN Validation - only show for manual checkout when face not rejected */}
+              {selectedPerson?.requiresPin && !scannedViaQR && faceVerified !== "rejected" && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
                     <Key className="h-4 w-4" />
-                    PIN de Segurança *
+                    PIN de Segurança
                   </label>
                   <Input
                     type="password"
-                    placeholder="Digite o PIN"
+                    placeholder="Digite o PIN (se cadastrado)"
                     value={enteredPin}
                     onChange={(e) => {
                       setEnteredPin(e.target.value);
@@ -516,6 +516,13 @@ export function CheckOutPanel() {
                   {pinError && (
                     <p className="text-sm text-destructive">{pinError}</p>
                   )}
+                </div>
+              )}
+
+              {scannedViaQR && selectedPerson && (
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-primary/30 bg-primary/5">
+                  <Check className="h-4 w-4 text-primary" />
+                  <p className="text-sm">QR Code verificado — PIN dispensado</p>
                 </div>
               )}
 

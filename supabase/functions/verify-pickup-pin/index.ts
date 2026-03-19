@@ -22,7 +22,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Verify the user is authenticated
     const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -43,7 +42,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use service role to read PINs (never exposed to client)
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     let storedPin: string | null = null;
@@ -73,7 +71,7 @@ Deno.serve(async (req) => {
       if (error) throw error;
 
       const notes = data?.notes ?? '';
-      const pinMatch = notes.match(/(?:^|\|\s)PIN:\s*(\d{4,6})(?:\s*\||$)/i);
+      const pinMatch = notes.match(/PIN:\s*(\d{4,6})/i);
       storedPin = pinMatch?.[1] ?? null;
     } else {
       return new Response(JSON.stringify({ error: 'Invalid person type' }), {
@@ -82,9 +80,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    const valid = storedPin != null && entered_pin === storedPin;
+    // If no PIN is stored, indicate that so the client can allow passage
+    if (storedPin == null || storedPin === '') {
+      return new Response(JSON.stringify({ valid: false, no_pin: true }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    return new Response(JSON.stringify({ valid }), {
+    const valid = entered_pin === storedPin;
+
+    return new Response(JSON.stringify({ valid, no_pin: false }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
