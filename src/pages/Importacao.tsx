@@ -271,7 +271,7 @@ export default function Importacao() {
 
       // Filter duplicates using content hash
       const { toImport, duplicates, batchDuplicates } = filterDuplicateTransactions(
-        transactionsForFilter,
+        transactionsForFilter as any,
         existingHashes,
         existingByExternalId
       );

@@ -135,7 +135,7 @@ export default function Integracoes() {
       if (sessionId && user) {
         // First check if session exists and is not expired
         const { data: session, error: sessionCheckError } = await supabase
-          .from('oauth_sessions')
+          (supabase as any).from('oauth_sessions')
           .select('id, expires_at')
           .eq('id', sessionId)
           .single();
@@ -158,7 +158,7 @@ export default function Integracoes() {
             variant: "destructive",
           });
           // Clean up expired session
-          await supabase.from('oauth_sessions').delete().eq('id', sessionId);
+          await supabase(supabase as any).from('oauth_sessions').delete().eq('id', sessionId);
           setSearchParams({});
           return;
         }
@@ -188,7 +188,7 @@ export default function Integracoes() {
         });
 
         // Delete session from database after retrieving tokens
-        await supabase.from('oauth_sessions').delete().eq('id', sessionId);
+        await supabase(supabase as any).from('oauth_sessions').delete().eq('id', sessionId);
 
         // Clear URL params
         setSearchParams({});
