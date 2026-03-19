@@ -414,6 +414,29 @@ export function useChildMutations() {
       isPrimary?: boolean;
       canPickup?: boolean;
     }) => {
+      // Fetch guardian's relationship to validate duplicates
+      const { data: guardian } = await supabase
+        .from("guardians")
+        .select("relationship")
+        .eq("id", guardianId)
+        .single();
+
+      if (guardian && (guardian.relationship === "Pai" || guardian.relationship === "Mãe")) {
+        // Check if child already has a guardian with the same relationship
+        const { data: existingLinks } = await supabase
+          .from("child_guardians")
+          .select("guardian_id, guardians:guardian_id (relationship)")
+          .eq("child_id", childId);
+
+        const hasSameRelationship = existingLinks?.some(
+          (link: any) => link.guardians?.relationship === guardian.relationship
+        );
+
+        if (hasSameRelationship) {
+          throw new Error(`Esta criança já possui um(a) ${guardian.relationship} cadastrado(a).`);
+        }
+      }
+
       const { data, error } = await supabase
         .from("child_guardians")
         .insert({
