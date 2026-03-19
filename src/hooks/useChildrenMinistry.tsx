@@ -309,6 +309,24 @@ export function useChildMutations() {
     mutationFn: async (child: Omit<Child, "id" | "church_id" | "created_at" | "updated_at">) => {
       if (!profile?.church_id) throw new Error("Igreja não encontrada");
 
+      // Check for duplicate child (same name + birth_date in same church)
+      const { data: existing } = await supabase
+        .from("children")
+        .select("id, full_name")
+        .eq("church_id", profile.church_id)
+        .eq("full_name", child.full_name)
+        .eq("birth_date", child.birth_date)
+        .maybeSingle();
+
+      if (existing) {
+        const confirmOverride = window.confirm(
+          `Já existe uma criança cadastrada com o nome "${existing.full_name}" e mesma data de nascimento. Deseja cadastrar mesmo assim?`
+        );
+        if (!confirmOverride) {
+          throw new Error("Cadastro cancelado pelo usuário.");
+        }
+      }
+
       const { data, error } = await supabase
         .from("children")
         .insert({ ...child, church_id: profile.church_id })
