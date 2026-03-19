@@ -21,11 +21,11 @@ import { FaceVerificationStep } from "./FaceVerificationStep";
 
 type PickupPerson = {
   id: string;
+  realId: string; // actual DB id for PIN verification
   name: string;
   type: "guardian" | "authorized" | "temporary";
   relationship?: string;
   requiresPin: boolean;
-  pin?: string | null;
   authorizationId?: string;
   photoUrl?: string | null;
 };
