@@ -71,9 +71,10 @@ Deno.serve(async (req) => {
         .eq('id', person_id)
         .single();
       if (error) throw error;
-      // For temporary authorizations, PIN might be stored in a dedicated field
-      // For now we check the notes or a security_pin pattern
-      storedPin = data?.notes; // fallback - adjust based on actual schema
+
+      const notes = data?.notes ?? '';
+      const pinMatch = notes.match(/(?:^|\|\s)PIN:\s*(\d{4,6})(?:\s*\||$)/i);
+      storedPin = pinMatch?.[1] ?? null;
     } else {
       return new Response(JSON.stringify({ error: 'Invalid person type' }), {
         status: 400,

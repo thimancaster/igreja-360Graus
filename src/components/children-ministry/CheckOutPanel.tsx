@@ -84,7 +84,7 @@ export function CheckOutPanel() {
       realId: a.id,
       name: a.authorized_person_name,
       type: "temporary" as const,
-      relationship: (a as any).authorization_type === 'one_time' ? 'Uso Único' : 'Autorização Temporária',
+      relationship: a.is_one_time ? 'Uso Único' : 'Autorização Temporária',
       requiresPin: true,
       authorizationId: a.id,
       photoUrl: null,
