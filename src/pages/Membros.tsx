@@ -269,6 +269,10 @@ export default function Membros() {
                               <Edit2 className="h-4 w-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => copyPortalLink(member.email)}>
+                              <Copy className="h-4 w-4 mr-2" />
+                              Enviar Link do Portal
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="text-destructive"
