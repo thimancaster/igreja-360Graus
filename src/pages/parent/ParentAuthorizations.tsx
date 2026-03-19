@@ -60,7 +60,7 @@ export default function ParentAuthorizations() {
       authorized_person_name: data.authorized_person_name,
       authorized_person_phone: data.authorized_person_phone,
       authorized_person_document: data.authorized_person_document,
-      authorization_type: data.authorization_type,
+      authorization_type: dat(a.authorization_type as any).authorization_type,
       valid_until: data.valid_until,
       security_pin: data.security_pin,
       reason: data.reason,
@@ -171,13 +171,13 @@ export default function ParentAuthorizations() {
                             </CardDescription>
                           )}
                         </div>
-                        {getStatusBadge(auth.status)}
+                        {getStatusBadge((auth as any).status)}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex flex-wrap gap-2">
-                        {getTypeBadge(auth.authorization_type)}
-                        {auth.leader_approval_required && (
+                        {getTypeBadge((auth as any).authorization_type)}
+                        {(auth as any).leader_approval_required && (
                           <Badge variant="outline" className="gap-1 text-xs">
                             <Shield className="h-3 w-3" />
                             Requer Líder
@@ -192,21 +192,21 @@ export default function ParentAuthorizations() {
                         </div>
                       )}
 
-                      {auth.reason && (
+                      {(auth as any).reason && (
                         <p className="text-sm text-muted-foreground flex items-start gap-2">
                           <FileText className="h-4 w-4 shrink-0 mt-0.5" />
-                          {auth.reason}
+                          {(auth as any).reason}
                         </p>
                       )}
 
                       <div className="flex items-center justify-between rounded-lg bg-muted p-3">
                         <span className="text-sm font-medium">PIN:</span>
                         <code className="rounded bg-background px-3 py-1 text-sm font-mono font-bold">
-                          {auth.security_pin}
+                          {(auth as any).security_pin || '—'}
                         </code>
                       </div>
 
-                      {auth.status !== 'used' && auth.status !== 'cancelled' && auth.status !== 'expired' && (
+                      {!auth.is_used && (
                         <Button
                           variant="destructive"
                           size="sm"

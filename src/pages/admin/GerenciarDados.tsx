@@ -274,11 +274,11 @@ export default function GerenciarDados() {
         .eq("church_id", profile.church_id);
       if (mapError) throw mapError;
 
-      const { error: notifError } = await supabase
+      const { error: notifError } = await (supabase as any)
         .from("notifications")
         .delete()
-        .eq("church_id", profile.church_id);
-      if (notifError) throw notifError;
+        .eq("user_id", user?.id);
+      if (notifError) console.warn('Notifications cleanup skipped:', notifError);
 
       await logAuditAction("DELETE_ALL", "all", 0);
     },

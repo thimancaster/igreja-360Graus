@@ -7,20 +7,17 @@ export type PickupAuthorization = {
   id: string;
   child_id: string;
   church_id: string;
-  authorized_by: string;
+  guardian_id: string | null;
   authorized_person_name: string;
   authorized_person_phone: string | null;
-  authorized_person_document: string | null;
-  authorization_type: 'one_time' | 'date_range' | 'permanent';
+  authorized_person_photo: string | null;
+  relationship: string | null;
   valid_from: string;
   valid_until: string | null;
-  security_pin: string;
-  reason: string | null;
-  approved_by_leader: string | null;
-  leader_approval_required: boolean;
-  status: 'pending' | 'approved' | 'active' | 'used' | 'expired' | 'cancelled';
+  is_one_time: boolean;
+  is_used: boolean;
   used_at: string | null;
-  used_by_checkin_id: string | null;
+  notes: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -31,7 +28,6 @@ export type LeaderCheckoutOverride = {
   leader_id: string;
   reason: string;
   pickup_person_name: string;
-  pickup_person_document: string | null;
   created_at: string;
 };
 
@@ -165,11 +161,10 @@ export function usePickupAuthorizations(childId: string | undefined) {
     queryFn: async () => {
       if (!childId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("pickup_authorizations")
         .select("*")
         .eq("child_id", childId)
-        .in("status", ["pending", "approved", "active"])
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -188,11 +183,10 @@ export function useValidPickupAuthorizations(childId: string | undefined) {
 
       const now = new Date().toISOString();
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("pickup_authorizations")
         .select("*")
         .eq("child_id", childId)
-        .in("status", ["approved", "active"])
         .lte("valid_from", now)
         .or(`valid_until.is.null,valid_until.gte.${now}`);
 
@@ -223,13 +217,12 @@ export function usePickupAuthorizationMutations() {
     }) => {
       if (!user?.id || !profile?.church_id) throw new Error("Usuário não autenticado");
 
-      const { data: result, error } = await supabase
+      const { data: result, error } = await (supabase as any)
         .from("pickup_authorizations")
         .insert({
           ...data,
           church_id: profile.church_id,
-          authorized_by: user.id,
-          status: data.leader_approval_required ? 'pending' : 'active',
+          guardian_id: user.id,
         })
         .select()
         .single();
@@ -249,9 +242,9 @@ export function usePickupAuthorizationMutations() {
 
   const cancelAuthorization = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("pickup_authorizations")
-        .update({ status: 'cancelled' })
+        .update({ is_used: true, used_at: new Date().toISOString() })
         .eq("id", id);
 
       if (error) throw error;
@@ -270,11 +263,10 @@ export function usePickupAuthorizationMutations() {
     mutationFn: async (id: string) => {
       if (!user?.id) throw new Error("Usuário não autenticado");
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("pickup_authorizations")
         .update({ 
-          status: 'active',
-          approved_by_leader: user.id,
+          notes: 'Approved by leader',
         })
         .eq("id", id);
 

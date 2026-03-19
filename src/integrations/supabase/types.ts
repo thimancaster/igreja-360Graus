@@ -14,16 +14,2552 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      announcement_reads: {
+        Row: {
+          announcement_id: string
+          id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          id?: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          church_id: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          ministry_id: string | null
+          priority: string | null
+          published_at: string | null
+          scheduled_at: string | null
+          target_audience: string | null
+          target_child_ids: string[] | null
+          target_classrooms: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          church_id: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ministry_id?: string | null
+          priority?: string | null
+          published_at?: string | null
+          scheduled_at?: string | null
+          target_audience?: string | null
+          target_child_ids?: string[] | null
+          target_classrooms?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          church_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ministry_id?: string | null
+          priority?: string | null
+          published_at?: string | null
+          scheduled_at?: string | null
+          target_audience?: string | null
+          target_child_ids?: string[] | null
+          target_classrooms?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcements_ministry_id_fkey"
+            columns: ["ministry_id"]
+            isOneToOne: false
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      app_settings: {
+        Row: {
+          church_id: string
+          created_at: string
+          id: string
+          setting_key: string
+          setting_value: string
+          updated_at: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          id?: string
+          setting_key: string
+          setting_value: string
+          updated_at?: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          id?: string
+          setting_key?: string
+          setting_value?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_settings_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          church_id: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          church_id: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          church_id?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      authorized_pickups: {
+        Row: {
+          authorized_name: string
+          authorized_phone: string | null
+          authorized_photo: string | null
+          child_id: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          pickup_pin: string | null
+          relationship: string | null
+          updated_at: string
+        }
+        Insert: {
+          authorized_name: string
+          authorized_phone?: string | null
+          authorized_photo?: string | null
+          child_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          pickup_pin?: string | null
+          relationship?: string | null
+          updated_at?: string
+        }
+        Update: {
+          authorized_name?: string
+          authorized_phone?: string | null
+          authorized_photo?: string | null
+          child_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          pickup_pin?: string | null
+          relationship?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "authorized_pickups_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          church_id: string
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          type: string | null
+        }
+        Insert: {
+          church_id: string
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          type?: string | null
+        }
+        Update: {
+          church_id?: string
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      child_anamnesis: {
+        Row: {
+          behavioral_notes: string | null
+          blood_type: string | null
+          child_id: string
+          chronic_conditions: string | null
+          church_id: string
+          consent_signed_at: string | null
+          consent_signed_by: string | null
+          created_at: string
+          current_medications: string | null
+          dietary_restrictions: string | null
+          emergency_transport_consent: boolean | null
+          health_insurance: string | null
+          health_insurance_number: string | null
+          hospitalizations: string | null
+          id: string
+          last_reviewed_at: string | null
+          medical_treatment_consent: boolean | null
+          pediatrician_name: string | null
+          pediatrician_phone: string | null
+          photo_consent: boolean | null
+          physical_restrictions: string | null
+          previous_surgeries: string | null
+          reviewed_by: string | null
+          updated_at: string
+          vaccination_notes: string | null
+          vaccination_up_to_date: boolean | null
+        }
+        Insert: {
+          behavioral_notes?: string | null
+          blood_type?: string | null
+          child_id: string
+          chronic_conditions?: string | null
+          church_id: string
+          consent_signed_at?: string | null
+          consent_signed_by?: string | null
+          created_at?: string
+          current_medications?: string | null
+          dietary_restrictions?: string | null
+          emergency_transport_consent?: boolean | null
+          health_insurance?: string | null
+          health_insurance_number?: string | null
+          hospitalizations?: string | null
+          id?: string
+          last_reviewed_at?: string | null
+          medical_treatment_consent?: boolean | null
+          pediatrician_name?: string | null
+          pediatrician_phone?: string | null
+          photo_consent?: boolean | null
+          physical_restrictions?: string | null
+          previous_surgeries?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+          vaccination_notes?: string | null
+          vaccination_up_to_date?: boolean | null
+        }
+        Update: {
+          behavioral_notes?: string | null
+          blood_type?: string | null
+          child_id?: string
+          chronic_conditions?: string | null
+          church_id?: string
+          consent_signed_at?: string | null
+          consent_signed_by?: string | null
+          created_at?: string
+          current_medications?: string | null
+          dietary_restrictions?: string | null
+          emergency_transport_consent?: boolean | null
+          health_insurance?: string | null
+          health_insurance_number?: string | null
+          hospitalizations?: string | null
+          id?: string
+          last_reviewed_at?: string | null
+          medical_treatment_consent?: boolean | null
+          pediatrician_name?: string | null
+          pediatrician_phone?: string | null
+          photo_consent?: boolean | null
+          physical_restrictions?: string | null
+          previous_surgeries?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+          vaccination_notes?: string | null
+          vaccination_up_to_date?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_anamnesis_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "child_anamnesis_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      child_check_ins: {
+        Row: {
+          checked_in_at: string
+          checked_in_by: string | null
+          checked_out_at: string | null
+          checked_out_by: string | null
+          child_id: string
+          church_id: string
+          classroom: string | null
+          created_at: string
+          event_date: string
+          event_name: string
+          id: string
+          label_number: string | null
+          notes: string | null
+          pickup_method: string
+          pickup_person_name: string | null
+          qr_code: string
+        }
+        Insert: {
+          checked_in_at?: string
+          checked_in_by?: string | null
+          checked_out_at?: string | null
+          checked_out_by?: string | null
+          child_id: string
+          church_id: string
+          classroom?: string | null
+          created_at?: string
+          event_date?: string
+          event_name?: string
+          id?: string
+          label_number?: string | null
+          notes?: string | null
+          pickup_method?: string
+          pickup_person_name?: string | null
+          qr_code?: string
+        }
+        Update: {
+          checked_in_at?: string
+          checked_in_by?: string | null
+          checked_out_at?: string | null
+          checked_out_by?: string | null
+          child_id?: string
+          church_id?: string
+          classroom?: string | null
+          created_at?: string
+          event_date?: string
+          event_name?: string
+          id?: string
+          label_number?: string | null
+          notes?: string | null
+          pickup_method?: string
+          pickup_person_name?: string | null
+          qr_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_check_ins_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "child_check_ins_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      child_guardians: {
+        Row: {
+          can_pickup: boolean | null
+          child_id: string
+          created_at: string
+          guardian_id: string
+          id: string
+          is_primary: boolean | null
+        }
+        Insert: {
+          can_pickup?: boolean | null
+          child_id: string
+          created_at?: string
+          guardian_id: string
+          id?: string
+          is_primary?: boolean | null
+        }
+        Update: {
+          can_pickup?: boolean | null
+          child_id?: string
+          created_at?: string
+          guardian_id?: string
+          id?: string
+          is_primary?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_guardians_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "child_guardians_guardian_id_fkey"
+            columns: ["guardian_id"]
+            isOneToOne: false
+            referencedRelation: "guardians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "child_guardians_guardian_id_fkey"
+            columns: ["guardian_id"]
+            isOneToOne: false
+            referencedRelation: "guardians_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      children: {
+        Row: {
+          allergies: string | null
+          birth_date: string
+          church_id: string
+          classroom: string
+          created_at: string
+          emergency_contact: string | null
+          emergency_phone: string | null
+          full_name: string
+          id: string
+          image_consent: boolean | null
+          medications: string | null
+          notes: string | null
+          photo_url: string | null
+          special_needs: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          allergies?: string | null
+          birth_date: string
+          church_id: string
+          classroom?: string
+          created_at?: string
+          emergency_contact?: string | null
+          emergency_phone?: string | null
+          full_name: string
+          id?: string
+          image_consent?: boolean | null
+          medications?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          special_needs?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          allergies?: string | null
+          birth_date?: string
+          church_id?: string
+          classroom?: string
+          created_at?: string
+          emergency_contact?: string | null
+          emergency_phone?: string | null
+          full_name?: string
+          id?: string
+          image_consent?: boolean | null
+          medications?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          special_needs?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "children_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      churches: {
+        Row: {
+          address: string | null
+          city: string | null
+          cnpj: string | null
+          created_at: string
+          email: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          owner_user_id: string | null
+          phone: string | null
+          state: string | null
+          updated_at: string
+          website: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          cnpj?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          owner_user_id?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          website?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          cnpj?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          owner_user_id?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          website?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      classroom_settings: {
+        Row: {
+          church_id: string
+          classroom_name: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          max_age_months: number | null
+          max_capacity: number
+          min_age_months: number | null
+          ratio_children_per_adult: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          church_id: string
+          classroom_name: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_age_months?: number | null
+          max_capacity?: number
+          min_age_months?: number | null
+          ratio_children_per_adult?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          church_id?: string
+          classroom_name?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_age_months?: number | null
+          max_capacity?: number
+          min_age_months?: number | null
+          ratio_children_per_adult?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classroom_settings_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      column_mappings: {
+        Row: {
+          church_id: string
+          created_at: string
+          id: string
+          mapping: Json
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          id?: string
+          mapping?: Json
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          id?: string
+          mapping?: Json
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "column_mappings_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contributions: {
+        Row: {
+          amount: number
+          campaign_name: string | null
+          church_id: string
+          contribution_date: string
+          contribution_type: string
+          created_at: string
+          id: string
+          member_id: string | null
+          notes: string | null
+          receipt_generated: boolean | null
+          receipt_generated_at: string | null
+          receipt_number: string | null
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          campaign_name?: string | null
+          church_id: string
+          contribution_date: string
+          contribution_type: string
+          created_at?: string
+          id?: string
+          member_id?: string | null
+          notes?: string | null
+          receipt_generated?: boolean | null
+          receipt_generated_at?: string | null
+          receipt_number?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          campaign_name?: string | null
+          church_id?: string
+          contribution_date?: string
+          contribution_type?: string
+          created_at?: string
+          id?: string
+          member_id?: string | null
+          notes?: string | null
+          receipt_generated?: boolean | null
+          receipt_generated_at?: string | null
+          receipt_number?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contributions_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributions_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      department_volunteers: {
+        Row: {
+          church_id: string
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          invited_at: string
+          invited_by: string | null
+          is_active: boolean | null
+          ministry_id: string
+          notes: string | null
+          phone: string | null
+          profile_id: string | null
+          role: string | null
+          skills: string[] | null
+          status: string
+          term_accepted_at: string | null
+          term_version: string | null
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          is_active?: boolean | null
+          ministry_id: string
+          notes?: string | null
+          phone?: string | null
+          profile_id?: string | null
+          role?: string | null
+          skills?: string[] | null
+          status?: string
+          term_accepted_at?: string | null
+          term_version?: string | null
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          is_active?: boolean | null
+          ministry_id?: string
+          notes?: string | null
+          phone?: string | null
+          profile_id?: string | null
+          role?: string | null
+          skills?: string[] | null
+          status?: string
+          term_accepted_at?: string | null
+          term_version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_volunteers_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "department_volunteers_ministry_id_fkey"
+            columns: ["ministry_id"]
+            isOneToOne: false
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_registrations: {
+        Row: {
+          check_in_at: string | null
+          check_out_at: string | null
+          child_id: string | null
+          church_id: string | null
+          event_id: string
+          guardian_id: string | null
+          id: string
+          member_id: string | null
+          notes: string | null
+          payment_amount: number | null
+          payment_date: string | null
+          payment_status: string
+          profile_id: string | null
+          registered_at: string
+          status: string
+          ticket_number: string | null
+        }
+        Insert: {
+          check_in_at?: string | null
+          check_out_at?: string | null
+          child_id?: string | null
+          church_id?: string | null
+          event_id: string
+          guardian_id?: string | null
+          id?: string
+          member_id?: string | null
+          notes?: string | null
+          payment_amount?: number | null
+          payment_date?: string | null
+          payment_status?: string
+          profile_id?: string | null
+          registered_at?: string
+          status?: string
+          ticket_number?: string | null
+        }
+        Update: {
+          check_in_at?: string | null
+          check_out_at?: string | null
+          child_id?: string | null
+          church_id?: string | null
+          event_id?: string
+          guardian_id?: string | null
+          id?: string
+          member_id?: string | null
+          notes?: string | null
+          payment_amount?: number | null
+          payment_date?: string | null
+          payment_status?: string
+          profile_id?: string | null
+          registered_at?: string
+          status?: string
+          ticket_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "ministry_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_guardian_id_fkey"
+            columns: ["guardian_id"]
+            isOneToOne: false
+            referencedRelation: "guardians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_guardian_id_fkey"
+            columns: ["guardian_id"]
+            isOneToOne: false
+            referencedRelation: "guardians_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      google_integrations: {
+        Row: {
+          access_token_enc: string | null
+          church_id: string
+          column_mapping: Json | null
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          refresh_token_enc: string | null
+          sheet_id: string
+          sheet_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token_enc?: string | null
+          church_id: string
+          column_mapping?: Json | null
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          refresh_token_enc?: string | null
+          sheet_id: string
+          sheet_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token_enc?: string | null
+          church_id?: string
+          column_mapping?: Json | null
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          refresh_token_enc?: string | null
+          sheet_id?: string
+          sheet_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_integrations_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guardians: {
+        Row: {
+          access_pin: string | null
+          church_id: string
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          phone: string | null
+          photo_url: string | null
+          profile_id: string | null
+          relationship: string
+          updated_at: string
+        }
+        Insert: {
+          access_pin?: string | null
+          church_id: string
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          phone?: string | null
+          photo_url?: string | null
+          profile_id?: string | null
+          relationship?: string
+          updated_at?: string
+        }
+        Update: {
+          access_pin?: string | null
+          church_id?: string
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          photo_url?: string | null
+          profile_id?: string | null
+          relationship?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardians_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incident_reports: {
+        Row: {
+          check_in_id: string | null
+          child_id: string
+          church_id: string
+          created_at: string
+          description: string
+          first_aid_administered: boolean | null
+          first_aid_details: string | null
+          follow_up_completed_at: string | null
+          follow_up_notes: string | null
+          follow_up_required: boolean | null
+          id: string
+          immediate_action_taken: string | null
+          incident_date: string
+          incident_time: string
+          incident_type: string
+          location: string | null
+          medical_attention_details: string | null
+          medical_attention_required: boolean | null
+          parent_notified_at: string | null
+          parent_notified_by: string | null
+          parent_response: string | null
+          reported_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: string
+          staff_present: string[] | null
+          status: string
+          updated_at: string
+          witnesses: string[] | null
+        }
+        Insert: {
+          check_in_id?: string | null
+          child_id: string
+          church_id: string
+          created_at?: string
+          description: string
+          first_aid_administered?: boolean | null
+          first_aid_details?: string | null
+          follow_up_completed_at?: string | null
+          follow_up_notes?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          immediate_action_taken?: string | null
+          incident_date?: string
+          incident_time?: string
+          incident_type?: string
+          location?: string | null
+          medical_attention_details?: string | null
+          medical_attention_required?: boolean | null
+          parent_notified_at?: string | null
+          parent_notified_by?: string | null
+          parent_response?: string | null
+          reported_by: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          staff_present?: string[] | null
+          status?: string
+          updated_at?: string
+          witnesses?: string[] | null
+        }
+        Update: {
+          check_in_id?: string | null
+          child_id?: string
+          church_id?: string
+          created_at?: string
+          description?: string
+          first_aid_administered?: boolean | null
+          first_aid_details?: string | null
+          follow_up_completed_at?: string | null
+          follow_up_notes?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          immediate_action_taken?: string | null
+          incident_date?: string
+          incident_time?: string
+          incident_type?: string
+          location?: string | null
+          medical_attention_details?: string | null
+          medical_attention_required?: boolean | null
+          parent_notified_at?: string | null
+          parent_notified_by?: string | null
+          parent_response?: string | null
+          reported_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          staff_present?: string[] | null
+          status?: string
+          updated_at?: string
+          witnesses?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_reports_check_in_id_fkey"
+            columns: ["check_in_id"]
+            isOneToOne: false
+            referencedRelation: "child_check_ins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_reports_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_reports_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leader_checkout_overrides: {
+        Row: {
+          check_in_id: string
+          created_at: string
+          id: string
+          leader_id: string
+          pickup_person_name: string
+          reason: string
+        }
+        Insert: {
+          check_in_id: string
+          created_at?: string
+          id?: string
+          leader_id: string
+          pickup_person_name: string
+          reason: string
+        }
+        Update: {
+          check_in_id?: string
+          created_at?: string
+          id?: string
+          leader_id?: string
+          pickup_person_name?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leader_checkout_overrides_check_in_id_fkey"
+            columns: ["check_in_id"]
+            isOneToOne: false
+            referencedRelation: "child_check_ins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medication_logs: {
+        Row: {
+          administered_at: string
+          administered_by: string
+          child_id: string
+          church_id: string
+          created_at: string
+          dosage_given: string
+          id: string
+          notes: string | null
+          schedule_id: string
+          witnessed_by: string | null
+        }
+        Insert: {
+          administered_at?: string
+          administered_by: string
+          child_id: string
+          church_id: string
+          created_at?: string
+          dosage_given: string
+          id?: string
+          notes?: string | null
+          schedule_id: string
+          witnessed_by?: string | null
+        }
+        Update: {
+          administered_at?: string
+          administered_by?: string
+          child_id?: string
+          church_id?: string
+          created_at?: string
+          dosage_given?: string
+          id?: string
+          notes?: string | null
+          schedule_id?: string
+          witnessed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_logs_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medication_logs_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medication_logs_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "medication_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medication_schedules: {
+        Row: {
+          administration_times: string[] | null
+          authorized_by: string | null
+          child_id: string
+          church_id: string
+          created_at: string
+          dosage: string
+          end_date: string | null
+          frequency: string
+          id: string
+          instructions: string | null
+          is_active: boolean | null
+          medication_name: string
+          parent_authorization_date: string | null
+          requires_refrigeration: boolean | null
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          administration_times?: string[] | null
+          authorized_by?: string | null
+          child_id: string
+          church_id: string
+          created_at?: string
+          dosage: string
+          end_date?: string | null
+          frequency: string
+          id?: string
+          instructions?: string | null
+          is_active?: boolean | null
+          medication_name: string
+          parent_authorization_date?: string | null
+          requires_refrigeration?: boolean | null
+          start_date?: string
+          updated_at?: string
+        }
+        Update: {
+          administration_times?: string[] | null
+          authorized_by?: string | null
+          child_id?: string
+          church_id?: string
+          created_at?: string
+          dosage?: string
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          instructions?: string | null
+          is_active?: boolean | null
+          medication_name?: string
+          parent_authorization_date?: string | null
+          requires_refrigeration?: boolean | null
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_schedules_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medication_schedules_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_ministries: {
+        Row: {
+          created_at: string
+          id: string
+          member_id: string
+          ministry_id: string
+          role: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          member_id: string
+          ministry_id: string
+          role?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          member_id?: string
+          ministry_id?: string
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_ministries_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_ministries_ministry_id_fkey"
+            columns: ["ministry_id"]
+            isOneToOne: false
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      members: {
+        Row: {
+          address: string | null
+          admission_type: string | null
+          baptism_church: string | null
+          baptism_date: string | null
+          baptism_pastor: string | null
+          birth_date: string | null
+          children_names: string | null
+          church_id: string
+          city: string | null
+          created_at: string
+          departure_conversation: boolean | null
+          departure_details: string | null
+          departure_reason: string | null
+          email: string | null
+          full_name: string
+          has_transfer_letter: boolean | null
+          holy_spirit_baptism: string | null
+          id: string
+          leadership_notes: string | null
+          marital_status: string | null
+          member_since: string | null
+          notes: string | null
+          phone: string | null
+          previous_church: string | null
+          previous_church_duration: string | null
+          previous_denominations: string | null
+          previous_ministry: string | null
+          previous_ministry_roles: string | null
+          profession: string | null
+          spouse_attends_church: string | null
+          spouse_name: string | null
+          state: string | null
+          status: string
+          technical_skills: string | null
+          time_without_church: string | null
+          transfer_letter_url: string | null
+          updated_at: string
+          wants_pastoral_visit: boolean | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          admission_type?: string | null
+          baptism_church?: string | null
+          baptism_date?: string | null
+          baptism_pastor?: string | null
+          birth_date?: string | null
+          children_names?: string | null
+          church_id: string
+          city?: string | null
+          created_at?: string
+          departure_conversation?: boolean | null
+          departure_details?: string | null
+          departure_reason?: string | null
+          email?: string | null
+          full_name: string
+          has_transfer_letter?: boolean | null
+          holy_spirit_baptism?: string | null
+          id?: string
+          leadership_notes?: string | null
+          marital_status?: string | null
+          member_since?: string | null
+          notes?: string | null
+          phone?: string | null
+          previous_church?: string | null
+          previous_church_duration?: string | null
+          previous_denominations?: string | null
+          previous_ministry?: string | null
+          previous_ministry_roles?: string | null
+          profession?: string | null
+          spouse_attends_church?: string | null
+          spouse_name?: string | null
+          state?: string | null
+          status?: string
+          technical_skills?: string | null
+          time_without_church?: string | null
+          transfer_letter_url?: string | null
+          updated_at?: string
+          wants_pastoral_visit?: boolean | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          admission_type?: string | null
+          baptism_church?: string | null
+          baptism_date?: string | null
+          baptism_pastor?: string | null
+          birth_date?: string | null
+          children_names?: string | null
+          church_id?: string
+          city?: string | null
+          created_at?: string
+          departure_conversation?: boolean | null
+          departure_details?: string | null
+          departure_reason?: string | null
+          email?: string | null
+          full_name?: string
+          has_transfer_letter?: boolean | null
+          holy_spirit_baptism?: string | null
+          id?: string
+          leadership_notes?: string | null
+          marital_status?: string | null
+          member_since?: string | null
+          notes?: string | null
+          phone?: string | null
+          previous_church?: string | null
+          previous_church_duration?: string | null
+          previous_denominations?: string | null
+          previous_ministry?: string | null
+          previous_ministry_roles?: string | null
+          profession?: string | null
+          spouse_attends_church?: string | null
+          spouse_name?: string | null
+          state?: string | null
+          status?: string
+          technical_skills?: string | null
+          time_without_church?: string | null
+          transfer_letter_url?: string | null
+          updated_at?: string
+          wants_pastoral_visit?: boolean | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministries: {
+        Row: {
+          church_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministries_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministry_events: {
+        Row: {
+          all_day: boolean | null
+          church_id: string
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_datetime: string | null
+          event_type: string
+          id: string
+          is_paid_event: boolean | null
+          location: string | null
+          max_capacity: number | null
+          ministry_id: string | null
+          recurrence_rule: string | null
+          recurring: boolean | null
+          registration_deadline: string | null
+          registration_required: boolean | null
+          start_datetime: string
+          status: string | null
+          tags: string[] | null
+          ticket_price: number | null
+          title: string
+          updated_at: string
+          visibility: string | null
+        }
+        Insert: {
+          all_day?: boolean | null
+          church_id: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_datetime?: string | null
+          event_type?: string
+          id?: string
+          is_paid_event?: boolean | null
+          location?: string | null
+          max_capacity?: number | null
+          ministry_id?: string | null
+          recurrence_rule?: string | null
+          recurring?: boolean | null
+          registration_deadline?: string | null
+          registration_required?: boolean | null
+          start_datetime: string
+          status?: string | null
+          tags?: string[] | null
+          ticket_price?: number | null
+          title: string
+          updated_at?: string
+          visibility?: string | null
+        }
+        Update: {
+          all_day?: boolean | null
+          church_id?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_datetime?: string | null
+          event_type?: string
+          id?: string
+          is_paid_event?: boolean | null
+          location?: string | null
+          max_capacity?: number | null
+          ministry_id?: string | null
+          recurrence_rule?: string | null
+          recurring?: boolean | null
+          registration_deadline?: string | null
+          registration_required?: boolean | null
+          start_datetime?: string
+          status?: string | null
+          tags?: string[] | null
+          ticket_price?: number | null
+          title?: string
+          updated_at?: string
+          visibility?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministry_events_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministry_events_ministry_id_fkey"
+            columns: ["ministry_id"]
+            isOneToOne: false
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministry_staff: {
+        Row: {
+          background_check_date: string | null
+          certifications: string | null
+          church_id: string
+          created_at: string | null
+          email: string | null
+          full_name: string
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          phone: string | null
+          profile_id: string | null
+          role: string
+          trained_classrooms: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          background_check_date?: string | null
+          certifications?: string | null
+          church_id: string
+          created_at?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          phone?: string | null
+          profile_id?: string | null
+          role?: string
+          trained_classrooms?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          background_check_date?: string | null
+          certifications?: string | null
+          church_id?: string
+          created_at?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          phone?: string | null
+          profile_id?: string | null
+          role?: string
+          trained_classrooms?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministry_staff_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          link: string | null
+          message: string
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message: string
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message?: string
+          title?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pickup_authorizations: {
+        Row: {
+          authorized_person_name: string
+          authorized_person_phone: string | null
+          authorized_person_photo: string | null
+          child_id: string
+          church_id: string
+          created_at: string
+          guardian_id: string | null
+          id: string
+          is_one_time: boolean | null
+          is_used: boolean | null
+          notes: string | null
+          relationship: string | null
+          updated_at: string
+          used_at: string | null
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          authorized_person_name: string
+          authorized_person_phone?: string | null
+          authorized_person_photo?: string | null
+          child_id: string
+          church_id: string
+          created_at?: string
+          guardian_id?: string | null
+          id?: string
+          is_one_time?: boolean | null
+          is_used?: boolean | null
+          notes?: string | null
+          relationship?: string | null
+          updated_at?: string
+          used_at?: string | null
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Update: {
+          authorized_person_name?: string
+          authorized_person_phone?: string | null
+          authorized_person_photo?: string | null
+          child_id?: string
+          church_id?: string
+          created_at?: string
+          guardian_id?: string | null
+          id?: string
+          is_one_time?: boolean | null
+          is_used?: boolean | null
+          notes?: string | null
+          relationship?: string | null
+          updated_at?: string
+          used_at?: string | null
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pickup_authorizations_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pickup_authorizations_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pickup_authorizations_guardian_id_fkey"
+            columns: ["guardian_id"]
+            isOneToOne: false
+            referencedRelation: "guardians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pickup_authorizations_guardian_id_fkey"
+            columns: ["guardian_id"]
+            isOneToOne: false
+            referencedRelation: "guardians_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          church_id: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          church_id?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          church_id?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_sheet_integrations: {
+        Row: {
+          church_id: string
+          column_mapping: Json | null
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          records_synced: number | null
+          sheet_id: string
+          sheet_name: string
+          sheet_url: string
+          sync_status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          church_id: string
+          column_mapping?: Json | null
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          records_synced?: number | null
+          sheet_id: string
+          sheet_name: string
+          sheet_url: string
+          sync_status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          church_id?: string
+          column_mapping?: Json | null
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          records_synced?: number | null
+          sheet_id?: string
+          sheet_name?: string
+          sheet_url?: string
+          sync_status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_sheet_integrations_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sheet_uploads: {
+        Row: {
+          church_id: string
+          column_mapping: Json | null
+          created_at: string
+          error_message: string | null
+          file_name: string
+          id: string
+          original_name: string | null
+          records_imported: number | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          church_id: string
+          column_mapping?: Json | null
+          created_at?: string
+          error_message?: string | null
+          file_name: string
+          id?: string
+          original_name?: string | null
+          records_imported?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          church_id?: string
+          column_mapping?: Json | null
+          created_at?: string
+          error_message?: string | null
+          file_name?: string
+          id?: string
+          original_name?: string | null
+          records_imported?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sheet_uploads_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_schedules: {
+        Row: {
+          church_id: string
+          classroom: string | null
+          confirmed: boolean | null
+          confirmed_at: string | null
+          created_at: string | null
+          event_id: string | null
+          id: string
+          notes: string | null
+          role: string | null
+          shift_end: string
+          shift_start: string
+          staff_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          church_id: string
+          classroom?: string | null
+          confirmed?: boolean | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          notes?: string | null
+          role?: string | null
+          shift_end: string
+          shift_start: string
+          staff_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          church_id?: string
+          classroom?: string | null
+          confirmed?: boolean | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          notes?: string | null
+          role?: string | null
+          shift_end?: string
+          shift_start?: string
+          staff_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_schedules_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_schedules_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "ministry_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_schedules_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "ministry_staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sync_history: {
+        Row: {
+          church_id: string
+          created_at: string
+          error_message: string | null
+          id: string
+          integration_id: string
+          integration_type: string | null
+          records_inserted: number | null
+          records_skipped: number | null
+          records_updated: number | null
+          status: string | null
+          sync_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          integration_id: string
+          integration_type?: string | null
+          records_inserted?: number | null
+          records_skipped?: number | null
+          records_updated?: number | null
+          status?: string | null
+          sync_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          integration_id?: string
+          integration_type?: string | null
+          records_inserted?: number | null
+          records_skipped?: number | null
+          records_updated?: number | null
+          status?: string | null
+          sync_type?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_history_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category_id: string | null
+          church_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          due_date: string | null
+          id: string
+          installment_group_id: string | null
+          installment_number: number | null
+          invoice_url: string | null
+          member_id: string | null
+          ministry_id: string | null
+          notes: string | null
+          origin: string | null
+          payment_date: string | null
+          status: string
+          total_installments: number | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          category_id?: string | null
+          church_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          due_date?: string | null
+          id?: string
+          installment_group_id?: string | null
+          installment_number?: number | null
+          invoice_url?: string | null
+          member_id?: string | null
+          ministry_id?: string | null
+          notes?: string | null
+          origin?: string | null
+          payment_date?: string | null
+          status?: string
+          total_installments?: number | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          church_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          due_date?: string | null
+          id?: string
+          installment_group_id?: string | null
+          installment_number?: number | null
+          invoice_url?: string | null
+          member_id?: string | null
+          ministry_id?: string | null
+          notes?: string | null
+          origin?: string | null
+          payment_date?: string | null
+          status?: string
+          total_installments?: number | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_ministry_id_fkey"
+            columns: ["ministry_id"]
+            isOneToOne: false
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_ministries: {
+        Row: {
+          created_at: string
+          id: string
+          ministry_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ministry_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ministry_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_ministries_ministry_id_fkey"
+            columns: ["ministry_id"]
+            isOneToOne: false
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      volunteer_announcement_reads: {
+        Row: {
+          announcement_id: string
+          id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          id?: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "volunteer_announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteer_announcements: {
+        Row: {
+          church_id: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_published: boolean | null
+          meeting_date: string | null
+          ministry_id: string
+          priority: string | null
+          title: string
+        }
+        Insert: {
+          church_id: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_published?: boolean | null
+          meeting_date?: string | null
+          ministry_id: string
+          priority?: string | null
+          title: string
+        }
+        Update: {
+          church_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_published?: boolean | null
+          meeting_date?: string | null
+          ministry_id?: string
+          priority?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_announcements_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_announcements_ministry_id_fkey"
+            columns: ["ministry_id"]
+            isOneToOne: false
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteer_commitment_terms: {
+        Row: {
+          church_id: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          title: string
+          version: string
+        }
+        Insert: {
+          church_id: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          version?: string
+        }
+        Update: {
+          church_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_commitment_terms_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteer_schedules: {
+        Row: {
+          church_id: string
+          confirmed: boolean | null
+          confirmed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          ministry_id: string
+          notes: string | null
+          schedule_date: string
+          schedule_type: string | null
+          shift_end: string
+          shift_start: string
+          volunteer_id: string
+        }
+        Insert: {
+          church_id: string
+          confirmed?: boolean | null
+          confirmed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ministry_id: string
+          notes?: string | null
+          schedule_date: string
+          schedule_type?: string | null
+          shift_end: string
+          shift_start: string
+          volunteer_id: string
+        }
+        Update: {
+          church_id?: string
+          confirmed?: boolean | null
+          confirmed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ministry_id?: string
+          notes?: string | null
+          schedule_date?: string
+          schedule_type?: string | null
+          shift_end?: string
+          shift_start?: string
+          volunteer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_schedules_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_schedules_ministry_id_fkey"
+            columns: ["ministry_id"]
+            isOneToOne: false
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_schedules_volunteer_id_fkey"
+            columns: ["volunteer_id"]
+            isOneToOne: false
+            referencedRelation: "department_volunteers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waitlist: {
+        Row: {
+          child_id: string
+          church_id: string
+          classroom: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          notified_at: string | null
+          position: number
+          requested_at: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          child_id: string
+          church_id: string
+          classroom: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          notified_at?: string | null
+          position?: number
+          requested_at?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          child_id?: string
+          church_id?: string
+          classroom?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          notified_at?: string | null
+          position?: number
+          requested_at?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      guardians_safe: {
+        Row: {
+          church_id: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          phone: string | null
+          photo_url: string | null
+          profile_id: string | null
+          relationship: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          church_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          profile_id?: string | null
+          relationship?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          church_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          profile_id?: string | null
+          relationship?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardians_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      generate_receipt_number: {
+        Args: { p_church_id: string }
+        Returns: string
+      }
+      get_birthdays_this_month: {
+        Args: { p_church_id: string }
+        Returns: {
+          birth_date: string
+          email: string
+          full_name: string
+          id: string
+          phone: string
+        }[]
+      }
+      get_guardians_for_management: {
+        Args: { p_church_id: string }
+        Returns: {
+          children_count: number
+          church_id: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string
+          photo_url: string
+          profile_id: string
+          relationship: string
+          updated_at: string
+        }[]
+      }
+      get_user_church_id: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      update_overdue_transactions: { Args: never; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "tesoureiro" | "pastor" | "lider" | "user" | "parent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +2686,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "tesoureiro", "pastor", "lider", "user", "parent"],
+    },
   },
 } as const

@@ -365,18 +365,17 @@ export function DuplicateCleanupSection() {
       // 4. Get ministry links from duplicates
       const { data: duplicateMinistries } = await supabase
         .from("member_ministries")
-        .select("ministry_id, role, joined_at")
+        .select("ministry_id, role")
         .in("member_id", duplicateIds);
 
       // 5. Add unique ministry links to master
       if (duplicateMinistries && duplicateMinistries.length > 0) {
-        const newMinistryLinks = duplicateMinistries
+        const newMinistryLinks = (duplicateMinistries as any[])
           .filter(m => !masterMinistryIds.has(m.ministry_id))
           .map(m => ({
             member_id: masterId,
             ministry_id: m.ministry_id,
             role: m.role,
-            joined_at: m.joined_at,
           }));
 
         if (newMinistryLinks.length > 0) {

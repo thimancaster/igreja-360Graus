@@ -21,7 +21,7 @@ export function useAutoUpdateOverdue() {
       try {
         console.log("[useAutoUpdateOverdue] Atualizando transações vencidas...");
         
-        const { data, error } = await supabase.rpc('check_and_update_overdue');
+        const { data, error } = await supabase.rpc('update_overdue_transactions');
         
         if (error) {
           console.error("[useAutoUpdateOverdue] Erro ao atualizar:", error);

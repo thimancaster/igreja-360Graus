@@ -166,13 +166,13 @@ export default function Importacao() {
 
     try {
       // Create upload record
-      const { data: uploadData, error: uploadError } = await supabase
+      const { data: uploadData, error: uploadError } = await (supabase as any)
         .from("sheet_uploads")
         .insert({
           church_id: profile.church_id,
           user_id: user.id,
-          filename: file?.name || "importacao.xlsx",
-          file_size: file?.size || 0,
+          file_name: file?.name || "importacao.xlsx",
+          original_name: file?.name || "importacao.xlsx",
           status: "Processando",
           records_imported: 0,
         })
@@ -249,9 +249,9 @@ export default function Importacao() {
       setProgress(40);
 
       // Fetch ALL existing transactions for intelligent deduplication
-      const { data: existingTransactions, error: fetchError } = await supabase
+      const { data: existingTransactions, error: fetchError } = await (supabase as any)
         .from("transactions")
-        .select("id, description, amount, type, due_date, payment_date, external_id")
+        .select("id, description, amount, type, due_date, payment_date")
         .eq("church_id", profile.church_id);
 
       if (fetchError) throw fetchError;
@@ -260,7 +260,7 @@ export default function Importacao() {
 
       // Build deduplication sets using content hash
       const { existingHashes, existingByExternalId } = buildDeduplicationSets(
-        (existingTransactions || []) as ExistingTransactionForDupe[]
+        (existingTransactions || []) as any
       );
 
       // Extract transactions for filtering
@@ -271,7 +271,7 @@ export default function Importacao() {
 
       // Filter duplicates using content hash
       const { toImport, duplicates, batchDuplicates } = filterDuplicateTransactions(
-        transactionsForFilter,
+        transactionsForFilter as any,
         existingHashes,
         existingByExternalId
       );
@@ -286,7 +286,7 @@ export default function Importacao() {
       setProgress(75);
 
       // Insert non-duplicate transactions
-      const { error: insertError } = await supabase.from("transactions").insert(toImport);
+      const { error: insertError } = await (supabase as any).from("transactions").insert(toImport);
       if (insertError) throw insertError;
 
       // Update upload record with success

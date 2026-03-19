@@ -12,13 +12,14 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 interface AuditLog {
   id: string;
-  user_id: string;
-  user_name: string | null;
+  user_id: string | null;
   action: string;
-  entity_type: string;
-  entity_count: number;
+  entity_type: string | null;
+  entity_id: string | null;
   details: Record<string, unknown> | null;
   created_at: string;
+  church_id: string;
+  ip_address: string | null;
 }
 
 const ACTION_LABELS: Record<string, string> = {
@@ -138,7 +139,7 @@ export function AuditLogViewer() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{log.user_name || "Sistema"}</span>
+                        <span className="font-medium">{(log.details as any)?.user_name || log.user_id || "Sistema"}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -152,9 +153,9 @@ export function AuditLogViewer() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 capitalize">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        {log.entity_type}
-                        {log.entity_count > 0 ? ` (${log.entity_count})` : ""}
+                         <FileText className="h-4 w-4 text-muted-foreground" />
+                        {log.entity_type || '-'}
+                        {(log.details as any)?.entity_count > 0 ? ` (${(log.details as any).entity_count})` : ""}
                       </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">

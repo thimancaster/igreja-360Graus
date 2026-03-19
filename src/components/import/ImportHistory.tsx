@@ -95,7 +95,7 @@ export function ImportHistory() {
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
-                        <span className="truncate max-w-[200px]">{upload.filename}</span>
+                        <span className="truncate max-w-[200px]">{upload.file_name || upload.original_name}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
