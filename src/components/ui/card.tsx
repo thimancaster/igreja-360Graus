@@ -1,10 +1,64 @@
 import * as React from "react";
-
+import { cva, type VariantProps } from "class-variance-authority";
+import { motion, HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)} {...props} />
-));
+const cardVariants = cva(
+  "rounded-xl border transition-all duration-300",
+  {
+    variants: {
+      variant: {
+        default: "bg-card text-card-foreground shadow-sm",
+        glass: "glass-card text-card-foreground",
+        "glass-static": "glass-card-static text-card-foreground",
+        elevated: "bg-card text-card-foreground shadow-lg hover:shadow-xl hover:-translate-y-1",
+        gradient: "gradient-border text-card-foreground shadow-sm",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
+
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {
+  interactive?: boolean;
+  hoverLift?: boolean;
+  tapScale?: boolean;
+}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, interactive = false, hoverLift = false, tapScale = false, ...props }, ref) => {
+    // If interactive features are enabled, use motion.div
+    if (interactive || hoverLift || tapScale) {
+      return (
+        <motion.div
+          ref={ref}
+          className={cn(cardVariants({ variant, className }))}
+          whileHover={hoverLift ? { 
+            y: -4,
+            transition: { type: "spring", stiffness: 300, damping: 20 }
+          } : undefined}
+          whileTap={tapScale ? { 
+            scale: 0.98,
+            transition: { type: "spring", stiffness: 400, damping: 17 }
+          } : undefined}
+          {...(props as any)}
+        />
+      );
+    }
+
+    return (
+      <div
+        ref={ref}
+        className={cn(cardVariants({ variant, className }))}
+        {...props}
+      />
+    );
+  }
+);
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -40,4 +94,4 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 );
 CardFooter.displayName = "CardFooter";
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants };
