@@ -84,10 +84,11 @@ export function useRole() {
     return rolesList.some(role => hasRole(role));
   };
 
-  const isAdmin = hasRole('admin');
-  const isTesoureiro = hasRole('tesoureiro');
-  const isPastor = hasRole('pastor');
-  const isLider = hasRole('lider');
+  const isMasterAdmin = user?.email === MASTER_ADMIN_EMAIL;
+  const isAdmin = hasRole('admin') || isMasterAdmin;
+  const isTesoureiro = hasRole('tesoureiro') || isMasterAdmin;
+  const isPastor = hasRole('pastor') || isMasterAdmin;
+  const isLider = hasRole('lider') || isMasterAdmin;
   const isUser = hasRole('user');
   // Parent is true if they have the role OR if they're linked as a guardian
   const isParent = hasRole('parent') || (isGuardian === true);
