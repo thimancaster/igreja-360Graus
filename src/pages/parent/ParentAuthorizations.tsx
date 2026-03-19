@@ -192,10 +192,10 @@ export default function ParentAuthorizations() {
                         </div>
                       )}
 
-                      {auth.reason && (
+                      {(auth as any).reason && (
                         <p className="text-sm text-muted-foreground flex items-start gap-2">
                           <FileText className="h-4 w-4 shrink-0 mt-0.5" />
-                          {auth.reason}
+                          {(auth as any).reason}
                         </p>
                       )}
 
