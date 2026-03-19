@@ -54,7 +54,7 @@ type Church = {
   name: string;
 };
 
-const ROLES: AppRole[] = ["admin", "tesoureiro", "pastor", "lider", "user", "parent"];
+const ROLES: AppRole[] = ["admin", "tesoureiro", "pastor", "lider", "user", "parent", "membro"];
 
 const ROLE_LABELS: Record<AppRole, string> = {
   admin: "Administrador",
@@ -63,6 +63,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
   lider: "Líder",
   user: "Usuário",
   parent: "Responsável",
+  membro: "Membro",
 };
 
 export default function GerenciarUsuarios() {
