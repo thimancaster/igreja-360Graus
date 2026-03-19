@@ -89,6 +89,9 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
     stopCamera();
 
     try {
+      const faceapi = getFaceApi();
+      if (!faceapi) throw new Error("face-api not loaded");
+
       // Load captured image
       const capturedImg = await faceapi.fetchImage(capturedDataUrl);
       const capturedDetection = await faceapi
