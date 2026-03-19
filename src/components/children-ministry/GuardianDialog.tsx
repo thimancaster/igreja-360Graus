@@ -134,7 +134,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
         email: data.email || null,
         phone: data.phone || null,
         relationship: data.relationship,
-        photo_url: null,
+        photo_url: photoUrl,
         profile_id: data.profile_id || null,
       };
 
