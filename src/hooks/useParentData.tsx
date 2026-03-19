@@ -263,11 +263,10 @@ export function usePickupAuthorizationMutations() {
     mutationFn: async (id: string) => {
       if (!user?.id) throw new Error("Usuário não autenticado");
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("pickup_authorizations")
         .update({ 
-          status: 'active',
-          approved_by_leader: user.id,
+          notes: 'Approved by leader',
         })
         .eq("id", id);
 
