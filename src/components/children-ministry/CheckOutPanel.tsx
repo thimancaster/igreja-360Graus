@@ -185,13 +185,10 @@ export function CheckOutPanel() {
       return;
     }
 
-    // Validate PIN server-side if required
-    if (person.requiresPin) {
-      if (!enteredPin) {
-        setPinError("Digite o PIN de segurança");
-        return;
-      }
-      
+    // Skip PIN validation for QR code checkout
+    const needsPin = person.requiresPin && !scannedViaQR;
+
+    if (needsPin && enteredPin) {
       const { data: pinResult, error: pinError } = await supabase.functions.invoke('verify-pickup-pin', {
         body: {
           person_type: person.type,
@@ -201,7 +198,26 @@ export function CheckOutPanel() {
       });
 
       if (pinError || !pinResult?.valid) {
-        setPinError("PIN incorreto");
+        // If result says no_pin, the person has no PIN set - allow
+        if (pinResult?.no_pin) {
+          // No PIN set, proceed
+        } else {
+          setPinError("PIN incorreto");
+          return;
+        }
+      }
+    } else if (needsPin && !enteredPin) {
+      // Check if the person actually has a PIN set
+      const { data: pinCheck } = await supabase.functions.invoke('verify-pickup-pin', {
+        body: {
+          person_type: person.type,
+          person_id: person.realId,
+          entered_pin: "__check__",
+        },
+      });
+      // If person has a PIN set, require it
+      if (pinCheck && !pinCheck.no_pin) {
+        setPinError("Digite o PIN de segurança");
         return;
       }
     }
