@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const valid = entered_pin === storedPin;
+    const valid = pin === storedPin;
 
     return new Response(JSON.stringify({ valid, no_pin: false }), {
       status: 200,
