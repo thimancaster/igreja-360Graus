@@ -242,9 +242,9 @@ export function usePickupAuthorizationMutations() {
 
   const cancelAuthorization = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("pickup_authorizations")
-        .update({ status: 'cancelled' })
+        .update({ is_used: true, used_at: new Date().toISOString() })
         .eq("id", id);
 
       if (error) throw error;
