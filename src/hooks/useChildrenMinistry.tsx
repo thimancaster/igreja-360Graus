@@ -140,14 +140,14 @@ export function useChildWithGuardians(childId: string | undefined) {
 
       if (childError) throw childError;
 
-      // Fetch guardians linked to this child
+      // Fetch guardians linked to this child (exclude access_pin for security)
       const { data: childGuardians, error: cgError } = await supabase
         .from("child_guardians")
         .select(`
           guardian_id,
           is_primary,
           can_pickup,
-          guardians:guardian_id (*)
+          guardians:guardian_id (id, church_id, profile_id, full_name, email, phone, photo_url, relationship, created_at, updated_at)
         `)
         .eq("child_id", childId);
 
