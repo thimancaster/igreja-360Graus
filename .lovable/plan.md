@@ -1,68 +1,41 @@
 
 
-# Plano: Anti-Duplicidade e CPF no Ministerio Infantil
+# Plano: Melhorias de Performance no Reconhecimento Facial
 
-## Resumo
+## Problemas Identificados
 
-Adicionar campo CPF aos responsaveis, implementar validacoes de duplicidade em criancas e responsaveis, e impedir que pais cadastrem criancas ja vinculadas a outros responsaveis.
+1. **Descritores calculados sequencialmente** -- cada foto e processada uma por uma, bloqueando tudo
+2. **Cache perdido entre sessoes** -- ao clonar candidatos (`map(c => ({...c}))`), os descritores em cache nao sao reaproveitados
+3. **Sem escaneamento automatico** -- usuario precisa clicar "Escanear Rosto" manualmente toda vez
+4. **Canvas em resolucao total** -- processa frame na resolucao completa da camera, desnecessariamente pesado
+5. **TinyFaceDetector com opcoes padrao** -- pode ser ajustado para velocidade
 
-## Alteracoes
+## Melhorias
 
-### 1. Migration: Adicionar coluna `cpf` na tabela `guardians`
+### 1. `faceRecognition.ts` -- Processamento paralelo + otimizacoes
 
-```sql
-ALTER TABLE public.guardians ADD COLUMN cpf text;
-CREATE UNIQUE INDEX guardians_cpf_church_unique ON public.guardians (church_id, cpf) WHERE cpf IS NOT NULL AND cpf != '';
-```
+- `precomputeDescriptors`: processar em lotes paralelos de 3 (em vez de 1 por vez) -- reduz tempo em ~3x
+- Adicionar opcao `inputSize` menor no `TinyFaceDetectorOptions` (160 em vez de 416) para scans ao vivo
+- Nova funcao `computeDescriptorFast` que redimensiona o canvas para 320px antes de processar
+- Manter cache global persistente entre sessoes do componente
 
-Indice unico garante que nao haja dois responsaveis com o mesmo CPF na mesma igreja.
+### 2. `FaceCheckInMode.tsx` -- Auto-scan + fluidez
 
-### 2. Atualizar view `guardians_safe` para incluir CPF
+- **Auto-scan continuo**: ao ativar camera, escanear automaticamente a cada 2.5s sem precisar clicar botao
+- **Nao clonar candidatos**: passar `rawCandidates` direto para `precomputeDescriptors` para aproveitar cache
+- **Redimensionar frame** para 320px de largura antes de processar (muito mais rapido)
+- **Indicador visual de scan** sutil (borda pulsando) em vez de overlay bloqueante
+- **Botao "Parar Camera"** visivel para controle
+- Remover estado `noMatch` intermediario que trava -- manter camera rodando e mostrar feedback inline
 
-Recriar a view incluindo o campo `cpf` (dado nao sigiloso como PIN).
+### 3. Corrigir warning do console
 
-### 3. Atualizar `get_guardians_for_management` RPC para incluir CPF
-
-### 4. `GuardianDialog.tsx` -- Adicionar campo CPF com validacao
-
-- Novo campo CPF no formulario com mascara (###.###.###-##)
-- Validacao de digitos verificadores do CPF via Zod custom
-- Antes de salvar, verificar no banco se ja existe responsavel com mesmo CPF na igreja
-- Se duplicado, mostrar erro: "Ja existe um responsavel cadastrado com este CPF: [nome]. Vincule o responsavel existente."
-
-### 5. `GuardianDialog.tsx` -- Validacao de duplicidade por parentesco
-
-- Ao criar responsavel com relationship "Pai" ou "Mae", antes de vincular a uma crianca, verificar se a crianca ja tem um "Pai" ou "Mae" vinculado
-- Se ja tiver, bloquear: "Esta crianca ja possui um(a) [Pai/Mae] cadastrado(a)."
-
-### 6. `ChildGuardianLinkSection.tsx` -- Validacao de duplicidade de parentesco ao vincular
-
-- Antes de executar `linkGuardianToChild`, consultar os guardians ja vinculados
-- Se o responsavel sendo vinculado tem relationship "Pai" e ja existe um "Pai" vinculado, bloquear com mensagem
-
-### 7. `useParentChildMutations.tsx` -- Verificar crianca existente antes de cadastrar
-
-- Antes de inserir nova crianca, buscar por `full_name` + `birth_date` na mesma `church_id`
-- Se encontrar match: lançar erro "Esta crianca ja esta cadastrada no sistema. Por favor, procure a administracao da igreja para vincular ao seu cadastro."
-- NAO permitir criar duplicata
-
-### 8. `useChildMutations` (admin) -- Verificar duplicidade tambem
-
-- Mesma logica: antes de criar crianca, checar `full_name` + `birth_date` na mesma igreja
-- Avisar admin mas permitir override (diferente do portal dos pais que bloqueia)
-
-### 9. Tipos TypeScript
-
-- Atualizar tipo `Guardian` em `useChildrenMinistry.tsx` para incluir `cpf: string | null`
-- Atualizar `guardianSchema` no `GuardianDialog` para incluir CPF
+- `FaceCheckInMode` recebe ref indevidamente do `CheckInPanel` -- nao e necessario ref, apenas remover
 
 ## Arquivos Afetados
 
 | Arquivo | Acao |
 |---------|------|
-| Migration SQL | Criar -- coluna cpf + indice unico |
-| `src/hooks/useChildrenMinistry.tsx` | Modificar -- tipo Guardian + validacoes em mutations |
-| `src/hooks/useParentChildMutations.tsx` | Modificar -- check duplicidade crianca |
-| `src/components/children-ministry/GuardianDialog.tsx` | Modificar -- campo CPF + validacoes |
-| `src/components/children-ministry/ChildGuardianLinkSection.tsx` | Modificar -- validacao parentesco |
+| `src/lib/faceRecognition.ts` | Modificar -- paralelo, fast descriptor, inputSize |
+| `src/components/children-ministry/FaceCheckInMode.tsx` | Modificar -- auto-scan, cache, resize, UX |
 
