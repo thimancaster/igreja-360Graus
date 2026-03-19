@@ -12,6 +12,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { AuthRedirect } from '@/components/AuthRedirect';
 
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AppRoute } from '@/components/AppRoute';
 import { AdminRoute } from '@/components/AdminRoute';
 
 import { AppLayout } from '@/components/AppLayout';
