@@ -42,15 +42,15 @@ export function useDueTransactionAlerts(daysAhead: number = 7) {
 
       if (error) throw error;
 
-      const transactionsWithDays: DueTransaction[] = (data || []).map((t) => ({
+      const transactionsWithDays: DueTransaction[] = (data || []).map((t: any) => ({
         id: t.id,
         description: t.description,
         amount: Number(t.amount),
         due_date: t.due_date!,
         type: t.type,
         status: t.status,
-        categories: t.categories,
-        ministries: t.ministries,
+        categories: Array.isArray(t.categories) ? t.categories[0] : t.categories,
+        ministries: Array.isArray(t.ministries) ? t.ministries[0] : t.ministries,
         daysRemaining: differenceInDays(parseISO(t.due_date!), today),
       }));
 

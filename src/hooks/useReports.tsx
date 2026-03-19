@@ -172,8 +172,9 @@ export function useRevenueByMinistry(filters: ReportFilters) {
       const { data, error } = await query;
       if (error) throw error;
 
-      const revenueByMinistry = data.reduce((acc, transaction) => {
-        const ministryName = transaction.ministries?.name || "Sem Ministério";
+      const revenueByMinistry = data.reduce((acc, transaction: any) => {
+        const min = Array.isArray(transaction.ministries) ? transaction.ministries[0] : transaction.ministries;
+        const ministryName = min?.name || "Sem Ministério";
         
         if (!acc[ministryName]) {
           acc[ministryName] = { name: ministryName, value: 0 };

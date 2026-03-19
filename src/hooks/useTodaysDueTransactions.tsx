@@ -43,14 +43,14 @@ export function useTodaysDueTransactions() {
 
       if (error) throw error;
 
-      const transactions: TodaysDueTransaction[] = (data || []).map((t) => ({
+      const transactions: TodaysDueTransaction[] = (data || []).map((t: any) => ({
         id: t.id,
         description: t.description,
         amount: t.amount,
         due_date: t.due_date!,
         type: t.type,
         status: t.status,
-        category_name: t.categories?.name,
+        category_name: (Array.isArray(t.categories) ? t.categories[0]?.name : t.categories?.name),
       }));
 
       return transactions;

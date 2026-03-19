@@ -48,15 +48,15 @@ export function useOverdueTransactions() {
         throw error;
       }
 
-      return (data || []).map((t) => ({
+      return (data || []).map((t: any) => ({
         id: t.id,
         description: t.description,
         amount: Number(t.amount),
         due_date: t.due_date!,
         days_overdue: differenceInDays(new Date(), new Date(t.due_date!)),
         type: t.type,
-        category_name: t.categories?.name || null,
-        ministry_name: t.ministries?.name || null,
+        category_name: (Array.isArray(t.categories) ? t.categories[0]?.name : t.categories?.name) || null,
+        ministry_name: (Array.isArray(t.ministries) ? t.ministries[0]?.name : t.ministries?.name) || null,
       }));
     },
     enabled: !!profile?.church_id,
