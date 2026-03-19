@@ -2,3 +2,6 @@ project_id = "znngymbrvutdrhxvjrfs"
 
 [functions.verify-pickup-pin]
 verify_jwt = false
+
+[functions.update-overdue]
+verify_jwt = false
