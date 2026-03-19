@@ -158,7 +158,7 @@ export default function Integracoes() {
             variant: "destructive",
           });
           // Clean up expired session
-          await supabase(supabase as any).from('oauth_sessions').delete().eq('id', sessionId);
+          await (supabase as any).from('oauth_sessions').delete().eq('id', sessionId);
           setSearchParams({});
           return;
         }
