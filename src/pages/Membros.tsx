@@ -89,6 +89,22 @@ export default function Membros() {
     setDialogOpen(true);
   };
 
+  const copyPortalLink = (memberEmail?: string | null) => {
+    if (!profile?.church_id) {
+      toast.error('Igreja não encontrada');
+      return;
+    }
+    const link = `${window.location.origin}/portal/auth?church=${profile.church_id}`;
+    navigator.clipboard.writeText(link);
+    if (memberEmail) {
+      toast.success('Link copiado! Envie para o membro.', {
+        description: `Envie o link para ${memberEmail}`,
+      });
+    } else {
+      toast.success('Link do Portal copiado!');
+    }
+  };
+
   return (
     <motion.main
       className="flex-1 p-4 md:p-6 space-y-6 overflow-auto"
