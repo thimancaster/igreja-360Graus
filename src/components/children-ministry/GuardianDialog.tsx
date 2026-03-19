@@ -211,6 +211,17 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
               </p>
             </div>
 
+            {/* Photo Upload */}
+            <div className="flex justify-center py-2">
+              <PhotoUpload
+                currentPhotoUrl={photoUrl}
+                name={form.watch("full_name") || ""}
+                folder="guardians"
+                entityId={guardian?.id}
+                onPhotoUploaded={setPhotoUrl}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="full_name"
