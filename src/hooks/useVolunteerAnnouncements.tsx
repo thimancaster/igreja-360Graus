@@ -85,10 +85,10 @@ export function useVolunteerAnnouncements(ministryId?: string) {
       }
 
       // Get read status
-      const { data: readsData } = await supabase
+      const { data: readsData } = await (supabase as any)
         .from("volunteer_announcement_reads")
         .select("announcement_id")
-        .in("volunteer_id", volunteerIds);
+        .in("user_id", volunteerIds);
 
       const readAnnouncementIds = new Set((readsData || []).map(r => r.announcement_id));
 
