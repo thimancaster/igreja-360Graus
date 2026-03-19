@@ -40,7 +40,11 @@ export function CheckInPanel() {
   const { data: guardiansWithChildren } = useGuardiansWithChildren();
   const { checkIn } = useChildMutations();
 
-  const checkedInIds = new Set(todayCheckIns?.map((c: any) => c.child_id));
+  const checkedInIds = new Set(
+    todayCheckIns
+      ?.filter((c: any) => !c.checked_out_at)
+      .map((c: any) => c.child_id)
+  );
 
   const availableChildren = children?.filter(
     (child) =>
