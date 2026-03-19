@@ -170,6 +170,7 @@ export function CheckOutPanel() {
     setEnteredPin("");
     setPinError("");
     setFaceVerified("pending");
+    setScannedViaQR(false);
   };
 
   const handleConfirmCheckOut = async () => {
