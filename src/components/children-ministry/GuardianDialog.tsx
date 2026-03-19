@@ -98,6 +98,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
         access_pin: "",
         profile_id: guardian.profile_id || "",
       });
+      setPhotoUrl(guardian.photo_url);
     } else {
       form.reset({
         full_name: "",
@@ -107,6 +108,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
         access_pin: "",
         profile_id: "",
       });
+      setPhotoUrl(null);
     }
   }, [guardian, form, open]);
 
