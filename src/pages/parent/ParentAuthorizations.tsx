@@ -202,7 +202,7 @@ export default function ParentAuthorizations() {
                       <div className="flex items-center justify-between rounded-lg bg-muted p-3">
                         <span className="text-sm font-medium">PIN:</span>
                         <code className="rounded bg-background px-3 py-1 text-sm font-mono font-bold">
-                          {auth.security_pin}
+                          {(auth as any).security_pin || '—'}
                         </code>
                       </div>
 
