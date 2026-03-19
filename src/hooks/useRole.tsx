@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-type AppRole = 'admin' | 'tesoureiro' | 'pastor' | 'lider' | 'user' | 'parent';
+type AppRole = 'admin' | 'tesoureiro' | 'pastor' | 'lider' | 'user' | 'parent' | 'membro';
 
 const MASTER_ADMIN_EMAIL = 'thimancaster@hotmail.com';
 
