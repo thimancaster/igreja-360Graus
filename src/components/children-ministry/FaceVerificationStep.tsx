@@ -68,7 +68,7 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
   };
 
   const captureAndCompare = async () => {
-    if (!videoRef.current || !canvasRef.current || !faceapi) return;
+    if (!videoRef.current || !canvasRef.current || !getFaceApi()) return;
 
     setResult("verifying");
 
