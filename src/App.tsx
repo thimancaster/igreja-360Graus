@@ -95,7 +95,7 @@ const App: React.FC = () => {
                 <Route path="/app/relatorios" element={<ProtectedRoute><AppRoute><AppLayout><Relatorios /></AppLayout></AppRoute></ProtectedRoute>} />
                 <Route path="/app/admin" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><Admin /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
                 <Route path="/app/admin/usuarios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarUsuarios /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
-                <Route path="/app/admin/ministerios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarMinisterios /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                <Route path="/app/admin/ministerios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarIgreja /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
                 <Route path="/app/admin/igreja" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarIgreja /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
                 <Route path="/app/admin/categorias" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarCategorias /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
                 <Route path="/app/admin/dados" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarDados /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
