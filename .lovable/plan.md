@@ -1,29 +1,34 @@
 
 
-# Plano: Adicionar envio de link do Portal do Membro na Gestao de Membros
+# Plano: Restringir acesso de membros ao app principal
 
-## O que sera feito
+## Problema
+Atualmente, um usuario com role `membro` consegue acessar qualquer rota `/app/*` se navegar diretamente pela URL. O `AuthRedirect` redireciona corretamente na raiz `/`, mas nao ha bloqueio nas rotas `/app/*`.
 
-Adicionar duas funcionalidades na pagina de Gestao de Membros:
+## Solucao
 
-1. **Botao global "Copiar Link do Portal"** no header da pagina -- gera e copia o link de cadastro/login do Portal do Membro vinculado a igreja do admin
-2. **Opcao "Enviar Convite" no menu de cada membro** -- copia o link personalizado ou abre dialog com opcao de copiar/compartilhar o link para aquele membro especifico
+Criar um componente `AppRoute` que envolve todas as rotas `/app/*` e verifica se o usuario tem apenas a role `membro`. Se sim, redireciona para `/portal`.
 
-## Como funciona
+### Alteracoes
 
-- O link gerado sera: `{window.location.origin}/portal/auth?church={profile.church_id}`
-- Este link ja existe e funciona com a pagina `/portal/auth` criada anteriormente
-- No dropdown de cada membro, adicionar opcao "Enviar Link do Portal" que copia o link e mostra toast de confirmacao
-- No header, ao lado do botao "Novo Membro", adicionar botao "Link do Portal" com icone de compartilhar
+**1. Criar `src/components/AppRoute.tsx`**
+- Componente wrapper que usa `useRole()` para verificar roles
+- Se o usuario tem apenas `membro` (sem admin, tesoureiro, pastor, lider), redireciona para `/portal` com toast de aviso
+- Se tem qualquer role privilegiada, renderiza normalmente
 
-## Alteracoes
+**2. Atualizar `src/App.tsx`**
+- Envolver todas as rotas `/app/*` com `<AppRoute>` dentro do `<ProtectedRoute>`
+- Formato: `<ProtectedRoute><AppRoute><AppLayout>...</AppLayout></AppRoute></ProtectedRoute>`
 
-### `src/pages/Membros.tsx`
-- Importar `Link2, Share2, Copy` do lucide-react e `toast` do sonner
-- Adicionar funcao `copyPortalLink()` que monta a URL e copia para clipboard
-- Adicionar botao "Link do Portal" no header ao lado de "Novo Membro"
-- Adicionar item "Enviar Link do Portal" no DropdownMenu de cada membro (entre Editar e Excluir)
-- Quando clicado no contexto de um membro com email, copiar o link e exibir toast com instrucao para enviar ao membro
+**3. Atualizar `src/components/AuthRedirect.tsx`**
+- Tambem considerar usuarios com role `membro` combinada com `parent` como "apenas portal"
+- Usuarios sem nenhuma role tambem devem ir para o portal (nao para o dashboard)
 
-Nenhuma alteracao de backend necessaria -- o link e a edge function `portal-signup` ja existem.
+### Logica de decisao
+```text
+Usuario tem role admin/tesoureiro/pastor/lider? → Acesso ao /app/*
+Usuario tem apenas membro/parent (ou nenhuma role)? → Redireciona para /portal
+```
+
+Nenhuma alteracao de backend necessaria.
 
