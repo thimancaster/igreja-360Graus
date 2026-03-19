@@ -14,6 +14,7 @@ import { useChildMutations, Child, CLASSROOMS } from "@/hooks/useChildrenMinistr
 import { DatePicker } from "@/components/ui/date-picker";
 import { ChildGuardianLinkSection } from "./ChildGuardianLinkSection";
 import { AuthorizedPickupsPanel } from "./AuthorizedPickupsPanel";
+import { PhotoUpload } from "./PhotoUpload";
 import { User, Users, Shield } from "lucide-react";
 const childSchema = z.object({
   full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
