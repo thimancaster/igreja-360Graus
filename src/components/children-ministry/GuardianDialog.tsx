@@ -302,6 +302,30 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
 
             <FormField
               control={form.control}
+              name="cpf"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CPF</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="000.000.000-00"
+                      maxLength={14}
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(formatCPF(e.target.value));
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  <p className="text-xs text-muted-foreground">
+                    Usado para identificação e prevenção de duplicidades
+                  </p>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
