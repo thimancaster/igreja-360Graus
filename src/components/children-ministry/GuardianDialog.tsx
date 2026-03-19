@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { PhotoUpload } from "./PhotoUpload";
 import { Link2, Unlink, UserCheck } from "lucide-react";
 
 const guardianSchema = z.object({
