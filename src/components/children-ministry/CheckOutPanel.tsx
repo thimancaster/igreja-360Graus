@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { usePresentChildren, useChildMutations, useChildWithGuardians, useAuthorizedPickups } from "@/hooks/useChildrenMinistry";
 import { useValidPickupAuthorizations, usePickupAuthorizationMutations } from "@/hooks/useParentData";
 import { useRole } from "@/hooks/useRole";
