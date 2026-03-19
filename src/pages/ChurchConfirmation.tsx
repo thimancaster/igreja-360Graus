@@ -14,18 +14,34 @@ type Church = Tables<'churches'>;
 export default function ChurchConfirmation() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [church, setChurch] = useState<Church | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Safety timeout
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        logger.warn('[ChurchConfirmation] Timeout, redirecting to dashboard');
+        navigate("/app/dashboard", { replace: true });
+      }
+    }, 8000);
+    return () => clearTimeout(timeout);
+  }, [loading, navigate]);
 
   useEffect(() => {
     const fetchChurch = async () => {
       logger.log('[ChurchConfirmation] Buscando igreja');
       
-      // Usar apenas profile.church_id (fonte única de verdade)
+      // Se o profile ainda não carregou, aguardar
+      if (profile === undefined) {
+        return;
+      }
+
+      // Sem church_id no perfil -> redirecionar
       if (!profile?.church_id) {
         logger.log('[ChurchConfirmation] Sem church_id, redirecionando para /');
-        navigate("/");
+        navigate("/", { replace: true });
         return;
       }
 
@@ -40,13 +56,18 @@ export default function ChurchConfirmation() {
         setChurch(data);
       } else {
         logger.log('[ChurchConfirmation] Igreja não encontrada, redirecionando');
-        navigate("/");
+        navigate("/", { replace: true });
       }
       
       setLoading(false);
     };
 
-    if (user && profile !== undefined) {
+    if (user) {
+      // If profile is null (loaded but empty), redirect
+      if (profile === null) {
+        navigate("/", { replace: true });
+        return;
+      }
       fetchChurch();
     }
   }, [profile?.church_id, user, profile, navigate]);
