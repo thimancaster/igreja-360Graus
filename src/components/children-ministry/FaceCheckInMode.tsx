@@ -337,7 +337,7 @@ export function FaceCheckInMode({
                   <span className="text-xs">{scanStatusText}</span>
                 </div>
                 {lastScanStatus === "no-match" && (
-                  <span className="text-xs text-yellow-300">Tente se aproximar</span>
+                  <span className="text-xs text-amber-200">Tente se aproximar</span>
                 )}
               </div>
             </div>
