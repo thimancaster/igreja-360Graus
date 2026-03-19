@@ -460,6 +460,36 @@ export function useChildMutations() {
     },
   });
 
+  // Helper to notify guardians linked to a child
+  const notifyGuardians = async (childId: string, title: string, message: string, link?: string) => {
+    try {
+      // Get guardians with profile_id for this child
+      const { data: links } = await supabase
+        .from("child_guardians")
+        .select("guardian_id, guardians!child_guardians_guardian_id_fkey(profile_id)")
+        .eq("child_id", childId);
+
+      if (!links) return;
+
+      const notifications = links
+        .filter((l: any) => l.guardians?.profile_id)
+        .map((l: any) => ({
+          user_id: l.guardians.profile_id,
+          title,
+          message,
+          type: "checkin",
+          link: link || "/parent/history",
+        }));
+
+      if (notifications.length > 0) {
+        await supabase.from("notifications").insert(notifications);
+      }
+    } catch (e) {
+      // Non-blocking — don't fail check-in/out if notification fails
+      console.error("Erro ao notificar responsáveis:", e);
+    }
+  };
+
   const checkIn = useMutation({
     mutationFn: async ({ childId, eventName, classroom }: {
       childId: string;
@@ -484,10 +514,21 @@ export function useChildMutations() {
           qr_code: qrCode,
           checked_in_by: user.id,
         })
-        .select()
+        .select("*, children:child_id(full_name)")
         .single();
 
       if (error) throw error;
+
+      // Notify guardians
+      const childName = (data as any).children?.full_name || "Seu filho(a)";
+      const timeStr = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      await notifyGuardians(
+        childId,
+        "✅ Check-in realizado",
+        `${childName} fez check-in às ${timeStr} no evento "${eventName}", sala ${classroom}. Etiqueta #${labelNumber}.`,
+        "/parent/history"
+      );
+
       return data;
     },
     onSuccess: () => {
@@ -508,19 +549,33 @@ export function useChildMutations() {
     }) => {
       if (!user?.id) throw new Error("Usuário não autenticado");
 
+      const checkedOutAt = new Date().toISOString();
+
       const { data, error } = await supabase
         .from("child_check_ins")
         .update({
-          checked_out_at: new Date().toISOString(),
+          checked_out_at: checkedOutAt,
           checked_out_by: user.id,
           pickup_person_name: pickupPersonName,
           pickup_method: pickupMethod,
         })
         .eq("id", checkInId)
-        .select()
+        .select("*, children:child_id(full_name)")
         .single();
 
       if (error) throw error;
+
+      // Notify guardians
+      const childName = (data as any).children?.full_name || "Seu filho(a)";
+      const timeStr = new Date(checkedOutAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      const checkinTime = new Date((data as any).checked_in_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      await notifyGuardians(
+        (data as any).child_id,
+        "🚪 Check-out realizado",
+        `${childName} saiu às ${timeStr} (entrada às ${checkinTime}). Retirado por: ${pickupPersonName} (${pickupMethod}).`,
+        "/parent/history"
+      );
+
       return data;
     },
     onSuccess: () => {
