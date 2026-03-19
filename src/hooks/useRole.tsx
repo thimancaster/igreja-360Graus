@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type AppRole = 'admin' | 'tesoureiro' | 'pastor' | 'lider' | 'user' | 'parent';
 
+const MASTER_ADMIN_EMAIL = 'thimancaster@hotmail.com';
+
 export function useRole() {
   const { user, loading: authLoading } = useAuth();
 
