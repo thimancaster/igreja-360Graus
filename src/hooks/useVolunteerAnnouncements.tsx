@@ -203,11 +203,11 @@ export function useVolunteerAnnouncements(ministryId?: string) {
         throw new Error("Voluntário não encontrado");
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("volunteer_announcement_reads")
         .upsert({
           announcement_id: announcementId,
-          volunteer_id: volunteerData.id,
+          user_id: volunteerData.id,
         });
 
       if (error) throw error;

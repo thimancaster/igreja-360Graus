@@ -91,7 +91,7 @@ export const useIntegrations = () => {
 
       if (insertError) throw insertError;
 
-      const { error: encryptError } = await supabase.rpc(
+      const { error: encryptError } = await (supabase.rpc as any)(
         'store_encrypted_integration_tokens',
         {
           p_integration_id: newIntegration.id,

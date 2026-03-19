@@ -286,7 +286,7 @@ export default function Importacao() {
       setProgress(75);
 
       // Insert non-duplicate transactions
-      const { error: insertError } = await supabase.from("transactions").insert(toImport);
+      const { error: insertError } = await (supabase as any).from("transactions").insert(toImport);
       if (insertError) throw insertError;
 
       // Update upload record with success
