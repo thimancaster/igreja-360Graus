@@ -118,9 +118,10 @@ export function useExpensesByCategory(filters: ReportFilters) {
       const { data, error } = await query;
       if (error) throw error;
 
-      const expensesByCategory = data.reduce((acc, transaction) => {
-        const categoryName = transaction.categories?.name || "Sem Categoria";
-        const categoryColor = transaction.categories?.color || "#8884d8";
+      const expensesByCategory = data.reduce((acc, transaction: any) => {
+        const cat = Array.isArray(transaction.categories) ? transaction.categories[0] : transaction.categories;
+        const categoryName = cat?.name || "Sem Categoria";
+        const categoryColor = cat?.color || "#8884d8";
         
         if (!acc[categoryName]) {
           acc[categoryName] = { name: categoryName, value: 0, color: categoryColor };
