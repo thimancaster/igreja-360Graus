@@ -123,6 +123,15 @@ export function ChildDialog({ open, onOpenChange, child }: ChildDialogProps) {
 
   const renderFormContent = () => (
     <>
+      <div className="flex justify-center pb-2">
+        <PhotoUpload
+          currentPhotoUrl={photoUrl}
+          name={form.watch("full_name") || ""}
+          folder="children"
+          entityId={child?.id}
+          onPhotoUploaded={setPhotoUrl}
+        />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
