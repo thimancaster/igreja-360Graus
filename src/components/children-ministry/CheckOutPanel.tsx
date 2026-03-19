@@ -149,6 +149,7 @@ export function CheckOutPanel() {
       const checkInRecord = await findCheckInByQR(qrCode);
       if (checkInRecord) {
         setSelectedCheckIn(checkInRecord);
+        setScannedViaQR(true);
         setConfirmDialogOpen(true);
       }
     } catch (err) {
