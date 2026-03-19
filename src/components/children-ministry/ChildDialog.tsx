@@ -41,6 +41,7 @@ type ChildDialogProps = {
 export function ChildDialog({ open, onOpenChange, child }: ChildDialogProps) {
   const { createChild, updateChild } = useChildMutations();
   const [activeTab, setActiveTab] = useState("dados");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   const form = useForm<ChildFormData>({
     resolver: zodResolver(childSchema),
