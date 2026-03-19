@@ -12,6 +12,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { AuthRedirect } from '@/components/AuthRedirect';
 
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AppRoute } from '@/components/AppRoute';
 import { AdminRoute } from '@/components/AdminRoute';
 
 import { AppLayout } from '@/components/AppLayout';
@@ -85,27 +86,27 @@ const App: React.FC = () => {
                 <Route path="/" element={<AuthRedirect />} /> 
 
                 {/* Rotas protegidas com layout (sidebar + header) */}
-                <Route path="/app/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-                <Route path="/app/transacoes" element={<ProtectedRoute><AppLayout><Transacoes /></AppLayout></ProtectedRoute>} />
-                <Route path="/app/membros" element={<ProtectedRoute><AppLayout><Membros /></AppLayout></ProtectedRoute>} />
-                <Route path="/app/contribuicoes" element={<ProtectedRoute><AppLayout><Contribuicoes /></AppLayout></ProtectedRoute>} />
-                <Route path="/app/importacao" element={<ProtectedRoute><AppLayout><Importacao /></AppLayout></ProtectedRoute>} />
-                <Route path="/app/integracoes" element={<ProtectedRoute><AppLayout><Integracoes /></AppLayout></ProtectedRoute>} />
-                <Route path="/app/relatorios" element={<ProtectedRoute><AppLayout><Relatorios /></AppLayout></ProtectedRoute>} />
-                <Route path="/app/admin" element={<ProtectedRoute><AdminRoute><AppLayout><Admin /></AppLayout></AdminRoute></ProtectedRoute>} />
-                <Route path="/app/admin/usuarios" element={<ProtectedRoute><AdminRoute><AppLayout><GerenciarUsuarios /></AppLayout></AdminRoute></ProtectedRoute>} />
-                <Route path="/app/admin/ministerios" element={<ProtectedRoute><AdminRoute><AppLayout><GerenciarMinisterios /></AppLayout></AdminRoute></ProtectedRoute>} />
-                <Route path="/app/admin/igreja" element={<ProtectedRoute><AdminRoute><AppLayout><GerenciarIgreja /></AppLayout></AdminRoute></ProtectedRoute>} />
-                <Route path="/app/admin/categorias" element={<ProtectedRoute><AdminRoute><AppLayout><GerenciarCategorias /></AppLayout></AdminRoute></ProtectedRoute>} />
-                <Route path="/app/admin/dados" element={<ProtectedRoute><AdminRoute><AppLayout><GerenciarDados /></AppLayout></AdminRoute></ProtectedRoute>} />
-                <Route path="/app/admin/configuracoes-sistema" element={<ProtectedRoute><AdminRoute><AppLayout><ConfiguracoesSistema /></AppLayout></AdminRoute></ProtectedRoute>} />
-                <Route path="/app/configuracoes" element={<ProtectedRoute><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
-                <Route path="/app/ministerio-infantil" element={<ProtectedRoute><AppLayout><MinisterioInfantil /></AppLayout></ProtectedRoute>} />
-                <Route path="/app/escalas" element={<ProtectedRoute><Escalas /></ProtectedRoute>} />
-                <Route path="/app/eventos" element={<ProtectedRoute><AppLayout><Eventos /></AppLayout></ProtectedRoute>} />
-                <Route path="/app/voluntario/aceitar-termo" element={<ProtectedRoute><AceitarTermoVoluntario /></ProtectedRoute>} />
+                <Route path="/app/dashboard" element={<ProtectedRoute><AppRoute><AppLayout><Dashboard /></AppLayout></AppRoute></ProtectedRoute>} />
+                <Route path="/app/transacoes" element={<ProtectedRoute><AppRoute><AppLayout><Transacoes /></AppLayout></AppRoute></ProtectedRoute>} />
+                <Route path="/app/membros" element={<ProtectedRoute><AppRoute><AppLayout><Membros /></AppLayout></AppRoute></ProtectedRoute>} />
+                <Route path="/app/contribuicoes" element={<ProtectedRoute><AppRoute><AppLayout><Contribuicoes /></AppLayout></AppRoute></ProtectedRoute>} />
+                <Route path="/app/importacao" element={<ProtectedRoute><AppRoute><AppLayout><Importacao /></AppLayout></AppRoute></ProtectedRoute>} />
+                <Route path="/app/integracoes" element={<ProtectedRoute><AppRoute><AppLayout><Integracoes /></AppLayout></AppRoute></ProtectedRoute>} />
+                <Route path="/app/relatorios" element={<ProtectedRoute><AppRoute><AppLayout><Relatorios /></AppLayout></AppRoute></ProtectedRoute>} />
+                <Route path="/app/admin" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><Admin /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                <Route path="/app/admin/usuarios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarUsuarios /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                <Route path="/app/admin/ministerios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarMinisterios /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                <Route path="/app/admin/igreja" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarIgreja /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                <Route path="/app/admin/categorias" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarCategorias /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                <Route path="/app/admin/dados" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarDados /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                <Route path="/app/admin/configuracoes-sistema" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><ConfiguracoesSistema /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                <Route path="/app/configuracoes" element={<ProtectedRoute><AppRoute><AppLayout><Configuracoes /></AppLayout></AppRoute></ProtectedRoute>} />
+                <Route path="/app/ministerio-infantil" element={<ProtectedRoute><AppRoute><AppLayout><MinisterioInfantil /></AppLayout></AppRoute></ProtectedRoute>} />
+                <Route path="/app/escalas" element={<ProtectedRoute><AppRoute><Escalas /></AppRoute></ProtectedRoute>} />
+                <Route path="/app/eventos" element={<ProtectedRoute><AppRoute><AppLayout><Eventos /></AppLayout></AppRoute></ProtectedRoute>} />
+                <Route path="/app/voluntario/aceitar-termo" element={<ProtectedRoute><AppRoute><AceitarTermoVoluntario /></AppRoute></ProtectedRoute>} />
                 <Route path="/inscricao/:eventId" element={<EventRegistrationPage />} />
-                <Route path="/app/*" element={<ProtectedRoute><AppLayout><NotFound /></AppLayout></ProtectedRoute>} />
+                <Route path="/app/*" element={<ProtectedRoute><AppRoute><AppLayout><NotFound /></AppLayout></AppRoute></ProtectedRoute>} />
 
                 {/* Rotas de fluxo de criação/seleção (fora do layout principal) */}
                 <Route path="/create-church" element={<ProtectedRoute><CreateChurchPage /></ProtectedRoute>} />

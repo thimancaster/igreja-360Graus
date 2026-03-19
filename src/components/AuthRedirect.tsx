@@ -53,7 +53,6 @@ export const AuthRedirect: React.FC = () => {
 
       // Com sessão e igreja vinculada -> check role
       if (profile?.church_id) {
-        // Check if user has 'membro' role only -> redirect to portal
         if (user?.id) {
           const { data: roles } = await supabase
             .from('user_roles')
@@ -61,9 +60,11 @@ export const AuthRedirect: React.FC = () => {
             .eq('user_id', user.id);
           
           const roleNames = roles?.map(r => r.role) || [];
-          const hasOnlyMembro = roleNames.length === 1 && roleNames[0] === 'membro';
+          const privilegedRoles = ['admin', 'tesoureiro', 'pastor', 'lider'];
+          const hasPrivilegedRole = roleNames.some(r => privilegedRoles.includes(r));
           
-          if (hasOnlyMembro) {
+          if (!hasPrivilegedRole) {
+            // Membros, parents ou usuários sem role vão para o portal
             navigate('/portal', { replace: true });
             return;
           }
