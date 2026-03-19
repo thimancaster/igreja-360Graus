@@ -125,6 +125,7 @@ export function useRole() {
     isPastor,
     isLider,
     isUser,
+    isMembro,
     isParent,
     isPrivileged,
     isLoading,

@@ -113,6 +113,7 @@ const App: React.FC = () => {
                 <Route path="/select-church" element={<ProtectedRoute><SelectChurch /></ProtectedRoute>} />
 
                 {/* Portal do Membro (unified) */}
+                <Route path="/portal/auth" element={<PortalAuth />} />
                 <Route path="/portal" element={<ProtectedRoute><PortalLayout><PortalDashboard /></PortalLayout></ProtectedRoute>} />
                 <Route path="/portal/escalas" element={<ProtectedRoute><PortalLayout><PortalSchedules /></PortalLayout></ProtectedRoute>} />
                 <Route path="/portal/comunicados" element={<ProtectedRoute><PortalLayout><PortalAnnouncements /></PortalLayout></ProtectedRoute>} />

@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.invite-user]
 verify_jwt = false
+
+[functions.portal-signup]
+verify_jwt = false
