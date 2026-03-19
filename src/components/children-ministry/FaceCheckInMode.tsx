@@ -336,7 +336,7 @@ export function FaceCheckInMode({
             )}
           >
             <video
-              ref={videoRef}
+              ref={videoRefCallback}
               autoPlay
               playsInline
               muted
