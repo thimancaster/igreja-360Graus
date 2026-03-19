@@ -160,7 +160,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {guardian ? "Editar Responsável" : "Novo Responsável"}

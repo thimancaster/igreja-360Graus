@@ -213,7 +213,7 @@ export function useGuardianManagement() {
       if (!profile?.church_id) return [];
 
       // Use secure RPC that enforces role checks and excludes access_pin
-      const { data, error } = await supabase.rpc("get_guardians_for_management");
+      const { data, error } = await supabase.rpc("get_guardians_for_management", { p_church_id: profile.church_id });
 
       if (error) throw error;
       
