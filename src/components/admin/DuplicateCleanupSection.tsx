@@ -249,7 +249,7 @@ export function DuplicateCleanupSection() {
         if (!groups.has(key)) {
           groups.set(key, {
             key,
-            memberName: c.members?.full_name || null,
+            memberName: (Array.isArray(c.members) ? c.members[0]?.full_name : (c as any).members?.full_name) || null,
             amount: c.amount,
             contributionDate: c.contribution_date,
             contributionType: c.contribution_type,
