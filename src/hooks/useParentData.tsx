@@ -181,14 +181,15 @@ export function useValidPickupAuthorizations(childId: string | undefined) {
     queryFn: async () => {
       if (!childId) return [];
 
-      const now = new Date().toISOString();
+      const today = new Date().toISOString().split('T')[0];
 
       const { data, error } = await (supabase as any)
         .from("pickup_authorizations")
         .select("*")
         .eq("child_id", childId)
-        .lte("valid_from", now)
-        .or(`valid_until.is.null,valid_until.gte.${now}`);
+        .eq("is_used", false)
+        .lte("valid_from", today)
+        .or(`valid_until.is.null,valid_until.gte.${today}`);
 
       if (error) throw error;
       return data as PickupAuthorization[];
@@ -303,13 +304,12 @@ export function usePickupAuthorizationMutations() {
   });
 
   const markAsUsed = useMutation({
-    mutationFn: async ({ id, checkInId }: { id: string; checkInId: string }) => {
+    mutationFn: async ({ id }: { id: string; checkInId: string }) => {
       const { error } = await supabase
         .from("pickup_authorizations")
-        .update({ 
-          status: 'used',
+        .update({
+          is_used: true,
           used_at: new Date().toISOString(),
-          used_by_checkin_id: checkInId,
         })
         .eq("id", id);
 
