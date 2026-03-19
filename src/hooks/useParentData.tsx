@@ -217,12 +217,32 @@ export function usePickupAuthorizationMutations() {
     }) => {
       if (!user?.id || !profile?.church_id) throw new Error("Usuário não autenticado");
 
-      const { data: result, error } = await (supabase as any)
+      // Find guardian_id for this user
+      const { data: guardian } = await supabase
+        .from("guardians")
+        .select("id")
+        .eq("profile_id", user.id)
+        .maybeSingle();
+
+      const { data: result, error } = await supabase
         .from("pickup_authorizations")
         .insert({
-          ...data,
+          child_id: data.child_id,
+          authorized_person_name: data.authorized_person_name,
+          authorized_person_phone: data.authorized_person_phone || null,
+          is_one_time: data.authorization_type === 'one_time',
+          valid_from: data.valid_from || new Date().toISOString().split('T')[0],
+          valid_until: data.valid_until || null,
+          notes: [
+            data.reason,
+            data.authorized_person_document ? `Doc: ${data.authorized_person_document}` : null,
+            data.security_pin ? `PIN: ${data.security_pin}` : null,
+            data.leader_approval_required ? 'Requer aprovação do líder' : null,
+            `Tipo: ${data.authorization_type}`,
+          ].filter(Boolean).join(' | '),
+          relationship: data.authorized_person_document || null,
           church_id: profile.church_id,
-          guardian_id: user.id,
+          guardian_id: guardian?.id || null,
         })
         .select()
         .single();
