@@ -103,6 +103,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
         relationship: guardian.relationship,
         access_pin: "",
         profile_id: guardian.profile_id || "",
+        cpf: guardian.cpf ? formatCPF(guardian.cpf) : "",
       });
       setPhotoUrl(guardian.photo_url);
     } else {
@@ -113,6 +114,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
         relationship: "Pai",
         access_pin: "",
         profile_id: "",
+        cpf: "",
       });
       setPhotoUrl(null);
     }
