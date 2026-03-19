@@ -8,7 +8,7 @@ export const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1/mo
 export const MATCH_THRESHOLD = 0.45;
 export const HIGH_CONFIDENCE_THRESHOLD = 0.35;
 
-// Descriptor cache: URL -> Float32Array
+// Descriptor cache: URL -> Float32Array (persists across component sessions)
 const descriptorCache = new Map<string, Float32Array>();
 
 export async function loadModelsOnce() {
@@ -56,6 +56,32 @@ export function loadImageWithCORS(url: string): Promise<HTMLImageElement> {
   });
 }
 
+/** Downscale a canvas/image to maxWidth for faster processing */
+function downscaleToCanvas(
+  source: HTMLImageElement | HTMLCanvasElement,
+  maxWidth: number
+): HTMLCanvasElement {
+  const sw = source instanceof HTMLCanvasElement ? source.width : source.naturalWidth || source.width;
+  const sh = source instanceof HTMLCanvasElement ? source.height : source.naturalHeight || source.height;
+
+  if (sw <= maxWidth) {
+    if (source instanceof HTMLCanvasElement) return source;
+    // Convert image to canvas at original size
+    const c = document.createElement("canvas");
+    c.width = sw;
+    c.height = sh;
+    c.getContext("2d")!.drawImage(source, 0, 0);
+    return c;
+  }
+
+  const scale = maxWidth / sw;
+  const c = document.createElement("canvas");
+  c.width = Math.round(sw * scale);
+  c.height = Math.round(sh * scale);
+  c.getContext("2d")!.drawImage(source, 0, 0, c.width, c.height);
+  return c;
+}
+
 /** Compute face descriptor from an image source (URL or HTMLImageElement) */
 export async function computeDescriptor(
   source: string | HTMLImageElement | HTMLCanvasElement
@@ -98,6 +124,29 @@ export async function computeDescriptor(
   }
 }
 
+/**
+ * Fast descriptor computation for live camera frames.
+ * Downscales to 320px and uses smaller inputSize for speed.
+ */
+export async function computeDescriptorFast(
+  source: HTMLCanvasElement
+): Promise<Float32Array | null> {
+  if (!faceapi) return null;
+
+  try {
+    const small = downscaleToCanvas(source, 320);
+    const detection = await faceapi
+      .detectSingleFace(small, new faceapi.TinyFaceDetectorOptions({ inputSize: 160 }))
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+
+    return detection?.descriptor ?? null;
+  } catch (err) {
+    console.error("Error computing fast descriptor:", err);
+    return null;
+  }
+}
+
 export type FaceCandidate = {
   id: string;
   label: string;
@@ -134,20 +183,41 @@ export function findBestMatch(
   return bestMatch;
 }
 
-/** Pre-compute descriptors for a list of candidates, reporting progress */
+/**
+ * Pre-compute descriptors for a list of candidates in parallel batches.
+ * Mutates the candidate objects in-place to set .descriptor.
+ * Skips candidates that already have a descriptor or whose URL is cached.
+ */
 export async function precomputeDescriptors(
   candidates: FaceCandidate[],
   onProgress?: (done: number, total: number) => void
 ): Promise<FaceCandidate[]> {
   const withPhotos = candidates.filter((c) => !!c.photoUrl);
   let done = 0;
+  const BATCH_SIZE = 3;
 
+  // Restore cached descriptors first (instant)
   for (const candidate of withPhotos) {
-    if (!candidate.descriptor) {
-      candidate.descriptor = await computeDescriptor(candidate.photoUrl);
+    if (!candidate.descriptor && descriptorCache.has(candidate.photoUrl)) {
+      candidate.descriptor = descriptorCache.get(candidate.photoUrl)!;
     }
-    done++;
-    onProgress?.(done, withPhotos.length);
+  }
+
+  const needCompute = withPhotos.filter((c) => !c.descriptor);
+  const total = withPhotos.length;
+  done = total - needCompute.length;
+  onProgress?.(done, total);
+
+  // Process in parallel batches
+  for (let i = 0; i < needCompute.length; i += BATCH_SIZE) {
+    const batch = needCompute.slice(i, i + BATCH_SIZE);
+    await Promise.all(
+      batch.map(async (candidate) => {
+        candidate.descriptor = await computeDescriptor(candidate.photoUrl);
+        done++;
+        onProgress?.(done, total);
+      })
+    );
   }
 
   return withPhotos.filter((c) => !!c.descriptor);
