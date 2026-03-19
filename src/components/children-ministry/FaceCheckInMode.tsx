@@ -176,6 +176,18 @@ export function FaceCheckInMode({
     return () => stopAutoScan();
   }, [cameraActive, candidatesReady.length, matchResult, preparingDescriptors, startAutoScan, stopAutoScan]);
 
+  // Attach stream to video once element is in the DOM
+  const pendingStreamRef = useRef<MediaStream | null>(null);
+
+  const videoRefCallback = useCallback((el: HTMLVideoElement | null) => {
+    (videoRef as any).current = el;
+    if (el && pendingStreamRef.current) {
+      el.srcObject = pendingStreamRef.current;
+      el.play().catch(() => {});
+      pendingStreamRef.current = null;
+    }
+  }, []);
+
   const startCamera = async () => {
     try {
       setLoadingModels(true);
@@ -191,14 +203,20 @@ export function FaceCheckInMode({
       ]);
 
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
+      pendingStreamRef.current = stream;
+
+      // Set camera active first so the <video> renders
       setCameraActive(true);
       setLoadingModels(false);
 
-      // Pre-compute descriptors (pass rawCandidates directly to leverage cache)
+      // If videoRef is already available, attach immediately
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+        pendingStreamRef.current = null;
+      }
+
+      // Pre-compute descriptors
       setPreparingDescriptors(true);
       const ready = await precomputeDescriptors(
         rawCandidates,
