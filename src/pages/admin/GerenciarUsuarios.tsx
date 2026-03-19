@@ -303,7 +303,7 @@ export default function GerenciarUsuarios() {
     await updateUserMutation.mutateAsync(data);
   };
 
-  const handleInviteSubmit = async (data: { email: string; fullName: string; role: AppRole; churchId: string }) => {
+  const handleInviteSubmit = async (data: { email: string; fullName: string; role: AppRole; churchId: string; directRegistration?: boolean; temporaryPassword?: string }) => {
     await inviteUserMutation.mutateAsync(data);
   };
 

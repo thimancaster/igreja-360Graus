@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.update-overdue]
 verify_jwt = false
+
+[functions.invite-user]
+verify_jwt = false
