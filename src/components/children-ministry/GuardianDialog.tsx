@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { PhotoUpload } from "./PhotoUpload";
 import { Link2, Unlink, UserCheck } from "lucide-react";
 
 const guardianSchema = z.object({
@@ -37,6 +38,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
   const { createGuardian } = useChildMutations();
   const { profile } = useAuth();
   const queryClient = useQueryClient();
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   // Fetch profiles from same church for linking
   const { data: profiles } = useQuery({
@@ -96,6 +98,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
         access_pin: "",
         profile_id: guardian.profile_id || "",
       });
+      setPhotoUrl(guardian.photo_url);
     } else {
       form.reset({
         full_name: "",
@@ -105,6 +108,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
         access_pin: "",
         profile_id: "",
       });
+      setPhotoUrl(null);
     }
   }, [guardian, form, open]);
 
@@ -130,7 +134,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
         email: data.email || null,
         phone: data.phone || null,
         relationship: data.relationship,
-        photo_url: null,
+        photo_url: photoUrl,
         profile_id: data.profile_id || null,
       };
 
@@ -205,6 +209,17 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
               <p className="text-xs text-muted-foreground">
                 Vincular permite que o responsável veja seus filhos no Portal do Membro
               </p>
+            </div>
+
+            {/* Photo Upload */}
+            <div className="flex justify-center py-2">
+              <PhotoUpload
+                currentPhotoUrl={photoUrl}
+                name={form.watch("full_name") || ""}
+                folder="guardians"
+                entityId={guardian?.id}
+                onPhotoUploaded={setPhotoUrl}
+              />
             </div>
 
             <FormField

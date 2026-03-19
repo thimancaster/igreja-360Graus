@@ -41,6 +41,7 @@ export function CheckOutPanel() {
   const [enteredPin, setEnteredPin] = useState("");
   const [pinError, setPinError] = useState("");
   const [faceVerified, setFaceVerified] = useState<"pending" | "approved" | "rejected" | "skipped">("pending");
+  const [scannedViaQR, setScannedViaQR] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   const { isAdmin, isPastor, isTesoureiro, isLider } = useRole();
@@ -148,6 +149,7 @@ export function CheckOutPanel() {
       const checkInRecord = await findCheckInByQR(qrCode);
       if (checkInRecord) {
         setSelectedCheckIn(checkInRecord);
+        setScannedViaQR(true);
         setConfirmDialogOpen(true);
       }
     } catch (err) {
@@ -157,6 +159,7 @@ export function CheckOutPanel() {
 
   const handleManualSelect = (record: any) => {
     setSelectedCheckIn(record);
+    setScannedViaQR(false);
     setConfirmDialogOpen(true);
   };
 
@@ -167,6 +170,7 @@ export function CheckOutPanel() {
     setEnteredPin("");
     setPinError("");
     setFaceVerified("pending");
+    setScannedViaQR(false);
   };
 
   const handleConfirmCheckOut = async () => {
@@ -181,13 +185,10 @@ export function CheckOutPanel() {
       return;
     }
 
-    // Validate PIN server-side if required
-    if (person.requiresPin) {
-      if (!enteredPin) {
-        setPinError("Digite o PIN de segurança");
-        return;
-      }
-      
+    // Skip PIN validation for QR code checkout
+    const needsPin = person.requiresPin && !scannedViaQR;
+
+    if (needsPin && enteredPin) {
       const { data: pinResult, error: pinError } = await supabase.functions.invoke('verify-pickup-pin', {
         body: {
           person_type: person.type,
@@ -197,7 +198,26 @@ export function CheckOutPanel() {
       });
 
       if (pinError || !pinResult?.valid) {
-        setPinError("PIN incorreto");
+        // If result says no_pin, the person has no PIN set - allow
+        if (pinResult?.no_pin) {
+          // No PIN set, proceed
+        } else {
+          setPinError("PIN incorreto");
+          return;
+        }
+      }
+    } else if (needsPin && !enteredPin) {
+      // Check if the person actually has a PIN set
+      const { data: pinCheck } = await supabase.functions.invoke('verify-pickup-pin', {
+        body: {
+          person_type: person.type,
+          person_id: person.realId,
+          entered_pin: "__check__",
+        },
+      });
+      // If person has a PIN set, require it
+      if (pinCheck && !pinCheck.no_pin) {
+        setPinError("Digite o PIN de segurança");
         return;
       }
     }
@@ -475,16 +495,16 @@ export function CheckOutPanel() {
                 </div>
               )}
 
-              {/* PIN Validation - only show if face not rejected */}
-              {selectedPerson?.requiresPin && faceVerified !== "rejected" && (
+              {/* PIN Validation - only show for manual checkout when face not rejected */}
+              {selectedPerson?.requiresPin && !scannedViaQR && faceVerified !== "rejected" && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
                     <Key className="h-4 w-4" />
-                    PIN de Segurança *
+                    PIN de Segurança
                   </label>
                   <Input
                     type="password"
-                    placeholder="Digite o PIN"
+                    placeholder="Digite o PIN (se cadastrado)"
                     value={enteredPin}
                     onChange={(e) => {
                       setEnteredPin(e.target.value);
@@ -496,6 +516,13 @@ export function CheckOutPanel() {
                   {pinError && (
                     <p className="text-sm text-destructive">{pinError}</p>
                   )}
+                </div>
+              )}
+
+              {scannedViaQR && selectedPerson && (
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-primary/30 bg-primary/5">
+                  <Check className="h-4 w-4 text-primary" />
+                  <p className="text-sm">QR Code verificado — PIN dispensado</p>
                 </div>
               )}
 

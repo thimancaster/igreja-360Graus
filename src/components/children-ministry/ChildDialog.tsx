@@ -14,6 +14,7 @@ import { useChildMutations, Child, CLASSROOMS } from "@/hooks/useChildrenMinistr
 import { DatePicker } from "@/components/ui/date-picker";
 import { ChildGuardianLinkSection } from "./ChildGuardianLinkSection";
 import { AuthorizedPickupsPanel } from "./AuthorizedPickupsPanel";
+import { PhotoUpload } from "./PhotoUpload";
 import { User, Users, Shield } from "lucide-react";
 const childSchema = z.object({
   full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -40,6 +41,7 @@ type ChildDialogProps = {
 export function ChildDialog({ open, onOpenChange, child }: ChildDialogProps) {
   const { createChild, updateChild } = useChildMutations();
   const [activeTab, setActiveTab] = useState("dados");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   const form = useForm<ChildFormData>({
     resolver: zodResolver(childSchema),
@@ -72,6 +74,7 @@ export function ChildDialog({ open, onOpenChange, child }: ChildDialogProps) {
         notes: child.notes || "",
         status: child.status,
       });
+      setPhotoUrl(child.photo_url);
     } else {
       form.reset({
         full_name: "",
@@ -85,6 +88,7 @@ export function ChildDialog({ open, onOpenChange, child }: ChildDialogProps) {
         notes: "",
         status: "active",
       });
+      setPhotoUrl(null);
       setActiveTab("dados");
     }
   }, [child, form, open]);
@@ -103,7 +107,7 @@ export function ChildDialog({ open, onOpenChange, child }: ChildDialogProps) {
         image_consent: data.image_consent,
         notes: data.notes || null,
         status: data.status,
-        photo_url: null,
+        photo_url: photoUrl,
       };
 
       if (child) {
@@ -119,6 +123,15 @@ export function ChildDialog({ open, onOpenChange, child }: ChildDialogProps) {
 
   const renderFormContent = () => (
     <>
+      <div className="flex justify-center pb-2">
+        <PhotoUpload
+          currentPhotoUrl={photoUrl}
+          name={form.watch("full_name") || ""}
+          folder="children"
+          entityId={child?.id}
+          onPhotoUploaded={setPhotoUrl}
+        />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
