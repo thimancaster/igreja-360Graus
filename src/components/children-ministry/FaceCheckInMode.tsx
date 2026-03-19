@@ -7,14 +7,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import {
   Camera, Loader2, ScanFace, UserCheck, Baby,
-  Check, RotateCcw, AlertTriangle, X
+  Check, RotateCcw, AlertTriangle, Square
 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  loadModelsOnce, computeDescriptor, findBestMatch,
+  loadModelsOnce, computeDescriptorFast, findBestMatch,
   precomputeDescriptors, type FaceCandidate, type MatchResult
 } from "@/lib/faceRecognition";
 import type { Child } from "@/hooks/useChildrenMinistry";
+import { cn } from "@/lib/utils";
 
 type CheckInMode = "child" | "guardian";
 
@@ -46,20 +47,30 @@ export function FaceCheckInMode({
   const [matchResult, setMatchResult] = useState<MatchResult | null>(null);
   const [matchedGuardian, setMatchedGuardian] = useState<GuardianWithChildren | null>(null);
   const [selectedChildIds, setSelectedChildIds] = useState<Set<string>>(new Set());
-  const [noMatch, setNoMatch] = useState(false);
   const [candidatesReady, setCandidatesReady] = useState<FaceCandidate[]>([]);
+  const [lastScanStatus, setLastScanStatus] = useState<"idle" | "no-face" | "no-match">("idle");
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const autoScanRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const scanningRef = useRef(false);
+
+  const stopAutoScan = useCallback(() => {
+    if (autoScanRef.current) {
+      clearInterval(autoScanRef.current);
+      autoScanRef.current = null;
+    }
+  }, []);
 
   const stopCamera = useCallback(() => {
+    stopAutoScan();
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
     setCameraActive(false);
-  }, []);
+  }, [stopAutoScan]);
 
   useEffect(() => {
     return () => { stopCamera(); };
@@ -78,12 +89,99 @@ export function FaceCheckInMode({
     }
   }, [mode, children, guardiansWithChildren, checkedInIds]);
 
+  // Capture frame from video to canvas (downscaled to 320px)
+  const captureFrame = useCallback((): HTMLCanvasElement | null => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas || video.readyState < 2) return null;
+
+    const targetWidth = 320;
+    const scale = targetWidth / video.videoWidth;
+    canvas.width = targetWidth;
+    canvas.height = Math.round(video.videoHeight * scale);
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    return canvas;
+  }, []);
+
+  // Single scan attempt
+  const doScan = useCallback(async () => {
+    if (scanningRef.current || candidatesReady.length === 0) return;
+    scanningRef.current = true;
+    setScanning(true);
+
+    try {
+      const canvas = captureFrame();
+      if (!canvas) return;
+
+      const queryDescriptor = await computeDescriptorFast(canvas);
+
+      if (!queryDescriptor) {
+        setLastScanStatus("no-face");
+        return;
+      }
+
+      const best = findBestMatch(queryDescriptor, candidatesReady);
+
+      if (best) {
+        // Match found! Stop auto-scan and show result
+        stopAutoScan();
+        setMatchResult(best);
+        setLastScanStatus("idle");
+
+        if (mode === "guardian") {
+          const guardian = guardiansWithChildren.find((g) => g.id === best.candidate.id);
+          if (guardian) {
+            const availableChildren = guardian.children.filter((c) => !checkedInIds.has(c.id));
+            setMatchedGuardian({ ...guardian, children: availableChildren });
+            setSelectedChildIds(new Set(availableChildren.map((c) => c.id)));
+          }
+        }
+
+        toast.success(`Reconhecido: ${best.candidate.label} (${Math.round(best.confidence * 100)}%)`);
+      } else {
+        setLastScanStatus("no-match");
+      }
+    } catch (err) {
+      console.error("Scan error:", err);
+    } finally {
+      scanningRef.current = false;
+      setScanning(false);
+    }
+  }, [candidatesReady, captureFrame, stopAutoScan, mode, guardiansWithChildren, checkedInIds]);
+
+  // Start auto-scanning
+  const startAutoScan = useCallback(() => {
+    stopAutoScan();
+    // Initial scan after short delay
+    setTimeout(() => doScan(), 800);
+    // Then every 2.5 seconds
+    autoScanRef.current = setInterval(() => {
+      doScan();
+    }, 2500);
+  }, [doScan, stopAutoScan]);
+
+  // Start auto-scan when descriptors are ready
+  useEffect(() => {
+    if (cameraActive && candidatesReady.length > 0 && !matchResult && !preparingDescriptors) {
+      startAutoScan();
+    }
+    return () => stopAutoScan();
+  }, [cameraActive, candidatesReady.length, matchResult, preparingDescriptors, startAutoScan, stopAutoScan]);
+
   const startCamera = async () => {
     try {
       setLoadingModels(true);
-      setNoMatch(false);
       setMatchResult(null);
       setMatchedGuardian(null);
+      setLastScanStatus("idle");
 
       const [stream] = await Promise.all([
         navigator.mediaDevices.getUserMedia({
@@ -100,10 +198,10 @@ export function FaceCheckInMode({
       setCameraActive(true);
       setLoadingModels(false);
 
-      // Pre-compute descriptors
+      // Pre-compute descriptors (pass rawCandidates directly to leverage cache)
       setPreparingDescriptors(true);
       const ready = await precomputeDescriptors(
-        rawCandidates.map((c) => ({ ...c })),
+        rawCandidates,
         (done, total) => setPrepProgress({ done, total })
       );
       setCandidatesReady(ready);
@@ -113,62 +211,6 @@ export function FaceCheckInMode({
       setLoadingModels(false);
       setPreparingDescriptors(false);
       toast.error("Não foi possível acessar a câmera ou carregar os modelos de IA.");
-    }
-  };
-
-  const scanFace = async () => {
-    if (!videoRef.current || !canvasRef.current) return;
-
-    setScanning(true);
-    setNoMatch(false);
-    setMatchResult(null);
-    setMatchedGuardian(null);
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
-    ctx.drawImage(video, 0, 0);
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-    try {
-      const queryDescriptor = await computeDescriptor(canvas);
-
-      if (!queryDescriptor) {
-        toast.error("Nenhum rosto detectado. Posicione o rosto na câmera e tente novamente.");
-        setScanning(false);
-        return;
-      }
-
-      const best = findBestMatch(queryDescriptor, candidatesReady);
-
-      if (best) {
-        setMatchResult(best);
-
-        if (mode === "guardian") {
-          const guardian = guardiansWithChildren.find((g) => g.id === best.candidate.id);
-          if (guardian) {
-            const availableChildren = guardian.children.filter((c) => !checkedInIds.has(c.id));
-            setMatchedGuardian({ ...guardian, children: availableChildren });
-            setSelectedChildIds(new Set(availableChildren.map((c) => c.id)));
-          }
-        }
-
-        toast.success(`Reconhecido: ${best.candidate.label} (${Math.round(best.confidence * 100)}%)`);
-      } else {
-        setNoMatch(true);
-        toast.info("Nenhuma correspondência encontrada. Tente novamente ou use busca manual.");
-      }
-    } catch (err) {
-      console.error("Scan error:", err);
-      toast.error("Erro ao escanear rosto.");
-    } finally {
-      setScanning(false);
     }
   };
 
@@ -192,7 +234,8 @@ export function FaceCheckInMode({
     setMatchResult(null);
     setMatchedGuardian(null);
     setSelectedChildIds(new Set());
-    setNoMatch(false);
+    setLastScanStatus("idle");
+    // Auto-scan will restart via useEffect
   };
 
   const toggleChildSelection = (childId: string) => {
@@ -206,10 +249,17 @@ export function FaceCheckInMode({
 
   const confidencePercent = matchResult ? Math.round(matchResult.confidence * 100) : 0;
 
+  // Status indicator text
+  const scanStatusText = lastScanStatus === "no-face"
+    ? "Nenhum rosto detectado"
+    : lastScanStatus === "no-match"
+    ? "Sem correspondência — escaneando..."
+    : "Escaneando automaticamente...";
+
   return (
     <div className="space-y-4">
-      {/* Camera area */}
-      {!cameraActive && !matchResult && !noMatch && (
+      {/* Camera start screen */}
+      {!cameraActive && !loadingModels && !matchResult && (
         <div className="text-center py-8 border rounded-lg bg-muted/30">
           <ScanFace className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
           <p className="text-sm text-muted-foreground mb-1">
@@ -224,13 +274,10 @@ export function FaceCheckInMode({
           </p>
           <Button
             onClick={startCamera}
-            disabled={loadingModels || rawCandidates.length === 0}
+            disabled={rawCandidates.length === 0}
           >
-            {loadingModels ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Carregando...</>
-            ) : (
-              <><Camera className="h-4 w-4 mr-2" />Iniciar Câmera</>
-            )}
+            <Camera className="h-4 w-4 mr-2" />
+            Iniciar Câmera
           </Button>
         </div>
       )}
@@ -259,10 +306,17 @@ export function FaceCheckInMode({
         </div>
       )}
 
-      {/* Camera feed */}
-      {cameraActive && !matchResult && !noMatch && (
+      {/* Camera feed with auto-scan */}
+      {cameraActive && !matchResult && (
         <div className="space-y-3">
-          <div className="relative aspect-video rounded-lg overflow-hidden border-2 border-primary/30 bg-black">
+          <div
+            className={cn(
+              "relative aspect-video rounded-lg overflow-hidden bg-black transition-all duration-500",
+              scanning
+                ? "border-2 border-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)]"
+                : "border-2 border-muted"
+            )}
+          >
             <video
               ref={videoRef}
               autoPlay
@@ -271,24 +325,42 @@ export function FaceCheckInMode({
               className="w-full h-full object-cover"
               style={{ transform: "scaleX(-1)" }}
             />
-            {scanning && (
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <Loader2 className="h-8 w-8 mx-auto animate-spin mb-2" />
-                  <p className="text-sm">Analisando rosto...</p>
+            {/* Scan indicator overlay - subtle, non-blocking */}
+            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-white/90">
+                  {scanning ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <ScanFace className="h-3.5 w-3.5" />
+                  )}
+                  <span className="text-xs">{scanStatusText}</span>
                 </div>
+                {lastScanStatus === "no-match" && (
+                  <span className="text-xs text-yellow-300">Tente se aproximar</span>
+                )}
               </div>
-            )}
+            </div>
           </div>
           <canvas ref={canvasRef} className="hidden" />
-          <Button
-            className="w-full"
-            onClick={scanFace}
-            disabled={scanning || preparingDescriptors}
-          >
-            <ScanFace className="h-4 w-4 mr-2" />
-            {scanning ? "Analisando..." : "Escanear Rosto"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={stopCamera}
+            >
+              <Square className="h-4 w-4 mr-2" />
+              Parar Câmera
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={doScan}
+              disabled={scanning || preparingDescriptors || candidatesReady.length === 0}
+            >
+              <ScanFace className="h-4 w-4 mr-2" />
+              {scanning ? "Analisando..." : "Escanear Agora"}
+            </Button>
+          </div>
         </div>
       )}
 
@@ -405,23 +477,6 @@ export function FaceCheckInMode({
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* No match */}
-      {noMatch && (
-        <div className="text-center py-6 border rounded-lg border-destructive/20 bg-destructive/5">
-          <AlertTriangle className="h-8 w-8 mx-auto text-destructive mb-2" />
-          <p className="text-sm font-medium text-destructive">Nenhuma correspondência encontrada</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Tente novamente ou use a busca manual.
-          </p>
-          <div className="flex gap-2 justify-center mt-4">
-            <Button size="sm" variant="outline" onClick={resetForNext}>
-              <RotateCcw className="h-4 w-4 mr-1" />
-              Tentar Novamente
-            </Button>
-          </div>
-        </div>
       )}
     </div>
   );
