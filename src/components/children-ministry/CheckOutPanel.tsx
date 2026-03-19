@@ -181,13 +181,22 @@ export function CheckOutPanel() {
       return;
     }
 
-    // Validate PIN if required
-    if (person.requiresPin && person.pin) {
+    // Validate PIN server-side if required
+    if (person.requiresPin) {
       if (!enteredPin) {
         setPinError("Digite o PIN de segurança");
         return;
       }
-      if (enteredPin !== person.pin) {
+      
+      const { data: pinResult, error: pinError } = await supabase.functions.invoke('verify-pickup-pin', {
+        body: {
+          person_type: person.type,
+          person_id: person.realId,
+          entered_pin: enteredPin,
+        },
+      });
+
+      if (pinError || !pinResult?.valid) {
         setPinError("PIN incorreto");
         return;
       }
