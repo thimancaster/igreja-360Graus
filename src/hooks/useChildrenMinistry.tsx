@@ -235,7 +235,7 @@ export function useAuthorizedPickups(childId: string | undefined) {
 
       const { data, error } = await supabase
         .from("authorized_pickups")
-        .select("*")
+        .select("id, child_id, authorized_name, authorized_phone, authorized_photo, relationship, is_active, created_at, updated_at")
         .eq("child_id", childId)
         .eq("is_active", true)
         .order("authorized_name");
