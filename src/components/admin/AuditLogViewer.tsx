@@ -139,7 +139,7 @@ export function AuditLogViewer() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{log.user_name || "Sistema"}</span>
+                        <span className="font-medium">{(log.details as any)?.user_name || log.user_id || "Sistema"}</span>
                       </div>
                     </TableCell>
                     <TableCell>
