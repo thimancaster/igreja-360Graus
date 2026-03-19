@@ -123,10 +123,16 @@ export default function Membros() {
             Cadastre e gerencie os membros da sua igreja
           </p>
         </div>
-        <Button onClick={handleNewMember} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Novo Membro
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => copyPortalLink()} className="gap-2">
+            <Share2 className="h-4 w-4" />
+            Link do Portal
+          </Button>
+          <Button onClick={handleNewMember} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Novo Membro
+          </Button>
+        </div>
       </motion.div>
 
       {/* Stats Cards */}
