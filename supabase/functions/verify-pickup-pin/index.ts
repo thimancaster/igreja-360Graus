@@ -35,12 +35,15 @@ Deno.serve(async (req) => {
 
     const { person_type, person_id, entered_pin } = await req.json();
 
-    if (!person_type || !person_id || !entered_pin) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+    if (!person_type || !person_id) {
+      return new Response(JSON.stringify({ error: 'Missing required fields: person_type and person_id' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // entered_pin can be empty string (user didn't enter a PIN)
+    const pin = typeof entered_pin === 'string' ? entered_pin : '';
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
