@@ -32,6 +32,7 @@ export type Guardian = {
   photo_url: string | null;
   relationship: string;
   access_pin: string | null;
+  cpf: string | null;
   created_at: string;
   updated_at: string;
 };
