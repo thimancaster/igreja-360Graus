@@ -41,6 +41,7 @@ export function CheckOutPanel() {
   const [enteredPin, setEnteredPin] = useState("");
   const [pinError, setPinError] = useState("");
   const [faceVerified, setFaceVerified] = useState<"pending" | "approved" | "rejected" | "skipped">("pending");
+  const [scannedViaQR, setScannedViaQR] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   const { isAdmin, isPastor, isTesoureiro, isLider } = useRole();
