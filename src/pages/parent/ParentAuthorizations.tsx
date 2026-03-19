@@ -60,7 +60,7 @@ export default function ParentAuthorizations() {
       authorized_person_name: data.authorized_person_name,
       authorized_person_phone: data.authorized_person_phone,
       authorized_person_document: data.authorized_person_document,
-      authorization_type: data.authorization_type,
+      authorization_type: dat(a.authorization_type as any).authorization_type,
       valid_until: data.valid_until,
       security_pin: data.security_pin,
       reason: data.reason,
@@ -171,12 +171,12 @@ export default function ParentAuthorizations() {
                             </CardDescription>
                           )}
                         </div>
-                        {getStatusBadge(auth.status)}
+                        {getStatusBadge((auth. as any).status)}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex flex-wrap gap-2">
-                        {getTypeBadge(auth.authorization_type)}
+                        {getTypeBadge((auth.authorization_type as any).authorization_type)}
                         {auth.leader_approval_required && (
                           <Badge variant="outline" className="gap-1 text-xs">
                             <Shield className="h-3 w-3" />
@@ -206,7 +206,7 @@ export default function ParentAuthorizations() {
                         </code>
                       </div>
 
-                      {auth.status !== 'used' && auth.status !== 'cancelled' && auth.status !== 'expired' && (
+                      {(auth. as any).status !== 'used' && (auth. as any).status !== 'cancelled' && (auth. as any).status !== 'expired' && (
                         <Button
                           variant="destructive"
                           size="sm"

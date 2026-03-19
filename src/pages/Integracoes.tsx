@@ -188,7 +188,7 @@ export default function Integracoes() {
         });
 
         // Delete session from database after retrieving tokens
-        await supabase(supabase as any).from('oauth_sessions').delete().eq('id', sessionId);
+        await (supabase as any).from('oauth_sessions').delete().eq('id', sessionId);
 
         // Clear URL params
         setSearchParams({});
