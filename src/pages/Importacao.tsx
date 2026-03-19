@@ -249,9 +249,9 @@ export default function Importacao() {
       setProgress(40);
 
       // Fetch ALL existing transactions for intelligent deduplication
-      const { data: existingTransactions, error: fetchError } = await supabase
+      const { data: existingTransactions, error: fetchError } = await (supabase as any)
         .from("transactions")
-        .select("id, description, amount, type, due_date, payment_date, external_id")
+        .select("id, description, amount, type, due_date, payment_date")
         .eq("church_id", profile.church_id);
 
       if (fetchError) throw fetchError;
