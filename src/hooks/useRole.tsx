@@ -90,6 +90,7 @@ export function useRole() {
   const isPastor = hasRole('pastor') || isMasterAdmin;
   const isLider = hasRole('lider') || isMasterAdmin;
   const isUser = hasRole('user');
+  const isMembro = hasRole('membro');
   // Parent is true if they have the role OR if they're linked as a guardian
   const isParent = hasRole('parent') || (isGuardian === true);
   
