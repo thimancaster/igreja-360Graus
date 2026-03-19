@@ -181,14 +181,15 @@ export function useValidPickupAuthorizations(childId: string | undefined) {
     queryFn: async () => {
       if (!childId) return [];
 
-      const now = new Date().toISOString();
+      const today = new Date().toISOString().split('T')[0];
 
       const { data, error } = await (supabase as any)
         .from("pickup_authorizations")
         .select("*")
         .eq("child_id", childId)
-        .lte("valid_from", now)
-        .or(`valid_until.is.null,valid_until.gte.${now}`);
+        .eq("is_used", false)
+        .lte("valid_from", today)
+        .or(`valid_until.is.null,valid_until.gte.${today}`);
 
       if (error) throw error;
       return data as PickupAuthorization[];
