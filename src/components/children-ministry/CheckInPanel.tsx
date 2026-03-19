@@ -1,21 +1,21 @@
 import { useState, useMemo } from "react";
-import { useChildren, useChildMutations, useTodayCheckIns, Child, CLASSROOMS } from "@/hooks/useChildrenMinistry";
-import { useClassroomSettings, useClassroomOccupancy } from "@/hooks/useCapacityManagement";
+import { useChildren, useChildMutations, useTodayCheckIns, useGuardiansWithChildren, Child, CLASSROOMS } from "@/hooks/useChildrenMinistry";
+import { useClassroomSettings } from "@/hooks/useCapacityManagement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { QrCode, Search, Check, Baby, Clock, AlertTriangle, Users } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { QrCode, Search, Check, Baby, Clock, AlertTriangle, Users, ScanFace, UserSearch } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { CapacityIndicator } from "./capacity";
+import { FaceCheckInMode } from "./FaceCheckInMode";
 
 const EVENT_OPTIONS = [
   "Culto Matutino",
@@ -25,15 +25,19 @@ const EVENT_OPTIONS = [
   "Evento Especial",
 ];
 
+type CheckInMode = "manual" | "face-child" | "face-guardian";
+
 export function CheckInPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [eventName, setEventName] = useState("Culto Matutino");
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [generatedCheckIn, setGeneratedCheckIn] = useState<any>(null);
+  const [checkInMode, setCheckInMode] = useState<CheckInMode>("manual");
 
   const { data: children, isLoading: loadingChildren } = useChildren();
   const { data: todayCheckIns, isLoading: loadingCheckIns } = useTodayCheckIns();
   const { data: classrooms } = useClassroomSettings();
+  const { data: guardiansWithChildren } = useGuardiansWithChildren();
   const { checkIn } = useChildMutations();
 
   const checkedInIds = new Set(todayCheckIns?.map((c: any) => c.child_id));
@@ -51,8 +55,6 @@ export function CheckInPanel() {
     if (!todayCheckIns || !classrooms) return {};
     
     const occupancy: Record<string, { current: number; max: number; isFull: boolean }> = {};
-    
-    // Count checked-in children per classroom (only those still present)
     const presentByClassroom: Record<string, number> = {};
     todayCheckIns.forEach((checkin: any) => {
       if (!checkin.checked_out_at && checkin.classroom) {
@@ -60,7 +62,6 @@ export function CheckInPanel() {
       }
     });
 
-    // Match with classroom settings
     classrooms.forEach((room) => {
       const current = presentByClassroom[room.classroom_name] || 0;
       occupancy[room.classroom_name] = {
@@ -78,10 +79,23 @@ export function CheckInPanel() {
   };
 
   const handleCheckIn = async (child: Child) => {
-    // Block if classroom is full
-    if (isClassroomFull(child.classroom)) {
-      return;
+    if (isClassroomFull(child.classroom)) return;
+    try {
+      const result = await checkIn.mutateAsync({
+        childId: child.id,
+        eventName,
+        classroom: child.classroom,
+      });
+      setGeneratedCheckIn({ ...result, child });
+      setQrDialogOpen(true);
+    } catch (error) {
+      // Error handled in mutation
     }
+  };
+
+  const handleFaceCheckIn = async (childId: string, notes?: string) => {
+    const child = children?.find((c) => c.id === childId);
+    if (!child || isClassroomFull(child.classroom)) return;
     try {
       const result = await checkIn.mutateAsync({
         childId: child.id,
@@ -134,20 +148,31 @@ export function CheckInPanel() {
                 </Select>
               </div>
             </div>
+
+            {/* Mode Toggle */}
+            <div className="mt-3">
+              <ToggleGroup
+                type="single"
+                value={checkInMode}
+                onValueChange={(val) => val && setCheckInMode(val as CheckInMode)}
+                className="justify-start"
+              >
+                <ToggleGroupItem value="manual" aria-label="Busca Manual" className="gap-1.5 text-xs">
+                  <Search className="h-3.5 w-3.5" />
+                  Manual
+                </ToggleGroupItem>
+                <ToggleGroupItem value="face-child" aria-label="Face Criança" className="gap-1.5 text-xs">
+                  <ScanFace className="h-3.5 w-3.5" />
+                  Face Criança
+                </ToggleGroupItem>
+                <ToggleGroupItem value="face-guardian" aria-label="Face Responsável" className="gap-1.5 text-xs">
+                  <UserSearch className="h-3.5 w-3.5" />
+                  Face Responsável
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar criança para check-in..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-
             {/* Capacity Overview */}
             {classrooms && classrooms.length > 0 && (
               <div className="mb-4 p-3 bg-muted/50 rounded-lg">
@@ -185,70 +210,99 @@ export function CheckInPanel() {
               </div>
             )}
 
-            {availableChildren && availableChildren.length > 0 ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {availableChildren.map((child) => {
-                  const isFull = isClassroomFull(child.classroom);
-                  return (
-                    <div
-                      key={child.id}
-                      className={cn(
-                        "flex items-center justify-between p-4 border rounded-lg transition-colors",
-                        isFull
-                          ? "bg-destructive/5 border-destructive/20 opacity-75"
-                          : "hover:bg-muted/50"
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={child.photo_url || undefined} />
-                          <AvatarFallback>
-                            {child.full_name.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{child.full_name}</p>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
-                              {child.classroom}
-                            </Badge>
-                            {isFull && (
-                              <Badge variant="destructive" className="text-xs">
-                                <AlertTriangle className="h-3 w-3 mr-1" />
-                                Lotado
-                              </Badge>
-                            )}
+            {/* Manual Mode */}
+            {checkInMode === "manual" && (
+              <>
+                <div className="mb-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar criança para check-in..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+
+                {availableChildren && availableChildren.length > 0 ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {availableChildren.map((child) => {
+                      const isFull = isClassroomFull(child.classroom);
+                      return (
+                        <div
+                          key={child.id}
+                          className={cn(
+                            "flex items-center justify-between p-4 border rounded-lg transition-colors",
+                            isFull
+                              ? "bg-destructive/5 border-destructive/20 opacity-75"
+                              : "hover:bg-muted/50"
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Avatar>
+                              <AvatarImage src={child.photo_url || undefined} />
+                              <AvatarFallback>
+                                {child.full_name.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{child.full_name}</p>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {child.classroom}
+                                </Badge>
+                                {isFull && (
+                                  <Badge variant="destructive" className="text-xs">
+                                    <AlertTriangle className="h-3 w-3 mr-1" />
+                                    Lotado
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
                           </div>
+                          <Button
+                            size="sm"
+                            onClick={() => handleCheckIn(child)}
+                            disabled={checkIn.isPending || isFull}
+                            variant={isFull ? "outline" : "default"}
+                          >
+                            {isFull ? (
+                              "Sala Lotada"
+                            ) : (
+                              <>
+                                <Check className="h-4 w-4 mr-1" />
+                                Check-in
+                              </>
+                            )}
+                          </Button>
                         </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => handleCheckIn(child)}
-                        disabled={checkIn.isPending || isFull}
-                        variant={isFull ? "outline" : "default"}
-                      >
-                        {isFull ? (
-                          "Sala Lotada"
-                        ) : (
-                          <>
-                            <Check className="h-4 w-4 mr-1" />
-                            Check-in
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Baby className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">
-                  {searchTerm
-                    ? "Nenhuma criança encontrada"
-                    : "Todas as crianças já fizeram check-in"}
-                </p>
-              </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Baby className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">
+                      {searchTerm
+                        ? "Nenhuma criança encontrada"
+                        : "Todas as crianças já fizeram check-in"}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Face Check-in Modes */}
+            {(checkInMode === "face-child" || checkInMode === "face-guardian") && (
+              <FaceCheckInMode
+                mode={checkInMode === "face-child" ? "child" : "guardian"}
+                children={children || []}
+                guardiansWithChildren={guardiansWithChildren || []}
+                checkedInIds={checkedInIds}
+                onCheckIn={handleFaceCheckIn}
+                isCheckingIn={checkIn.isPending}
+              />
             )}
           </CardContent>
         </Card>
