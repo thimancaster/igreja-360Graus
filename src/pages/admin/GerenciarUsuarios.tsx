@@ -237,11 +237,11 @@ export default function GerenciarUsuarios() {
   });
 
   const inviteUserMutation = useMutation({
-    mutationFn: async ({ email, fullName, role, churchId }: { email: string; fullName: string; role: AppRole; churchId: string }) => {
+    mutationFn: async ({ email, fullName, role, churchId, directRegistration, temporaryPassword }: { email: string; fullName: string; role: AppRole; churchId: string; directRegistration?: boolean; temporaryPassword?: string }) => {
       if (!canManage) throw new Error("Você não tem permissão para convidar usuários.");
 
       const { data, error } = await supabase.functions.invoke("invite-user", {
-        body: { email, fullName, role, churchId },
+        body: { email, fullName, role, churchId, directRegistration, temporaryPassword },
       });
 
       if (error) throw new Error(error.message);
@@ -303,7 +303,7 @@ export default function GerenciarUsuarios() {
     await updateUserMutation.mutateAsync(data);
   };
 
-  const handleInviteSubmit = async (data: { email: string; fullName: string; role: AppRole; churchId: string }) => {
+  const handleInviteSubmit = async (data: { email: string; fullName: string; role: AppRole; churchId: string; directRegistration?: boolean; temporaryPassword?: string }) => {
     await inviteUserMutation.mutateAsync(data);
   };
 
