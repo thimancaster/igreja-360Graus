@@ -517,3 +517,56 @@ export function useChildMutations() {
     findCheckInByQR,
   };
 }
+
+/** Hook to fetch guardians with their linked children for face check-in */
+export function useGuardiansWithChildren() {
+  const { profile } = useAuth();
+
+  return useQuery({
+    queryKey: ["guardians-with-children", profile?.church_id],
+    queryFn: async () => {
+      if (!profile?.church_id) return [];
+
+      // Fetch all guardians with photos
+      const { data: guardians, error: gError } = await supabase
+        .from("guardians")
+        .select("id, full_name, photo_url")
+        .eq("church_id", profile.church_id)
+        .not("photo_url", "is", null);
+
+      if (gError) throw gError;
+      if (!guardians || guardians.length === 0) return [];
+
+      // Fetch all child_guardians links
+      const { data: links, error: lError } = await supabase
+        .from("child_guardians")
+        .select("guardian_id, child_id")
+        .in("guardian_id", guardians.map((g) => g.id));
+
+      if (lError) throw lError;
+
+      // Fetch all active children
+      const childIds = [...new Set((links || []).map((l) => l.child_id))];
+      if (childIds.length === 0) return guardians.map((g) => ({ ...g, children: [] as Child[] }));
+
+      const { data: children, error: cError } = await supabase
+        .from("children")
+        .select("*")
+        .in("id", childIds)
+        .eq("status", "active");
+
+      if (cError) throw cError;
+
+      const childMap = new Map((children || []).map((c) => [c.id, c as Child]));
+
+      return guardians.map((g) => ({
+        ...g,
+        children: (links || [])
+          .filter((l) => l.guardian_id === g.id)
+          .map((l) => childMap.get(l.child_id))
+          .filter(Boolean) as Child[],
+      }));
+    },
+    enabled: !!profile?.church_id,
+  });
+}
