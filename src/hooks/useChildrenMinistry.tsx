@@ -32,6 +32,7 @@ export type Guardian = {
   photo_url: string | null;
   relationship: string;
   access_pin: string | null;
+  cpf: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -308,6 +309,24 @@ export function useChildMutations() {
     mutationFn: async (child: Omit<Child, "id" | "church_id" | "created_at" | "updated_at">) => {
       if (!profile?.church_id) throw new Error("Igreja não encontrada");
 
+      // Check for duplicate child (same name + birth_date in same church)
+      const { data: existing } = await supabase
+        .from("children")
+        .select("id, full_name")
+        .eq("church_id", profile.church_id)
+        .eq("full_name", child.full_name)
+        .eq("birth_date", child.birth_date)
+        .maybeSingle();
+
+      if (existing) {
+        const confirmOverride = window.confirm(
+          `Já existe uma criança cadastrada com o nome "${existing.full_name}" e mesma data de nascimento. Deseja cadastrar mesmo assim?`
+        );
+        if (!confirmOverride) {
+          throw new Error("Cadastro cancelado pelo usuário.");
+        }
+      }
+
       const { data, error } = await supabase
         .from("children")
         .insert({ ...child, church_id: profile.church_id })
@@ -395,6 +414,29 @@ export function useChildMutations() {
       isPrimary?: boolean;
       canPickup?: boolean;
     }) => {
+      // Fetch guardian's relationship to validate duplicates
+      const { data: guardian } = await supabase
+        .from("guardians")
+        .select("relationship")
+        .eq("id", guardianId)
+        .single();
+
+      if (guardian && (guardian.relationship === "Pai" || guardian.relationship === "Mãe")) {
+        // Check if child already has a guardian with the same relationship
+        const { data: existingLinks } = await supabase
+          .from("child_guardians")
+          .select("guardian_id, guardians:guardian_id (relationship)")
+          .eq("child_id", childId);
+
+        const hasSameRelationship = existingLinks?.some(
+          (link: any) => link.guardians?.relationship === guardian.relationship
+        );
+
+        if (hasSameRelationship) {
+          throw new Error(`Esta criança já possui um(a) ${guardian.relationship} cadastrado(a).`);
+        }
+      }
+
       const { data, error } = await supabase
         .from("child_guardians")
         .insert({

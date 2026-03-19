@@ -60,6 +60,21 @@ export function useParentChildMutations() {
     mutationFn: async (data: CreateChildData) => {
       const guardian = await getOrCreateGuardian();
 
+      // Check for duplicate child (same name + birth_date in same church)
+      const { data: existing } = await supabase
+        .from("children")
+        .select("id, full_name")
+        .eq("church_id", guardian.church_id)
+        .eq("full_name", data.full_name)
+        .eq("birth_date", data.birth_date)
+        .maybeSingle();
+
+      if (existing) {
+        throw new Error(
+          "Esta criança já está cadastrada no sistema. Por favor, procure a administração da igreja para vincular ao seu cadastro."
+        );
+      }
+
       // Insert child
       const { data: child, error: childError } = await supabase
         .from("children")

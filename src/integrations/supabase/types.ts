@@ -993,6 +993,7 @@ export type Database = {
         Row: {
           access_pin: string | null
           church_id: string
+          cpf: string | null
           created_at: string
           email: string | null
           full_name: string
@@ -1006,6 +1007,7 @@ export type Database = {
         Insert: {
           access_pin?: string | null
           church_id: string
+          cpf?: string | null
           created_at?: string
           email?: string | null
           full_name: string
@@ -1019,6 +1021,7 @@ export type Database = {
         Update: {
           access_pin?: string | null
           church_id?: string
+          cpf?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
@@ -2472,6 +2475,7 @@ export type Database = {
       guardians_safe: {
         Row: {
           church_id: string | null
+          cpf: string | null
           created_at: string | null
           email: string | null
           full_name: string | null
@@ -2484,6 +2488,7 @@ export type Database = {
         }
         Insert: {
           church_id?: string | null
+          cpf?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
@@ -2496,6 +2501,7 @@ export type Database = {
         }
         Update: {
           church_id?: string | null
+          cpf?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
@@ -2537,6 +2543,7 @@ export type Database = {
         Returns: {
           children_count: number
           church_id: string
+          cpf: string
           created_at: string
           email: string
           full_name: string

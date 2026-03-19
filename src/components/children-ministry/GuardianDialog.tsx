@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { PhotoUpload } from "./PhotoUpload";
 import { Link2, Unlink, UserCheck } from "lucide-react";
+import { validateCPF, formatCPF, cleanCPF } from "@/lib/cpfUtils";
 
 const guardianSchema = z.object({
   full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -23,6 +24,10 @@ const guardianSchema = z.object({
   relationship: z.string().min(1, "Selecione o parentesco"),
   access_pin: z.string().length(6, "PIN deve ter 6 dígitos").optional().or(z.literal("")),
   profile_id: z.string().optional().or(z.literal("")),
+  cpf: z.string().optional().or(z.literal("")).refine(
+    (val) => !val || validateCPF(val),
+    { message: "CPF inválido" }
+  ),
 });
 
 type GuardianFormData = z.infer<typeof guardianSchema>;
@@ -83,6 +88,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
       relationship: "Pai",
       access_pin: "",
       profile_id: "",
+      cpf: "",
     },
   });
 
@@ -97,6 +103,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
         relationship: guardian.relationship,
         access_pin: "",
         profile_id: guardian.profile_id || "",
+        cpf: guardian.cpf ? formatCPF(guardian.cpf) : "",
       });
       setPhotoUrl(guardian.photo_url);
     } else {
@@ -107,6 +114,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
         relationship: "Pai",
         access_pin: "",
         profile_id: "",
+        cpf: "",
       });
       setPhotoUrl(null);
     }
@@ -129,6 +137,23 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
 
   const onSubmit = async (data: GuardianFormData) => {
     try {
+      const cpfClean = data.cpf ? cleanCPF(data.cpf) : null;
+
+      // Check for duplicate CPF in the same church
+      if (cpfClean && cpfClean.length === 11 && profile?.church_id) {
+        const { data: existingByCpf } = await supabase
+          .from("guardians")
+          .select("id, full_name")
+          .eq("church_id", profile.church_id)
+          .eq("cpf", cpfClean)
+          .maybeSingle();
+
+        if (existingByCpf && existingByCpf.id !== guardian?.id) {
+          toast.error(`Já existe um responsável cadastrado com este CPF: ${existingByCpf.full_name}. Vincule o responsável existente.`);
+          return;
+        }
+      }
+
       const payload: Record<string, any> = {
         full_name: data.full_name,
         email: data.email || null,
@@ -136,13 +161,13 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
         relationship: data.relationship,
         photo_url: photoUrl,
         profile_id: data.profile_id || null,
+        cpf: cpfClean && cpfClean.length === 11 ? cpfClean : null,
       };
 
       // Only send access_pin if it was actually filled in
       if (data.access_pin && data.access_pin.length === 6) {
         payload.access_pin = data.access_pin;
       } else if (!guardian) {
-        // For new guardians, explicitly set null if no PIN provided
         payload.access_pin = null;
       }
 
@@ -271,6 +296,30 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
                     <Input placeholder="(00) 00000-0000" {...field} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cpf"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CPF</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="000.000.000-00"
+                      maxLength={14}
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(formatCPF(e.target.value));
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  <p className="text-xs text-muted-foreground">
+                    Usado para identificação e prevenção de duplicidades
+                  </p>
                 </FormItem>
               )}
             />
