@@ -159,6 +159,7 @@ export function CheckOutPanel() {
 
   const handleManualSelect = (record: any) => {
     setSelectedCheckIn(record);
+    setScannedViaQR(false);
     setConfirmDialogOpen(true);
   };
 
