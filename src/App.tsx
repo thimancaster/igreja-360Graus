@@ -1,27 +1,143 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+// src/App.tsx
+// --- VERSÃO COM LAZY LOADING PARA REDUZIR BUNDLE SIZE ---
 
-const queryClient = new QueryClient();
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { queryClient } from '@/lib/queryClient';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthRedirect } from '@/components/AuthRedirect';
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AdminRoute } from '@/components/AdminRoute';
+
+import { AppLayout } from '@/components/AppLayout';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { InstallPrompt } from '@/components/pwa/InstallPrompt';
+
+// Lazy loading para reduzir bundle inicial - páginas carregadas sob demanda
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const AuthPage = lazy(() => import('@/pages/Auth'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
+const Transacoes = lazy(() => import('@/pages/Transacoes'));
+const Membros = lazy(() => import('@/pages/Membros'));
+const Contribuicoes = lazy(() => import('@/pages/Contribuicoes'));
+const Integracoes = lazy(() => import('@/pages/Integracoes'));
+const Importacao = lazy(() => import('@/pages/Importacao'));
+const Relatorios = lazy(() => import('@/pages/Relatorios'));
+const Configuracoes = lazy(() => import('@/pages/Configuracoes'));
+const Admin = lazy(() => import('@/pages/Admin'));
+const GerenciarUsuarios = lazy(() => import('@/pages/admin/GerenciarUsuarios'));
+const GerenciarMinisterios = lazy(() => import('@/pages/admin/GerenciarMinisterios'));
+const GerenciarIgreja = lazy(() => import('@/pages/admin/GerenciarIgreja'));
+const GerenciarCategorias = lazy(() => import('@/pages/admin/GerenciarCategorias'));
+const GerenciarDados = lazy(() => import('@/pages/admin/GerenciarDados'));
+const ConfiguracoesSistema = lazy(() => import('@/pages/admin/ConfiguracoesSistema'));
+const CreateChurchPage = lazy(() => import('@/pages/CreateChurch'));
+const ChurchConfirmation = lazy(() => import('@/pages/ChurchConfirmation'));
+const SelectChurch = lazy(() => import('@/pages/SelectChurch'));
+const LandingPage = lazy(() => import('@/pages/LandingPage'));
+const FAQPage = lazy(() => import('@/pages/FAQPage'));
+const MinisterioInfantil = lazy(() => import('@/pages/MinisterioInfantil'));
+const Escalas = lazy(() => import('@/pages/Escalas'));
+const AceitarTermoVoluntario = lazy(() => import('@/pages/AceitarTermoVoluntario'));
+const Eventos = lazy(() => import('@/pages/Eventos'));
+const EventRegistrationPage = lazy(() => import('@/pages/EventRegistration'));
+
+// Parent Portal pages (kept for backward compatibility)
+const ParentDashboard = lazy(() => import('@/pages/parent/ParentDashboard'));
+const ParentAuthorizations = lazy(() => import('@/pages/parent/ParentAuthorizations'));
+const ParentHistory = lazy(() => import('@/pages/parent/ParentHistory'));
+const ParentAnnouncements = lazy(() => import('@/pages/parent/ParentAnnouncements'));
+const ParentEvents = lazy(() => import('@/pages/parent/ParentEvents'));
+import { ParentLayout } from '@/components/parent/ParentLayout';
+
+// Portal do Membro (unified)
+const PortalDashboard = lazy(() => import('@/pages/portal/PortalDashboard'));
+const PortalSchedules = lazy(() => import('@/pages/portal/PortalSchedules'));
+const PortalAnnouncements = lazy(() => import('@/pages/portal/PortalAnnouncements'));
+const PortalChildren = lazy(() => import('@/pages/portal/PortalChildren'));
+const PortalProfile = lazy(() => import('@/pages/portal/PortalProfile'));
+const PortalEvents = lazy(() => import('@/pages/portal/PortalEvents'));
+import { PortalLayout } from '@/components/portal/PortalLayout';
+
+const App: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <Toaster />
+          <Sonner />
+          <InstallPrompt />
+          <AuthProvider>
+            <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><LoadingSpinner size="lg" /></div>}>
+              <Routes>
+                {/* Rotas Públicas */}
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/landing" element={<LandingPage />} />
+                <Route path="/faq" element={<FAQPage />} />
+
+                {/* Rota raiz: redireciona dependendo do auth */}
+                <Route path="/" element={<AuthRedirect />} /> 
+
+                {/* Rotas protegidas com layout (sidebar + header) */}
+                <Route path="/app/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+                <Route path="/app/transacoes" element={<ProtectedRoute><AppLayout><Transacoes /></AppLayout></ProtectedRoute>} />
+                <Route path="/app/membros" element={<ProtectedRoute><AppLayout><Membros /></AppLayout></ProtectedRoute>} />
+                <Route path="/app/contribuicoes" element={<ProtectedRoute><AppLayout><Contribuicoes /></AppLayout></ProtectedRoute>} />
+                <Route path="/app/importacao" element={<ProtectedRoute><AppLayout><Importacao /></AppLayout></ProtectedRoute>} />
+                <Route path="/app/integracoes" element={<ProtectedRoute><AppLayout><Integracoes /></AppLayout></ProtectedRoute>} />
+                <Route path="/app/relatorios" element={<ProtectedRoute><AppLayout><Relatorios /></AppLayout></ProtectedRoute>} />
+                <Route path="/app/admin" element={<ProtectedRoute><AdminRoute><AppLayout><Admin /></AppLayout></AdminRoute></ProtectedRoute>} />
+                <Route path="/app/admin/usuarios" element={<ProtectedRoute><AdminRoute><AppLayout><GerenciarUsuarios /></AppLayout></AdminRoute></ProtectedRoute>} />
+                <Route path="/app/admin/ministerios" element={<ProtectedRoute><AdminRoute><AppLayout><GerenciarMinisterios /></AppLayout></AdminRoute></ProtectedRoute>} />
+                <Route path="/app/admin/igreja" element={<ProtectedRoute><AdminRoute><AppLayout><GerenciarIgreja /></AppLayout></AdminRoute></ProtectedRoute>} />
+                <Route path="/app/admin/categorias" element={<ProtectedRoute><AdminRoute><AppLayout><GerenciarCategorias /></AppLayout></AdminRoute></ProtectedRoute>} />
+                <Route path="/app/admin/dados" element={<ProtectedRoute><AdminRoute><AppLayout><GerenciarDados /></AppLayout></AdminRoute></ProtectedRoute>} />
+                <Route path="/app/admin/configuracoes-sistema" element={<ProtectedRoute><AdminRoute><AppLayout><ConfiguracoesSistema /></AppLayout></AdminRoute></ProtectedRoute>} />
+                <Route path="/app/configuracoes" element={<ProtectedRoute><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
+                <Route path="/app/ministerio-infantil" element={<ProtectedRoute><AppLayout><MinisterioInfantil /></AppLayout></ProtectedRoute>} />
+                <Route path="/app/escalas" element={<ProtectedRoute><Escalas /></ProtectedRoute>} />
+                <Route path="/app/eventos" element={<ProtectedRoute><AppLayout><Eventos /></AppLayout></ProtectedRoute>} />
+                <Route path="/app/voluntario/aceitar-termo" element={<ProtectedRoute><AceitarTermoVoluntario /></ProtectedRoute>} />
+                <Route path="/inscricao/:eventId" element={<EventRegistrationPage />} />
+                <Route path="/app/*" element={<ProtectedRoute><AppLayout><NotFound /></AppLayout></ProtectedRoute>} />
+
+                {/* Rotas de fluxo de criação/seleção (fora do layout principal) */}
+                <Route path="/create-church" element={<ProtectedRoute><CreateChurchPage /></ProtectedRoute>} />
+                <Route path="/church-confirmation" element={<ProtectedRoute><ChurchConfirmation /></ProtectedRoute>} />
+                <Route path="/select-church" element={<ProtectedRoute><SelectChurch /></ProtectedRoute>} />
+
+                {/* Portal do Membro (unified) */}
+                <Route path="/portal" element={<ProtectedRoute><PortalLayout><PortalDashboard /></PortalLayout></ProtectedRoute>} />
+                <Route path="/portal/escalas" element={<ProtectedRoute><PortalLayout><PortalSchedules /></PortalLayout></ProtectedRoute>} />
+                <Route path="/portal/comunicados" element={<ProtectedRoute><PortalLayout><PortalAnnouncements /></PortalLayout></ProtectedRoute>} />
+                <Route path="/portal/filhos" element={<ProtectedRoute><PortalLayout><PortalChildren /></PortalLayout></ProtectedRoute>} />
+                <Route path="/portal/perfil" element={<ProtectedRoute><PortalLayout><PortalProfile /></PortalLayout></ProtectedRoute>} />
+                <Route path="/portal/eventos" element={<ProtectedRoute><PortalLayout><PortalEvents /></PortalLayout></ProtectedRoute>} />
+
+                {/* Legacy Parent Portal - redirects to unified portal */}
+                <Route path="/parent" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
+                <Route path="/parent/children" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
+                <Route path="/parent/authorizations" element={<ProtectedRoute><ParentLayout><ParentAuthorizations /></ParentLayout></ProtectedRoute>} />
+                <Route path="/parent/history" element={<ProtectedRoute><ParentLayout><ParentHistory /></ParentLayout></ProtectedRoute>} />
+                <Route path="/parent/announcements" element={<ProtectedRoute><ParentLayout><ParentAnnouncements /></ParentLayout></ProtectedRoute>} />
+                <Route path="/parent/events" element={<ProtectedRoute><ParentLayout><ParentEvents /></ParentLayout></ProtectedRoute>} />
+                <Route path="/parent/notifications" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
+                <Route path="/parent/settings" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
+
+                {/* Fallback global */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
