@@ -28,7 +28,6 @@ export type LeaderCheckoutOverride = {
   leader_id: string;
   reason: string;
   pickup_person_name: string;
-  pickup_person_document: string | null;
   created_at: string;
 };
 

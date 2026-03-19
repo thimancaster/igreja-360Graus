@@ -47,18 +47,31 @@ export function BirthdayCard() {
         <ScrollArea className="h-[300px] pr-4">
           {birthdays && birthdays.length > 0 ? (
             <div className="space-y-3">
-              {birthdays.map((member) => (
+              {birthdays.map((member: any) => {
+                const birthDate = new Date(member.birth_date);
+                const today = new Date();
+                const thisYearBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+                const diffTime = thisYearBirthday.getTime() - today.getTime();
+                const daysUntil = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+                
+                return (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                  className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent/50 transition-colors"
                 >
                   <div className="space-y-1">
                     <p className="font-medium">{member.full_name}</p>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       {member.birth_date && (
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {format(new Date(member.birth_date), 'dd/MM', { locale: ptBR })}
+                          {format(new Date(member.birth_date), "dd/MM", { locale: ptBR })}
+                        </span>
+                      )}
+                      {member.email && (
+                        <span className="flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          {member.email}
                         </span>
                       )}
                       {member.phone && (
@@ -70,19 +83,19 @@ export function BirthdayCard() {
                     </div>
                   </div>
                   <Badge
-                    variant={member.days_until === 0 ? 'default' : 'secondary'}
-                    className={member.days_until === 0 ? 'bg-green-500' : ''}
+                    variant={daysUntil === 0 ? 'default' : 'secondary'}
+                    className={daysUntil === 0 ? 'bg-green-500' : ''}
                   >
-                    {member.days_until === 0 ? (
+                    {daysUntil === 0 ? (
                       '🎉 Hoje!'
-                    ) : member.days_until === 1 ? (
+                    ) : daysUntil === 1 ? (
                       'Amanhã'
                     ) : (
-                      `Em ${member.days_until} dias`
+                      `Em ${daysUntil} dias`
                     )}
                   </Badge>
                 </div>
-              ))}
+              )})}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
