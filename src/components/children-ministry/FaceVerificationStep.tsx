@@ -4,51 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Camera, CheckCircle2, XCircle, RotateCcw, Eye, Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
-// Lazy-load face-api to avoid blocking the main bundle
-let faceapi: typeof import("@vladmandic/face-api") | null = null;
-let modelsLoaded = false;
-let modelsLoading = false;
-
-const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1/model";
-const MATCH_THRESHOLD = 0.45;
-const HIGH_CONFIDENCE_THRESHOLD = 0.35;
-
-async function loadModelsOnce() {
-  if (modelsLoaded) return;
-  if (modelsLoading) {
-    while (modelsLoading && !modelsLoaded) {
-      await new Promise((r) => setTimeout(r, 200));
-    }
-    return;
-  }
-  modelsLoading = true;
-  try {
-    const mod = await import("@vladmandic/face-api");
-    faceapi = mod;
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-    ]);
-    modelsLoaded = true;
-  } catch (err) {
-    console.error("Failed to load face-api models:", err);
-    throw err;
-  } finally {
-    modelsLoading = false;
-  }
-}
-
-/** Load an image with crossOrigin support for Supabase Storage URLs */
-function loadImageWithCORS(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = (e) => reject(new Error(`Failed to load image: ${url}`));
-    img.src = url;
-  });
-}
+import {
+  loadModelsOnce, loadImageWithCORS, getFaceApi,
+  MATCH_THRESHOLD, HIGH_CONFIDENCE_THRESHOLD
+} from "@/lib/faceRecognition";
 
 type VerificationResult = "pending" | "verifying" | "match" | "no_match" | "error";
 
