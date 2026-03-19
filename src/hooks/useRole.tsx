@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type AppRole = 'admin' | 'tesoureiro' | 'pastor' | 'lider' | 'user' | 'parent';
 
+const MASTER_ADMIN_EMAIL = 'thimancaster@hotmail.com';
+
 export function useRole() {
   const { user, loading: authLoading } = useAuth();
 
@@ -82,10 +84,11 @@ export function useRole() {
     return rolesList.some(role => hasRole(role));
   };
 
-  const isAdmin = hasRole('admin');
-  const isTesoureiro = hasRole('tesoureiro');
-  const isPastor = hasRole('pastor');
-  const isLider = hasRole('lider');
+  const isMasterAdmin = user?.email === MASTER_ADMIN_EMAIL;
+  const isAdmin = hasRole('admin') || isMasterAdmin;
+  const isTesoureiro = hasRole('tesoureiro') || isMasterAdmin;
+  const isPastor = hasRole('pastor') || isMasterAdmin;
+  const isLider = hasRole('lider') || isMasterAdmin;
   const isUser = hasRole('user');
   // Parent is true if they have the role OR if they're linked as a guardian
   const isParent = hasRole('parent') || (isGuardian === true);
@@ -115,6 +118,7 @@ export function useRole() {
     userMinistries: userMinistries || [],
     hasRole,
     hasAnyRole,
+    isMasterAdmin,
     isAdmin,
     isTesoureiro,
     isPastor,
