@@ -4,8 +4,9 @@ import { ptBR } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import {
   Users, Plus, Search, Filter, Edit2, Trash2, Mail, Phone, Calendar,
-  ChevronDown, UserCheck, UserX, MoreHorizontal, FileText
+  ChevronDown, UserCheck, UserX, MoreHorizontal, FileText, Share2, Copy
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
