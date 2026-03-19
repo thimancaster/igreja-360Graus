@@ -68,7 +68,7 @@ export function usePushNotifications() {
       const subscriptionJson = subscription.toJSON();
       
       // Save subscription to database
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('push_subscriptions')
         .upsert({
           user_id: user.id,
