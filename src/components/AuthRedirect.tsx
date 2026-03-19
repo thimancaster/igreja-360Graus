@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { logger } from '@/lib/logger';
+import { Database } from '@/integrations/supabase/types';
 
 export const AuthRedirect: React.FC = () => {
   const { session, user, loading: authLoading, profile, refetchProfile } = useAuth();
