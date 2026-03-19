@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { PhotoUpload } from "./PhotoUpload";
 import { Link2, Unlink, UserCheck } from "lucide-react";
+import { validateCPF, formatCPF, cleanCPF } from "@/lib/cpfUtils";
 
 const guardianSchema = z.object({
   full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -23,6 +24,10 @@ const guardianSchema = z.object({
   relationship: z.string().min(1, "Selecione o parentesco"),
   access_pin: z.string().length(6, "PIN deve ter 6 dígitos").optional().or(z.literal("")),
   profile_id: z.string().optional().or(z.literal("")),
+  cpf: z.string().optional().or(z.literal("")).refine(
+    (val) => !val || validateCPF(val),
+    { message: "CPF inválido" }
+  ),
 });
 
 type GuardianFormData = z.infer<typeof guardianSchema>;
