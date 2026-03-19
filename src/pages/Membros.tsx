@@ -4,8 +4,9 @@ import { ptBR } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import {
   Users, Plus, Search, Filter, Edit2, Trash2, Mail, Phone, Calendar,
-  ChevronDown, UserCheck, UserX, MoreHorizontal, FileText
+  ChevronDown, UserCheck, UserX, MoreHorizontal, FileText, Share2, Copy
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -88,6 +89,22 @@ export default function Membros() {
     setDialogOpen(true);
   };
 
+  const copyPortalLink = (memberEmail?: string | null) => {
+    if (!profile?.church_id) {
+      toast.error('Igreja não encontrada');
+      return;
+    }
+    const link = `${window.location.origin}/portal/auth?church=${profile.church_id}`;
+    navigator.clipboard.writeText(link);
+    if (memberEmail) {
+      toast.success('Link copiado! Envie para o membro.', {
+        description: `Envie o link para ${memberEmail}`,
+      });
+    } else {
+      toast.success('Link do Portal copiado!');
+    }
+  };
+
   return (
     <motion.main
       className="flex-1 p-4 md:p-6 space-y-6 overflow-auto"
@@ -106,10 +123,16 @@ export default function Membros() {
             Cadastre e gerencie os membros da sua igreja
           </p>
         </div>
-        <Button onClick={handleNewMember} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Novo Membro
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => copyPortalLink()} className="gap-2">
+            <Share2 className="h-4 w-4" />
+            Link do Portal
+          </Button>
+          <Button onClick={handleNewMember} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Novo Membro
+          </Button>
+        </div>
       </motion.div>
 
       {/* Stats Cards */}
@@ -245,6 +268,10 @@ export default function Membros() {
                             <DropdownMenuItem onClick={() => handleEdit(member)}>
                               <Edit2 className="h-4 w-4 mr-2" />
                               Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => copyPortalLink(member.email)}>
+                              <Copy className="h-4 w-4 mr-2" />
+                              Enviar Link do Portal
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
