@@ -217,13 +217,12 @@ export function usePickupAuthorizationMutations() {
     }) => {
       if (!user?.id || !profile?.church_id) throw new Error("Usuário não autenticado");
 
-      const { data: result, error } = await supabase
+      const { data: result, error } = await (supabase as any)
         .from("pickup_authorizations")
         .insert({
           ...data,
           church_id: profile.church_id,
-          authorized_by: user.id,
-          status: data.leader_approval_required ? 'pending' : 'active',
+          guardian_id: user.id,
         })
         .select()
         .single();
