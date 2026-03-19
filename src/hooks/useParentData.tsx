@@ -183,11 +183,10 @@ export function useValidPickupAuthorizations(childId: string | undefined) {
 
       const now = new Date().toISOString();
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("pickup_authorizations")
         .select("*")
         .eq("child_id", childId)
-        .in("status", ["approved", "active"])
         .lte("valid_from", now)
         .or(`valid_until.is.null,valid_until.gte.${now}`);
 
