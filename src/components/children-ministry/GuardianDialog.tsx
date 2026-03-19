@@ -38,6 +38,7 @@ export function GuardianDialog({ open, onOpenChange, guardian, onCreated }: Guar
   const { createGuardian } = useChildMutations();
   const { profile } = useAuth();
   const queryClient = useQueryClient();
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   // Fetch profiles from same church for linking
   const { data: profiles } = useQuery({
