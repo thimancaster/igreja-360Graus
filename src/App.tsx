@@ -32,7 +32,7 @@ const Relatorios = lazy(() => import('@/pages/Relatorios'));
 const Configuracoes = lazy(() => import('@/pages/Configuracoes'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const GerenciarUsuarios = lazy(() => import('@/pages/admin/GerenciarUsuarios'));
-const GerenciarMinisterios = lazy(() => import('@/pages/admin/GerenciarMinisterios'));
+// GerenciarMinisterios foi absorvido por GerenciarIgreja
 const GerenciarIgreja = lazy(() => import('@/pages/admin/GerenciarIgreja'));
 const GerenciarCategorias = lazy(() => import('@/pages/admin/GerenciarCategorias'));
 const GerenciarDados = lazy(() => import('@/pages/admin/GerenciarDados'));
