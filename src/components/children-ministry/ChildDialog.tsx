@@ -107,7 +107,7 @@ export function ChildDialog({ open, onOpenChange, child }: ChildDialogProps) {
         image_consent: data.image_consent,
         notes: data.notes || null,
         status: data.status,
-        photo_url: null,
+        photo_url: photoUrl,
       };
 
       if (child) {
