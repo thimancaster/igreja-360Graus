@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { FileHeart, Search, ClipboardList } from "lucide-react";
-import { useChildrenMinistry } from "@/hooks/useChildrenMinistry";
+import { useChildren } from "@/hooks/useChildrenMinistry";
 import { AnamnesisDialog } from "./AnamnesisDialog";
 
 export function AnamnesisPanel() {
