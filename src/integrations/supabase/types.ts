@@ -561,6 +561,9 @@ export type Database = {
       churches: {
         Row: {
           address: string | null
+          bank_account: string | null
+          bank_agency: string | null
+          bank_name: string | null
           city: string | null
           cnpj: string | null
           created_at: string
@@ -570,13 +573,19 @@ export type Database = {
           name: string
           owner_user_id: string | null
           phone: string | null
+          pix_key: string | null
+          pix_key_type: string | null
           state: string | null
           updated_at: string
           website: string | null
+          youtube_live_url: string | null
           zip_code: string | null
         }
         Insert: {
           address?: string | null
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
           city?: string | null
           cnpj?: string | null
           created_at?: string
@@ -586,13 +595,19 @@ export type Database = {
           name: string
           owner_user_id?: string | null
           phone?: string | null
+          pix_key?: string | null
+          pix_key_type?: string | null
           state?: string | null
           updated_at?: string
           website?: string | null
+          youtube_live_url?: string | null
           zip_code?: string | null
         }
         Update: {
           address?: string | null
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
           city?: string | null
           cnpj?: string | null
           created_at?: string
@@ -602,9 +617,12 @@ export type Database = {
           name?: string
           owner_user_id?: string | null
           phone?: string | null
+          pix_key?: string | null
+          pix_key_type?: string | null
           state?: string | null
           updated_at?: string
           website?: string | null
+          youtube_live_url?: string | null
           zip_code?: string | null
         }
         Relationships: []
@@ -1723,6 +1741,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      pastoral_appointments: {
+        Row: {
+          appointment_date: string
+          appointment_time: string
+          church_id: string
+          created_at: string
+          id: string
+          member_profile_id: string
+          notes: string | null
+          pastor_name: string
+          reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          appointment_time: string
+          church_id: string
+          created_at?: string
+          id?: string
+          member_profile_id: string
+          notes?: string | null
+          pastor_name: string
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          appointment_time?: string
+          church_id?: string
+          created_at?: string
+          id?: string
+          member_profile_id?: string
+          notes?: string | null
+          pastor_name?: string
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pastoral_appointments_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pickup_authorizations: {
         Row: {
