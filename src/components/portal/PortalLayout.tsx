@@ -21,6 +21,9 @@ import {
   ChevronLeft,
   Megaphone,
   CalendarDays,
+  Heart,
+  Radio,
+  CalendarClock,
 } from "lucide-react";
 
 interface PortalLayoutProps {
