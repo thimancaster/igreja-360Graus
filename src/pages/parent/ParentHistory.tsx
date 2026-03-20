@@ -34,7 +34,7 @@ export default function ParentHistory() {
       className="flex-1 space-y-4 p-4"
     >
       <div>
-        <h1 className="text-2xl font-bold">Histórico</h1>
+        <h1 className="text-2xl font-bold">Histórico 📋</h1>
         <p className="text-sm text-muted-foreground">
           Presenças dos seus filhos
         </p>
