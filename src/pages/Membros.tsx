@@ -4,7 +4,8 @@ import { ptBR } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import {
   Users, Plus, Search, Filter, Edit2, Trash2, Mail, Phone, Calendar,
-  ChevronDown, UserCheck, UserX, MoreHorizontal, FileText, Share2, Copy
+  ChevronDown, UserCheck, UserX, MoreHorizontal, FileText, Share2, Copy,
+  Upload, Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -29,8 +30,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { pageAnimation, itemAnimation } from '@/lib/pageAnimations';
 import { useMembers, useDeleteMember, Member } from '@/hooks/useMembers';
 import { MemberDialog } from '@/components/members/MemberDialog';
+import { MemberImportDialog } from '@/components/members/MemberImportDialog';
 import { BirthdayCard } from '@/components/members/BirthdayCard';
 import { useMemberContributions } from '@/hooks/useContributions';
+import { exportMembersToExcel } from '@/utils/memberImportHelpers';
 // Dynamic import for PDF - loaded only when user exports (see ContributionBooklet)
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -45,6 +48,7 @@ export default function Membros() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const filteredMembers = useMemo(() => {
     if (!members) return [];
@@ -123,8 +127,16 @@ export default function Membros() {
             Cadastre e gerencie os membros da sua igreja
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => copyPortalLink()} className="gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => exportMembersToExcel((members || []) as unknown as Record<string, unknown>[])} className="gap-2">
+            <Download className="h-4 w-4" />
+            Exportar
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)} className="gap-2">
+            <Upload className="h-4 w-4" />
+            Importar
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => copyPortalLink()} className="gap-2">
             <Share2 className="h-4 w-4" />
             Link do Portal
           </Button>
@@ -325,6 +337,11 @@ export default function Membros() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <MemberImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+      />
     </motion.main>
   );
 }
