@@ -1,11 +1,12 @@
 import { useChildren, usePresentChildren, useTodayCheckIns, CLASSROOMS } from "@/hooks/useChildrenMinistry";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Baby, Users, LogIn, LogOut, AlertTriangle, Clock } from "lucide-react";
+import { Baby, Users, LogIn, LogOut, AlertTriangle, Clock, PhoneCall } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Progress } from "@/components/ui/progress";
+import { EmergencyCallButton } from "./EmergencyCallPanel";
 
 export function MinistryDashboard() {
   const { data: children, isLoading: loadingChildren } = useChildren();
