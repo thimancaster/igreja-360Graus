@@ -1,66 +1,51 @@
 
 
-# Plano: Import/Export de Membros com mapeamento de colunas
+# Plano: Filtros de Aniversariantes + Mensagem WhatsApp
 
-## Resumo
+## Situacao Atual
 
-Adicionar na pagina "Gestao de Membros" botoes para exportar todos os membros para Excel/CSV e importar membros a partir de planilhas com mapeamento de colunas adaptavel. Baseado nos 3 modelos enviados (Novos, Batizados, Convertidos) que compartilham colunas: Nome, Data de nascimento, Estado civil, CPF, Celular, Rua, Conjuge, Data de conversao, Igreja de conversao, Data de batismo.
+O `BirthdayCard` mostra apenas aniversariantes do mes corrente via RPC `get_birthdays_this_month`. Sem filtros, sem acao de mensagem.
 
 ## Alteracoes
 
-### 1. `src/utils/memberImportHelpers.ts` -- Novo arquivo
+### 1. Expandir `BirthdayCard.tsx` com filtros e acoes
 
-Helpers especificos para importacao de membros:
-- `readMemberSpreadsheet(file)` -- reutiliza `readSpreadsheet` existente
-- `parseMemberRow(row, mapping)` -- mapeia colunas da planilha para campos do membro
-- `MemberColumnMapping` -- interface com campos mapeaveiss: `full_name`, `birth_date`, `marital_status`, `cpf` (mapeado para `notes` ou campo custom), `phone`, `address`, `spouse_name`, `baptism_date`, `baptism_church`, `previous_church`
-- `downloadMemberTemplate()` -- gera modelo .xlsx com colunas padronizadas baseadas nos modelos enviados
-- `exportMembersToExcel(members)` -- exporta membros atuais com colunas legiveiss
+Adicionar barra de filtros no topo do card:
+- **Filtro por periodo**: Hoje, Esta Semana, Este Mes (default: Hoje)
+- **Contagem** atualizada conforme filtro
+- Filtragem feita no frontend (ja temos todos os aniversariantes do mes)
 
-### 2. `src/components/members/MemberImportDialog.tsx` -- Novo componente
+Para "Hoje": mostrar apenas membros cujo dia/mes = hoje.
+Para "Esta Semana": proximos 7 dias.
+Para "Este Mes": todos (comportamento atual).
 
-Dialog modal com 3 steps (igual ao fluxo de importacao de transacoes):
-- **Step 1**: Upload de arquivo (.xlsx, .xls, .csv) + botao baixar modelo
-- **Step 2**: Mapeamento de colunas -- cada campo do membro pode ser associado a qualquer coluna da planilha. Campos obrigatorios: apenas `full_name`. Demais opcionais.
-- **Step 3**: Preview dos dados mapeados + botao importar
+### 2. Botao "Enviar Parabens" por membro
 
-Campos mapeaveiss (todos opcionais exceto nome):
-| Campo Sistema | Label | Exemplo da planilha |
-|---|---|---|
-| full_name | Nome completo | "Nome" |
-| birth_date | Data de nascimento | "Data de nascimento" |
-| marital_status | Estado civil | "Estado civil" |
-| phone | Telefone/Celular | "Celular 1" |
-| address | Endereco | "Rua" |
-| spouse_name | Nome do conjuge | "Nome do cônjuge" |
-| baptism_date | Data de batismo | "Data de Batismo nas águas" |
-| baptism_church | Igreja de conversao/batismo | "Igreja de conversão" |
-| previous_church | Convertido na igreja | "Convertido em nossa Igreja" |
-| notes | Observacoes | (qualquer coluna extra) |
-| status | Status | (default: active) |
+Em cada item da lista, adicionar icone WhatsApp clicavel que:
+- Abre link `https://wa.me/{phone}?text={mensagem}` (funciona sem API)
+- A mensagem padrao e editavel via dialog de configuracao
 
-Deduplicacao: por `full_name` normalizado -- pula membros com nome identico ja existente.
+### 3. Dialog "Configurar Mensagem de Aniversario"
 
-Insercao: batch insert via Supabase, com progress bar e contadores (importados / duplicados / erros).
+Botao de engrenagem no header do card abre dialog com:
+- **Textarea** com a mensagem template (ex: "Feliz aniversario, {nome}! Com carinho, Pastor [Nome]")
+- Variaveis disponiveis: `{nome}`, `{igreja}` 
+- **Campo "Remetente"**: nome de quem assina (Pastor, Lider, etc)
+- Salvar no `localStorage` por enquanto (futuro: banco)
 
-### 3. `src/pages/Membros.tsx` -- Adicionar botoes
+### 4. Botao "Enviar para todos do dia"
 
-No header, adicionar 2 botoes:
-- **Exportar** (icone Download) -- chama `exportMembersToExcel(members)` gerando arquivo com todos os membros e colunas relevantes
-- **Importar** (icone Upload) -- abre `MemberImportDialog`
+Botao no header que gera links WhatsApp para todos os aniversariantes do filtro ativo, abrindo sequencialmente ou listando em um dialog.
 
-### 4. Template padronizado baseado nos modelos
+### 5. Futuro (fase 2): Integracao API WhatsApp
 
-O modelo para download tera as colunas:
-Nome, Data de Nascimento, Estado Civil, CPF, Celular, Endereco, Cidade, Estado, CEP, Conjuge, Membro Desde, Data de Batismo, Igreja de Batismo, Pastor de Batismo, Igreja Anterior, Observacoes
+Quando conectar API do WhatsApp (Evolution API, Z-API, ou WhatsApp Business API), substituir `wa.me` por envio automatico via edge function. Nao implementado agora.
 
 ## Arquivos Afetados
 
 | Arquivo | Acao |
-|---|---|
-| `src/utils/memberImportHelpers.ts` | Criar |
-| `src/components/members/MemberImportDialog.tsx` | Criar |
-| `src/pages/Membros.tsx` | Modificar -- botoes importar/exportar |
+|---------|------|
+| `src/components/members/BirthdayCard.tsx` | Reescrever -- filtros + botao WhatsApp + config |
 
-Nenhuma alteracao de banco necessaria -- usa a tabela `members` existente.
+Nenhuma alteracao de banco necessaria.
 
