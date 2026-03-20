@@ -184,18 +184,18 @@ export function PortalLayout({ children }: PortalLayoutProps) {
       {/* Mobile */}
       <div className="flex flex-1 flex-col">
         {/* Mobile header - minimal, transparent */}
-        <header className="sticky top-0 z-40 flex h-12 items-center gap-4 bg-background/60 backdrop-blur-xl px-4 lg:hidden">
+        <header className="sticky top-0 z-40 flex h-14 items-center gap-3 bg-background/60 backdrop-blur-xl px-4 pt-2 safe-area-pt lg:hidden">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="-ml-2 h-9 w-9">
-                <Menu className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="h-11 w-11 min-h-[44px] min-w-[44px]">
+                <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0">
               <NavContent onNavigate={() => setMobileOpen(false)} />
             </SheetContent>
           </Sheet>
-          <h1 className="text-sm font-semibold text-muted-foreground">Portal do Membro</h1>
+          <h1 className="text-base font-bold text-foreground">Portal do Membro</h1>
         </header>
 
         <main className="flex-1 overflow-auto pb-20 lg:pb-0">{children}</main>
