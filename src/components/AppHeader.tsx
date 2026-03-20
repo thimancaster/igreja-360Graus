@@ -34,7 +34,7 @@ export function AppHeader() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 overflow-visible relative z-[61]">
           <NotificationCenter />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
