@@ -53,6 +53,8 @@ const bottomNavItems = [
 function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const { signOut, profile } = useAuth();
+  const { isAdmin, isTesoureiro, isPastor, isLider } = useRole();
+  const showAppLink = isAdmin || isTesoureiro || isPastor || isLider;
 
   return (
     <div className="flex h-full flex-col">
