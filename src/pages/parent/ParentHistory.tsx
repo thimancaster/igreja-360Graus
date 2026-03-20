@@ -34,19 +34,19 @@ export default function ParentHistory() {
       className="flex-1 space-y-4 p-4"
     >
       <div>
-        <h1 className="text-2xl font-bold">Histórico</h1>
+        <h1 className="text-2xl font-bold">Histórico 📋</h1>
         <p className="text-sm text-muted-foreground">
           Presenças dos seus filhos
         </p>
       </div>
 
       {/* Child selector */}
-      <Card>
+      <Card className="rounded-2xl border-0 shadow-sm bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-950/20 dark:to-blue-950/20">
         <CardContent className="pt-4">
           <Label className="text-sm font-medium mb-2 block">Selecionar Filho</Label>
           <Select value={selectedChildId} onValueChange={setSelectedChildId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Escolha uma criança" />
+            <SelectTrigger className="rounded-xl">
+              <SelectValue placeholder="Escolha uma criança 👧" />
             </SelectTrigger>
             <SelectContent>
               {children?.map((child: any) => (
@@ -78,7 +78,7 @@ export default function ParentHistory() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card>
+                  <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="py-4">
                       <div className="flex items-start justify-between gap-3">
                         {/* Left side - Date and event */}

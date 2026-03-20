@@ -627,6 +627,53 @@ export type Database = {
         }
         Relationships: []
       }
+      classroom_reports: {
+        Row: {
+          church_id: string
+          classroom: string
+          content: string
+          created_at: string
+          created_by: string | null
+          event_date: string
+          event_name: string | null
+          id: string
+          teacher_name: string | null
+          title: string
+        }
+        Insert: {
+          church_id: string
+          classroom: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          event_date?: string
+          event_name?: string | null
+          id?: string
+          teacher_name?: string | null
+          title: string
+        }
+        Update: {
+          church_id?: string
+          classroom?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          event_date?: string
+          event_name?: string | null
+          id?: string
+          teacher_name?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classroom_reports_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classroom_settings: {
         Row: {
           church_id: string
