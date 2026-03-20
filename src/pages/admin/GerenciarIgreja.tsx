@@ -235,10 +235,11 @@ const GerenciarIgreja = () => {
 
       {churchData && (
         <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 max-w-lg">
+          <TabsList className="grid w-full grid-cols-4 max-w-2xl">
             <TabsTrigger value="dados" className="gap-2"><Building2 className="h-4 w-4" />Dados</TabsTrigger>
             <TabsTrigger value="financeiro" className="gap-2"><CreditCard className="h-4 w-4" />Financeiro</TabsTrigger>
             <TabsTrigger value="ministerios" className="gap-2"><Users className="h-4 w-4" />Ministérios</TabsTrigger>
+            <TabsTrigger value="personalizar" className="gap-2"><Palette className="h-4 w-4" />Personalizar</TabsTrigger>
           </TabsList>
 
           {/* Aba Dados da Igreja */}
