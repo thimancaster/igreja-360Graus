@@ -477,6 +477,123 @@ const GerenciarIgreja = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Aba Personalizar */}
+          <TabsContent value="personalizar" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Personalização Visual</CardTitle>
+                <CardDescription>Configure logo e cores da igreja. Essas cores serão aplicadas em todo o app automaticamente.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleChurchSubmit} className="space-y-6">
+                  {/* Logo Upload */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-muted-foreground">Logo da Igreja</h3>
+                    {churchData.logo_url ? (
+                      <div className="relative w-fit">
+                        <img src={churchData.logo_url} alt="Logo" className="h-24 w-24 rounded-2xl border shadow-sm object-cover" />
+                        <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full"
+                          onClick={() => setChurchData({ ...churchData, logo_url: null })}
+                        ><X className="h-3 w-3" /></Button>
+                      </div>
+                    ) : (
+                      <label className="cursor-pointer">
+                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const ext = file.name.split('.').pop();
+                          const path = `logos/${churchData.id}.${ext}`;
+                          const { error: uploadError } = await supabase.storage.from('photos').upload(path, file, { upsert: true });
+                          if (uploadError) { toast.error('Erro ao enviar logo: ' + uploadError.message); return; }
+                          const { data: urlData } = supabase.storage.from('photos').getPublicUrl(path);
+                          setChurchData({ ...churchData, logo_url: urlData.publicUrl });
+                          toast.success('Logo carregada! Clique em Salvar.');
+                        }} />
+                        <div className="flex items-center gap-2 px-4 py-3 border border-dashed rounded-xl hover:bg-muted/50 transition-colors w-fit">
+                          <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Enviar logo da igreja</span>
+                        </div>
+                      </label>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  {/* Colors */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-muted-foreground">Cores do App</h3>
+                    <p className="text-xs text-muted-foreground">Defina as cores personalizadas da sua igreja. Deixe em branco para usar o tema padrão.</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="primary_color">Cor Primária</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" id="primary_color_picker" value={(churchData as any).primary_color || '#6366f1'}
+                            onChange={(e) => setChurchData({ ...churchData, primary_color: e.target.value } as any)}
+                            className="h-10 w-10 rounded-lg border cursor-pointer" />
+                          <Input value={(churchData as any).primary_color || ''} onChange={(e) => setChurchData({ ...churchData, primary_color: e.target.value } as any)}
+                            placeholder="#6366f1" className="font-mono text-sm" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="secondary_color">Cor Secundária</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" id="secondary_color_picker" value={(churchData as any).secondary_color || '#8b5cf6'}
+                            onChange={(e) => setChurchData({ ...churchData, secondary_color: e.target.value } as any)}
+                            className="h-10 w-10 rounded-lg border cursor-pointer" />
+                          <Input value={(churchData as any).secondary_color || ''} onChange={(e) => setChurchData({ ...churchData, secondary_color: e.target.value } as any)}
+                            placeholder="#8b5cf6" className="font-mono text-sm" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="accent_color">Cor de Destaque</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" id="accent_color_picker" value={(churchData as any).accent_color || '#f59e0b'}
+                            onChange={(e) => setChurchData({ ...churchData, accent_color: e.target.value } as any)}
+                            className="h-10 w-10 rounded-lg border cursor-pointer" />
+                          <Input value={(churchData as any).accent_color || ''} onChange={(e) => setChurchData({ ...churchData, accent_color: e.target.value } as any)}
+                            placeholder="#f59e0b" className="font-mono text-sm" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Preview */}
+                    {((churchData as any).primary_color || (churchData as any).secondary_color || (churchData as any).accent_color) && (
+                      <div className="p-4 rounded-xl border bg-muted/30 space-y-3">
+                        <p className="text-xs font-medium text-muted-foreground">Preview</p>
+                        <div className="flex gap-3">
+                          {(churchData as any).primary_color && (
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="h-12 w-12 rounded-xl shadow-sm" style={{ backgroundColor: (churchData as any).primary_color }} />
+                              <span className="text-[10px] text-muted-foreground">Primária</span>
+                            </div>
+                          )}
+                          {(churchData as any).secondary_color && (
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="h-12 w-12 rounded-xl shadow-sm" style={{ backgroundColor: (churchData as any).secondary_color }} />
+                              <span className="text-[10px] text-muted-foreground">Secundária</span>
+                            </div>
+                          )}
+                          {(churchData as any).accent_color && (
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="h-12 w-12 rounded-xl shadow-sm" style={{ backgroundColor: (churchData as any).accent_color }} />
+                              <span className="text-[10px] text-muted-foreground">Destaque</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <Button type="submit" disabled={updateChurchMutation.isPending}>
+                    {updateChurchMutation.isPending && <LoadingSpinner size="sm" className="mr-2" />}
+                    Salvar Personalização
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       )}
 
