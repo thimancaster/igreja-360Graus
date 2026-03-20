@@ -366,6 +366,52 @@ const GerenciarIgreja = () => {
                     </div>
                   </div>
 
+                  <Separator />
+                  <h3 className="text-sm font-medium text-muted-foreground">Arte QR Code PIX</h3>
+                  <p className="text-xs text-muted-foreground">Suba a arte com o QR Code válido do seu PIX. Esta imagem será exibida no Portal do Membro em vez de um QR Code gerado automaticamente.</p>
+
+                  {(churchData as any).pix_qr_image_url ? (
+                    <div className="space-y-3">
+                      <div className="relative w-fit">
+                        <img src={(churchData as any).pix_qr_image_url} alt="QR Code PIX" className="max-w-[200px] rounded-xl border shadow-sm" />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-7 w-7 rounded-full"
+                          onClick={() => setChurchData({ ...churchData, pix_qr_image_url: null } as any)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const ext = file.name.split('.').pop();
+                            const path = `pix-qr/${churchData.id}.${ext}`;
+                            const { error: uploadError } = await supabase.storage.from('photos').upload(path, file, { upsert: true });
+                            if (uploadError) { toast.error('Erro ao fazer upload: ' + uploadError.message); return; }
+                            const { data: urlData } = supabase.storage.from('photos').getPublicUrl(path);
+                            setChurchData({ ...churchData, pix_qr_image_url: urlData.publicUrl } as any);
+                            toast.success('Imagem carregada! Clique em Salvar para confirmar.');
+                          }}
+                        />
+                        <div className="flex items-center gap-2 px-4 py-2 border border-dashed rounded-xl hover:bg-muted/50 transition-colors">
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Enviar arte do QR Code</span>
+                        </div>
+                      </label>
+                    </div>
+                  )}
+
                   <Button type="submit" disabled={updateChurchMutation.isPending}>
                     {updateChurchMutation.isPending && <LoadingSpinner size="sm" className="mr-2" />}
                     Salvar Alterações
