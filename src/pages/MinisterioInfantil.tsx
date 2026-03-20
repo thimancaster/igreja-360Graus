@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Baby, Users, QrCode, LogOut, BarChart3, Megaphone, Calendar, Settings, HeartPulse, UserCog } from "lucide-react";
+import { Baby, Users, QrCode, LogOut, BarChart3, Megaphone, Calendar, Settings, HeartPulse, UserCog, FileText } from "lucide-react";
 import { pageVariants, pageTransition } from "@/lib/pageAnimations";
 import { ChildrenList } from "@/components/children-ministry/ChildrenList";
 import { GuardiansList } from "@/components/children-ministry/GuardiansList";
@@ -14,6 +14,7 @@ import { ClassroomCapacityManager, WaitlistPanel } from "@/components/children-m
 import { MedicationPanel, IncidentReportPanel } from "@/components/children-ministry/health";
 import { StaffList, StaffScheduler } from "@/components/children-ministry/staff";
 import { AnamnesisPanel } from "@/components/children-ministry/health/AnamnesisPanel";
+import { ClassroomReportPanel } from "@/components/children-ministry/ClassroomReportPanel";
 
 export default function MinisterioInfantil() {
   const [activeTab, setActiveTab] = useState("dashboard");
