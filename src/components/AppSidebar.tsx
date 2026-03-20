@@ -72,10 +72,10 @@ export function AppSidebar() {
 
   // Mostrar menu admin apenas para admin
   const canAccessAdmin = isAdmin;
-  
+
   // Build menu items - always add portal at the top
   let menuItems = [portalMenuItem, ...baseMenuItems];
-  
+
   // Add admin menu for admins
   if (canAccessAdmin) {
     menuItems = [...menuItems.slice(0, menuItems.length - 1), adminMenuItem, menuItems[menuItems.length - 1]];
@@ -87,8 +87,8 @@ export function AppSidebar() {
             <span className="text-primary-foreground font-bold text-sm">I360</span>
           </div>
           {!isCollapsed && <div className="flex flex-col">
-              <span className="text-sidebar-foreground font-semibold">Igreja360</span>
-              <span className="text-xs text-muted-foreground">Gestão Financeira</span>
+              <span className="font-semibold text-xl text-center border-accent border border-solid rounded-3xl shadow-md opacity-75 text-accent">Igreja360</span>
+              <span className="text-xs text-primary-foreground">Gestão Financeira</span>
             </div>}
         </div>
       </SidebarHeader>
@@ -98,7 +98,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map(item => <SidebarMenuItem key={item.title}>
+              {menuItems.map((item) => <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={({
                   isActive
