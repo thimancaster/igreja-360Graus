@@ -182,6 +182,28 @@ export function filterDuplicateTransactions<T extends {
  * @returns A promise that resolves to an object with headers and rows.
  */
 export const readSpreadsheet = (file: File): Promise<{ headers: string[]; rows: unknown[][] }> => {
+  const extension = file.name.split('.').pop()?.toLowerCase() || '';
+
+  // CSV handling
+  if (extension === 'csv') {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const text = event.target?.result as string;
+          if (!text) throw new Error('Empty file');
+          const { headers, rows } = parseCSVText(text);
+          resolve({ headers, rows });
+        } catch {
+          reject(new Error('Falha ao ler o arquivo CSV.'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Falha ao ler o arquivo.'));
+      reader.readAsText(file, 'UTF-8');
+    });
+  }
+
+  // XLS/XLSX handling
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async (event) => {
@@ -190,34 +212,162 @@ export const readSpreadsheet = (file: File): Promise<{ headers: string[]; rows: 
         if (!data || !(data instanceof ArrayBuffer)) {
           throw new Error('Could not read file data.');
         }
-        
-        const workbook = new ExcelJS.Workbook();
-        await workbook.xlsx.load(data);
-        
-        const worksheet = workbook.worksheets[0];
-        if (!worksheet) {
-          throw new Error('No worksheet found in the file.');
-        }
-        
-        const rows: unknown[][] = [];
-        worksheet.eachRow((row) => {
-          const rowValues = row.values as unknown[];
-          // ExcelJS row.values starts at index 1, so we slice from index 1
-          rows.push(rowValues.slice(1));
-        });
-        
-        const headers = rows[0]?.map(h => String(h ?? '')) || [];
-        const dataRows = rows.slice(1);
 
-        resolve({ headers, rows: dataRows });
+        // Try xlsx first
+        try {
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(data);
+          const worksheet = workbook.worksheets[0];
+          if (worksheet) {
+            const rows: unknown[][] = [];
+            worksheet.eachRow((row) => {
+              const rowValues = row.values as unknown[];
+              rows.push(rowValues.slice(1));
+            });
+            const headers = rows[0]?.map(h => String(h ?? '')) || [];
+            const dataRows = rows.slice(1);
+            resolve({ headers, rows: dataRows });
+            return;
+          }
+        } catch {
+          // Not a valid xlsx, try HTML table parsing (many .xls files are HTML)
+        }
+
+        // Fallback: parse as HTML table (.xls exported from web apps)
+        const decoder = new TextDecoder('utf-8');
+        let htmlText = decoder.decode(data);
+        // Also try latin1 if utf-8 produces garbage
+        if (htmlText.includes('�')) {
+          const latin1Decoder = new TextDecoder('iso-8859-1');
+          htmlText = latin1Decoder.decode(data);
+        }
+
+        if (htmlText.includes('<table') || htmlText.includes('<TABLE')) {
+          const { headers, rows } = parseHTMLTable(htmlText);
+          if (headers.length > 0) {
+            resolve({ headers, rows });
+            return;
+          }
+        }
+
+        throw new Error('Formato de arquivo não reconhecido.');
       } catch (error) {
-        reject(new Error('Failed to parse the spreadsheet file.'));
+        reject(new Error('Falha ao ler a planilha. Verifique o formato do arquivo.'));
       }
     };
-    reader.onerror = () => reject(new Error('Failed to read the file.'));
+    reader.onerror = () => reject(new Error('Falha ao ler o arquivo.'));
     reader.readAsArrayBuffer(file);
   });
 };
+
+/**
+ * Parses CSV text into headers and rows.
+ */
+function parseCSVText(text: string): { headers: string[]; rows: unknown[][] } {
+  const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+  if (lines.length === 0) return { headers: [], rows: [] };
+
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuotes) {
+        if (ch === '"' && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else if (ch === '"') {
+          inQuotes = false;
+        } else {
+          current += ch;
+        }
+      } else {
+        if (ch === '"') {
+          inQuotes = true;
+        } else if (ch === ',' || ch === ';') {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+    }
+    result.push(current.trim());
+    return result;
+  };
+
+  // Detect if first rows are title/subtitle (fewer columns than data rows)
+  const allParsed = lines.map(parseCSVLine);
+  const maxCols = Math.max(...allParsed.map(r => r.length));
+
+  // Skip rows that have significantly fewer columns (title rows)
+  let headerIndex = 0;
+  for (let i = 0; i < allParsed.length; i++) {
+    if (allParsed[i].length >= maxCols - 1) {
+      headerIndex = i;
+      break;
+    }
+  }
+
+  const headers = allParsed[headerIndex] || [];
+  const rows = allParsed.slice(headerIndex + 1).filter(r => r.some(cell => cell !== ''));
+  return { headers, rows };
+}
+
+/**
+ * Parses an HTML table (common in .xls files exported from web apps).
+ */
+function parseHTMLTable(html: string): { headers: string[]; rows: unknown[][] } {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const table = doc.querySelector('table');
+  if (!table) return { headers: [], rows: [] };
+
+  const allRows: string[][] = [];
+  table.querySelectorAll('tr').forEach(tr => {
+    const cells: string[] = [];
+    tr.querySelectorAll('th, td').forEach(cell => {
+      cells.push((cell.textContent || '').trim());
+    });
+    if (cells.some(c => c !== '')) {
+      allRows.push(cells);
+    }
+  });
+
+  if (allRows.length === 0) return { headers: [], rows: [] };
+
+  // Find the header row: the row with the most columns that contains typical header words
+  const maxCols = Math.max(...allRows.map(r => r.length));
+  let headerIndex = 0;
+  for (let i = 0; i < allRows.length; i++) {
+    if (allRows[i].length >= maxCols - 1) {
+      // Check if this looks like a header (has text, not just numbers)
+      const hasText = allRows[i].some(c => c.length > 1 && isNaN(Number(c)));
+      if (hasText) {
+        headerIndex = i;
+        break;
+      }
+    }
+  }
+
+  // Filter out the '#' column if present
+  const rawHeaders = allRows[headerIndex];
+  let skipFirstCol = false;
+  if (rawHeaders[0] === '#' || rawHeaders[0] === 'Nº' || rawHeaders[0] === 'N°') {
+    skipFirstCol = true;
+  }
+
+  const headers = skipFirstCol ? rawHeaders.slice(1) : rawHeaders;
+  const dataRows = allRows.slice(headerIndex + 1).map(row => {
+    const cells = skipFirstCol ? row.slice(1) : row;
+    // Pad rows to match header length
+    while (cells.length < headers.length) cells.push('');
+    return cells;
+  });
+
+  return { headers, rows: dataRows };
+}
 
 /**
  * Parses a currency string (e.g., "R$ 1.234,56" or "1234.56") into a number.
