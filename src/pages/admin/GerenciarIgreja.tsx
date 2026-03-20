@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Plus, Pencil, Trash2 } from 'lucide-react';
+import { AlertTriangle, Plus, Pencil, Trash2, Building2, CreditCard, Users } from 'lucide-react';
 import { Tables, TablesUpdate } from '@/integrations/supabase/types';
 import { formatCNPJ, validateCNPJ } from '@/lib/cnpjUtils';
 import { pageVariants, pageTransition } from '@/lib/pageAnimations';
@@ -19,6 +19,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -42,11 +44,9 @@ const GerenciarIgreja = () => {
   const { toast: uiToast } = useToast();
   const queryClient = useQueryClient();
 
-  // Church state
   const [churchData, setChurchData] = useState<Church | null>(null);
   const [cnpjError, setCnpjError] = useState<string | null>(null);
 
-  // Ministry state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMinistry, setSelectedMinistry] = useState<Ministry | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -59,7 +59,6 @@ const GerenciarIgreja = () => {
     defaultValues: { name: "", description: "" },
   });
 
-  // ---- Church queries ----
   const { data: church, isLoading: isLoadingChurch } = useQuery({
     queryKey: ['church-details', profile?.church_id],
     queryFn: async () => {
@@ -88,6 +87,7 @@ const GerenciarIgreja = () => {
     onSuccess: () => {
       uiToast({ title: 'Sucesso', description: 'Informações da igreja atualizadas.' });
       queryClient.invalidateQueries({ queryKey: ['church-details', profile?.church_id] });
+      queryClient.invalidateQueries({ queryKey: ['church'] });
     },
     onError: (error: any) => {
       uiToast({ title: 'Erro', description: error.message, variant: 'destructive' });
@@ -160,7 +160,6 @@ const GerenciarIgreja = () => {
     }
   }, [selectedMinistry, ministryForm, dialogOpen]);
 
-  // ---- Handlers ----
   const handleCNPJChange = (value: string) => {
     if (!churchData) return;
     const formatted = formatCNPJ(value);
@@ -181,6 +180,16 @@ const GerenciarIgreja = () => {
       address: churchData.address?.trim() === "" ? null : churchData.address,
       city: churchData.city?.trim() === "" ? null : churchData.city,
       state: churchData.state?.trim() === "" ? null : churchData.state,
+      zip_code: churchData.zip_code?.trim() === "" ? null : churchData.zip_code,
+      phone: churchData.phone?.trim() === "" ? null : churchData.phone,
+      email: churchData.email?.trim() === "" ? null : churchData.email,
+      website: churchData.website?.trim() === "" ? null : churchData.website,
+      pix_key: churchData.pix_key?.trim() === "" ? null : churchData.pix_key,
+      pix_key_type: churchData.pix_key_type?.trim() === "" ? null : churchData.pix_key_type,
+      bank_name: churchData.bank_name?.trim() === "" ? null : churchData.bank_name,
+      bank_agency: churchData.bank_agency?.trim() === "" ? null : churchData.bank_agency,
+      bank_account: churchData.bank_account?.trim() === "" ? null : churchData.bank_account,
+      youtube_live_url: churchData.youtube_live_url?.trim() === "" ? null : churchData.youtube_live_url,
     };
     updateChurchMutation.mutate(cleanedData);
   };
@@ -221,16 +230,18 @@ const GerenciarIgreja = () => {
 
       {churchData && (
         <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="dados">Dados da Igreja</TabsTrigger>
-            <TabsTrigger value="ministerios">Ministérios</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 max-w-lg">
+            <TabsTrigger value="dados" className="gap-2"><Building2 className="h-4 w-4" />Dados</TabsTrigger>
+            <TabsTrigger value="financeiro" className="gap-2"><CreditCard className="h-4 w-4" />Financeiro</TabsTrigger>
+            <TabsTrigger value="ministerios" className="gap-2"><Users className="h-4 w-4" />Ministérios</TabsTrigger>
           </TabsList>
 
           {/* Aba Dados da Igreja */}
           <TabsContent value="dados" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Informações da Igreja: {churchData.name}</CardTitle>
+                <CardTitle>Informações da Igreja</CardTitle>
+                <CardDescription>Dados gerais, endereço e contato</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleChurchSubmit} className="space-y-4">
@@ -243,9 +254,112 @@ const GerenciarIgreja = () => {
                       <Label htmlFor="cnpj">CNPJ (opcional)</Label>
                       <Input id="cnpj" value={churchData.cnpj || ''} onChange={(e) => handleCNPJChange(e.target.value)} placeholder="00.000.000/0000-00" className={cnpjError ? "border-destructive" : ""} />
                       {cnpjError && <p className="text-xs text-destructive mt-1">{cnpjError}</p>}
-                      <p className="text-xs text-muted-foreground mt-1">Deixe em branco se não possuir CNPJ</p>
                     </div>
                   </div>
+
+                  <Separator />
+                  <h3 className="text-sm font-medium text-muted-foreground">Endereço</h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <Label htmlFor="address">Endereço</Label>
+                      <Input id="address" value={churchData.address || ''} onChange={(e) => setChurchData({ ...churchData, address: e.target.value })} placeholder="Rua, número, complemento" />
+                    </div>
+                    <div>
+                      <Label htmlFor="city">Cidade</Label>
+                      <Input id="city" value={churchData.city || ''} onChange={(e) => setChurchData({ ...churchData, city: e.target.value })} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="state">Estado</Label>
+                        <Input id="state" value={churchData.state || ''} onChange={(e) => setChurchData({ ...churchData, state: e.target.value })} maxLength={2} placeholder="UF" />
+                      </div>
+                      <div>
+                        <Label htmlFor="zip_code">CEP</Label>
+                        <Input id="zip_code" value={churchData.zip_code || ''} onChange={(e) => setChurchData({ ...churchData, zip_code: e.target.value })} placeholder="00000-000" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+                  <h3 className="text-sm font-medium text-muted-foreground">Contato e Mídia</h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="phone">Telefone</Label>
+                      <Input id="phone" value={churchData.phone || ''} onChange={(e) => setChurchData({ ...churchData, phone: e.target.value })} placeholder="(00) 00000-0000" />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">Email</Label>
+                      <Input id="email" type="email" value={churchData.email || ''} onChange={(e) => setChurchData({ ...churchData, email: e.target.value })} placeholder="contato@igreja.com" />
+                    </div>
+                    <div>
+                      <Label htmlFor="website">Website</Label>
+                      <Input id="website" value={churchData.website || ''} onChange={(e) => setChurchData({ ...churchData, website: e.target.value })} placeholder="https://www.igreja.com" />
+                    </div>
+                    <div>
+                      <Label htmlFor="youtube_live_url">URL YouTube ao Vivo</Label>
+                      <Input id="youtube_live_url" value={churchData.youtube_live_url || ''} onChange={(e) => setChurchData({ ...churchData, youtube_live_url: e.target.value })} placeholder="https://youtube.com/c/suaigreja/live" />
+                    </div>
+                  </div>
+
+                  <Button type="submit" disabled={updateChurchMutation.isPending}>
+                    {updateChurchMutation.isPending && <LoadingSpinner size="sm" className="mr-2" />}
+                    Salvar Alterações
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Aba Financeiro */}
+          <TabsContent value="financeiro" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Dados Financeiros</CardTitle>
+                <CardDescription>Configurações de PIX e dados bancários exibidos no Portal do Membro</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleChurchSubmit} className="space-y-4">
+                  <h3 className="text-sm font-medium text-muted-foreground">Chave PIX</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="pix_key_type">Tipo da Chave</Label>
+                      <Select value={churchData.pix_key_type || ''} onValueChange={(v) => setChurchData({ ...churchData, pix_key_type: v })}>
+                        <SelectTrigger><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cpf">CPF</SelectItem>
+                          <SelectItem value="cnpj">CNPJ</SelectItem>
+                          <SelectItem value="email">Email</SelectItem>
+                          <SelectItem value="phone">Telefone</SelectItem>
+                          <SelectItem value="random">Chave Aleatória</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="pix_key">Chave PIX</Label>
+                      <Input id="pix_key" value={churchData.pix_key || ''} onChange={(e) => setChurchData({ ...churchData, pix_key: e.target.value })} placeholder="Digite a chave PIX" />
+                    </div>
+                  </div>
+
+                  <Separator />
+                  <h3 className="text-sm font-medium text-muted-foreground">Dados Bancários</h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="bank_name">Banco</Label>
+                      <Input id="bank_name" value={churchData.bank_name || ''} onChange={(e) => setChurchData({ ...churchData, bank_name: e.target.value })} placeholder="Ex: Banco do Brasil" />
+                    </div>
+                    <div>
+                      <Label htmlFor="bank_agency">Agência</Label>
+                      <Input id="bank_agency" value={churchData.bank_agency || ''} onChange={(e) => setChurchData({ ...churchData, bank_agency: e.target.value })} placeholder="0000" />
+                    </div>
+                    <div>
+                      <Label htmlFor="bank_account">Conta</Label>
+                      <Input id="bank_account" value={churchData.bank_account || ''} onChange={(e) => setChurchData({ ...churchData, bank_account: e.target.value })} placeholder="00000-0" />
+                    </div>
+                  </div>
+
                   <Button type="submit" disabled={updateChurchMutation.isPending}>
                     {updateChurchMutation.isPending && <LoadingSpinner size="sm" className="mr-2" />}
                     Salvar Alterações
