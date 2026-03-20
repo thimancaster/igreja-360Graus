@@ -128,7 +128,7 @@ export default function Membros() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => exportMembersToExcel(members || [])} className="gap-2">
+          <Button variant="outline" size="sm" onClick={() => exportMembersToExcel((members || []) as unknown as Record<string, unknown>[])} className="gap-2">
             <Download className="h-4 w-4" />
             Exportar
           </Button>
