@@ -148,6 +148,7 @@ const App: React.FC = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            </ChurchThemeProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
