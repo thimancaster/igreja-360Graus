@@ -368,7 +368,7 @@ export function CheckInPanel() {
       <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
         <DialogContent className="max-w-sm text-center">
           <DialogHeader>
-            <DialogTitle>Check-in Realizado!</DialogTitle>
+            <DialogTitle>Check-in Realizado! ✅</DialogTitle>
           </DialogHeader>
           {generatedCheckIn && (
             <div className="space-y-4">
@@ -376,7 +376,7 @@ export function CheckInPanel() {
                 <div className="bg-white p-4 rounded-lg">
                   <QRCodeSVG
                     value={generatedCheckIn.qr_code}
-                    size={200}
+                    size={160}
                     level="H"
                   />
                 </div>
@@ -390,7 +390,16 @@ export function CheckInPanel() {
                   </div>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">
+
+              {/* Security Label */}
+              <SecurityLabel
+                child={generatedCheckIn.child}
+                labelNumber={generatedCheckIn.label_number}
+                qrCode={generatedCheckIn.qr_code}
+                eventName={eventName}
+              />
+
+              <p className="text-sm text-muted-foreground text-center">
                 Apresente este QR Code ou o número da etiqueta para retirar a criança
               </p>
               <Button className="w-full" onClick={() => setQrDialogOpen(false)}>

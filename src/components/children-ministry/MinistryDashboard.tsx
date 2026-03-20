@@ -166,9 +166,18 @@ export function MinistryDashboard() {
                         </div>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {record.children?.classroom}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {!record.checked_out_at && (
+                        <EmergencyCallButton
+                          childId={record.child_id}
+                          childName={record.children?.full_name || ""}
+                          classroom={record.children?.classroom || ""}
+                        />
+                      )}
+                      <Badge variant="outline" className="text-xs">
+                        {record.children?.classroom}
+                      </Badge>
+                    </div>
                   </div>
                 ))
               ) : (
