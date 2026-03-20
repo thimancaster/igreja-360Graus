@@ -324,7 +324,7 @@ export function MemberImportDialog({ open, onOpenChange }: Props) {
         {/* Result */}
         {result && (
           <div className="space-y-4 text-center py-4">
-            <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
+            <CheckCircle2 className="h-12 w-12 text-primary mx-auto" />
             <h3 className="text-lg font-semibold">Importação Concluída</h3>
             <div className="flex justify-center gap-4">
               <Badge variant="default" className="text-sm px-3 py-1">{result.imported} importados</Badge>
