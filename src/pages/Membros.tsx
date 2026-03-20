@@ -48,6 +48,7 @@ export default function Membros() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const filteredMembers = useMemo(() => {
     if (!members) return [];
