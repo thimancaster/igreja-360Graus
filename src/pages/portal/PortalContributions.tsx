@@ -54,7 +54,7 @@ export default function PortalContributions() {
       if (!profile?.church_id) return null;
       const { data, error } = await supabase
         .from("churches")
-        .select("name, pix_key, pix_key_type, bank_name, bank_agency, bank_account")
+        .select("name, pix_key, pix_key_type, bank_name, bank_agency, bank_account, pix_qr_image_url")
         .eq("id", profile.church_id)
         .single();
       if (error) throw error;
