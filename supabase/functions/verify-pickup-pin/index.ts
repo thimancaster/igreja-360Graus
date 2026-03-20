@@ -42,6 +42,21 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Get caller's church_id for scoping queries
+    const { data: callerProfile } = await userClient
+      .from('profiles')
+      .select('church_id')
+      .eq('id', user.id)
+      .single();
+
+    const callerChurchId = callerProfile?.church_id;
+    if (!callerChurchId) {
+      return new Response(JSON.stringify({ error: 'User has no church' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // entered_pin can be empty string (user didn't enter a PIN)
     const pin = typeof entered_pin === 'string' ? entered_pin : '';
 
@@ -54,22 +69,33 @@ Deno.serve(async (req) => {
         .from('guardians')
         .select('access_pin')
         .eq('id', person_id)
+        .eq('church_id', callerChurchId)
         .single();
       if (error) throw error;
       storedPin = data?.access_pin;
     } else if (person_type === 'authorized') {
+      // authorized_pickups doesn't have church_id directly, scope via children table
       const { data, error } = await adminClient
         .from('authorized_pickups')
-        .select('pickup_pin')
+        .select('pickup_pin, child:children!authorized_pickups_child_id_fkey(church_id)')
         .eq('id', person_id)
         .single();
       if (error) throw error;
+      // Verify child belongs to caller's church
+      const childChurchId = (data?.child as any)?.church_id;
+      if (childChurchId !== callerChurchId) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       storedPin = data?.pickup_pin;
     } else if (person_type === 'temporary') {
       const { data, error } = await adminClient
         .from('pickup_authorizations')
         .select('notes')
         .eq('id', person_id)
+        .eq('church_id', callerChurchId)
         .single();
       if (error) throw error;
 
