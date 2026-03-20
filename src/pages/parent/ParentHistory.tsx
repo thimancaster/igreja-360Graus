@@ -41,12 +41,12 @@ export default function ParentHistory() {
       </div>
 
       {/* Child selector */}
-      <Card>
+      <Card className="rounded-2xl border-0 shadow-sm bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-950/20 dark:to-blue-950/20">
         <CardContent className="pt-4">
           <Label className="text-sm font-medium mb-2 block">Selecionar Filho</Label>
           <Select value={selectedChildId} onValueChange={setSelectedChildId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Escolha uma criança" />
+            <SelectTrigger className="rounded-xl">
+              <SelectValue placeholder="Escolha uma criança 👧" />
             </SelectTrigger>
             <SelectContent>
               {children?.map((child: any) => (
