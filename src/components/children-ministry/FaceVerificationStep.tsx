@@ -24,9 +24,10 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [loadingModels, setLoadingModels] = useState(false);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const pendingStreamRef = useRef<MediaStream | null>(null);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
