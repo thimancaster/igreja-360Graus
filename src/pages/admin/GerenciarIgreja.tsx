@@ -190,6 +190,11 @@ const GerenciarIgreja = () => {
       bank_agency: churchData.bank_agency?.trim() === "" ? null : churchData.bank_agency,
       bank_account: churchData.bank_account?.trim() === "" ? null : churchData.bank_account,
       youtube_live_url: churchData.youtube_live_url?.trim() === "" ? null : churchData.youtube_live_url,
+      pix_qr_image_url: (churchData as any).pix_qr_image_url?.trim() === "" ? null : (churchData as any).pix_qr_image_url,
+      primary_color: (churchData as any).primary_color?.trim() === "" ? null : (churchData as any).primary_color,
+      secondary_color: (churchData as any).secondary_color?.trim() === "" ? null : (churchData as any).secondary_color,
+      accent_color: (churchData as any).accent_color?.trim() === "" ? null : (churchData as any).accent_color,
+      logo_url: churchData.logo_url?.trim() === "" ? null : churchData.logo_url,
     };
     updateChurchMutation.mutate(cleanedData);
   };
