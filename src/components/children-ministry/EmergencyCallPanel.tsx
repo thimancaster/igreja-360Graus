@@ -52,6 +52,19 @@ export function EmergencyCallButton({ childId, childName, classroom }: Emergency
       const { error } = await supabase.from("notifications").insert(notifications);
       if (error) throw error;
 
+      // Trigger push notification edge function for each guardian
+      for (const notif of notifications) {
+        supabase.functions.invoke("send-push-notification", {
+          body: {
+            user_id: notif.user_id,
+            title: notif.title,
+            message: notif.message,
+            type: "urgent",
+            url: "/portal/filhos",
+          },
+        }).catch(console.error);
+      }
+
       toast.success(`Chamada de emergência enviada para ${notifications.length} responsável(eis)`);
       setDialogOpen(false);
     } catch (err) {

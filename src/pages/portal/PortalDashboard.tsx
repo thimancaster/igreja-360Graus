@@ -116,6 +116,9 @@ export default function PortalDashboard() {
       animate={{ opacity: 1 }}
       className="flex-1 space-y-5 p-4 max-w-2xl mx-auto w-full"
     >
+      {/* Urgent Notification Banner */}
+      <UrgentNotificationBanner />
+
       {/* Hero Welcome Banner */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
