@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Bell, Baby, ChevronRight, Clock, MapPin, CalendarDays, User, Sparkles, Heart, Radio, CalendarClock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { UrgentNotificationBanner } from "@/components/portal/UrgentNotificationBanner";
 import { useVolunteerStatus } from "@/hooks/useVolunteerStatus";
 import { useVolunteerSchedules } from "@/hooks/useVolunteerSchedules";
 import { useVolunteerAnnouncements } from "@/hooks/useVolunteerAnnouncements";
@@ -115,6 +116,9 @@ export default function PortalDashboard() {
       animate={{ opacity: 1 }}
       className="flex-1 space-y-5 p-4 max-w-2xl mx-auto w-full"
     >
+      {/* Urgent Notification Banner */}
+      <UrgentNotificationBanner />
+
       {/* Hero Welcome Banner */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}

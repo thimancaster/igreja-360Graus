@@ -1770,6 +1770,7 @@ export type Database = {
       }
       notifications: {
         Row: {
+          acknowledged_at: string | null
           created_at: string
           id: string
           is_read: boolean | null
@@ -1780,6 +1781,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          acknowledged_at?: string | null
           created_at?: string
           id?: string
           is_read?: boolean | null
@@ -1790,6 +1792,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          acknowledged_at?: string | null
           created_at?: string
           id?: string
           is_read?: boolean | null
@@ -2018,6 +2021,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "public_sheet_integrations_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          church_id: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          church_id: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          church_id?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_church_id_fkey"
             columns: ["church_id"]
             isOneToOne: false
             referencedRelation: "churches"
