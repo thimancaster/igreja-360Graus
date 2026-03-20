@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Bell, Baby, ChevronRight, Clock, MapPin, CalendarDays, User, Sparkles } from "lucide-react";
+import { Calendar, Bell, Baby, ChevronRight, Clock, MapPin, CalendarDays, User, Sparkles, Heart, Radio, CalendarClock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useVolunteerStatus } from "@/hooks/useVolunteerStatus";
 import { useVolunteerSchedules } from "@/hooks/useVolunteerSchedules";
@@ -223,6 +223,45 @@ export default function PortalDashboard() {
           label="Meus Filhos"
           badge={children && children.length > 0 ? `${children.length}` : undefined}
         />
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="grid grid-cols-3 gap-2"
+      >
+        <Link to="/portal/contribuicoes" className="block">
+          <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all active:scale-[0.97] bg-gradient-to-br from-primary/5 to-primary/10">
+            <CardContent className="p-3 flex flex-col items-center gap-2 text-center">
+              <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center">
+                <Heart className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-xs font-semibold">Contribuir</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link to="/portal/culto-ao-vivo" className="block">
+          <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all active:scale-[0.97] bg-gradient-to-br from-destructive/5 to-destructive/10">
+            <CardContent className="p-3 flex flex-col items-center gap-2 text-center">
+              <div className="h-9 w-9 rounded-xl bg-destructive/15 flex items-center justify-center">
+                <Radio className="h-4 w-4 text-destructive" />
+              </div>
+              <span className="text-xs font-semibold">Ao Vivo</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link to="/portal/agendar" className="block">
+          <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all active:scale-[0.97] bg-gradient-to-br from-accent/5 to-accent/10">
+            <CardContent className="p-3 flex flex-col items-center gap-2 text-center">
+              <div className="h-9 w-9 rounded-xl bg-accent/15 flex items-center justify-center">
+                <CalendarClock className="h-4 w-4 text-accent" />
+              </div>
+              <span className="text-xs font-semibold">Agendar</span>
+            </CardContent>
+          </Card>
+        </Link>
       </motion.div>
 
       {/* Upcoming Schedules */}

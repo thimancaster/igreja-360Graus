@@ -64,6 +64,9 @@ const PortalAnnouncements = lazy(() => import('@/pages/portal/PortalAnnouncement
 const PortalChildren = lazy(() => import('@/pages/portal/PortalChildren'));
 const PortalProfile = lazy(() => import('@/pages/portal/PortalProfile'));
 const PortalEvents = lazy(() => import('@/pages/portal/PortalEvents'));
+const PortalContributions = lazy(() => import('@/pages/portal/PortalContributions'));
+const PortalLiveService = lazy(() => import('@/pages/portal/PortalLiveService'));
+const PortalBooking = lazy(() => import('@/pages/portal/PortalBooking'));
 import { PortalLayout } from '@/components/portal/PortalLayout';
 
 const App: React.FC = () => {
@@ -121,6 +124,9 @@ const App: React.FC = () => {
                 <Route path="/portal/filhos" element={<ProtectedRoute><PortalLayout><PortalChildren /></PortalLayout></ProtectedRoute>} />
                 <Route path="/portal/perfil" element={<ProtectedRoute><PortalLayout><PortalProfile /></PortalLayout></ProtectedRoute>} />
                 <Route path="/portal/eventos" element={<ProtectedRoute><PortalLayout><PortalEvents /></PortalLayout></ProtectedRoute>} />
+                <Route path="/portal/contribuicoes" element={<ProtectedRoute><PortalLayout><PortalContributions /></PortalLayout></ProtectedRoute>} />
+                <Route path="/portal/culto-ao-vivo" element={<ProtectedRoute><PortalLayout><PortalLiveService /></PortalLayout></ProtectedRoute>} />
+                <Route path="/portal/agendar" element={<ProtectedRoute><PortalLayout><PortalBooking /></PortalLayout></ProtectedRoute>} />
 
                 {/* Legacy Parent Portal - redirects to unified portal */}
                 <Route path="/parent" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />

@@ -21,6 +21,9 @@ import {
   ChevronLeft,
   Megaphone,
   CalendarDays,
+  Heart,
+  Radio,
+  CalendarClock,
 } from "lucide-react";
 
 interface PortalLayoutProps {
@@ -32,6 +35,9 @@ const navItems = [
   { href: "/portal/eventos", label: "Eventos", icon: CalendarDays },
   { href: "/portal/escalas", label: "Escalas", icon: Calendar },
   { href: "/portal/comunicados", label: "Comunicados", icon: Megaphone },
+  { href: "/portal/contribuicoes", label: "Contribuições", icon: Heart },
+  { href: "/portal/culto-ao-vivo", label: "Culto ao Vivo", icon: Radio },
+  { href: "/portal/agendar", label: "Agendar", icon: CalendarClock },
   { href: "/portal/filhos", label: "Meus Filhos", icon: Baby },
   { href: "/portal/perfil", label: "Meu Perfil", icon: User },
 ];
@@ -47,6 +53,8 @@ const bottomNavItems = [
 function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const { signOut, profile } = useAuth();
+  const { isAdmin, isTesoureiro, isPastor, isLider } = useRole();
+  const showAppLink = isAdmin || isTesoureiro || isPastor || isLider;
 
   return (
     <div className="flex h-full flex-col">
@@ -94,12 +102,14 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
       </ScrollArea>
 
       <div className="border-t p-4 space-y-2">
-        <Link to="/app/dashboard" onClick={onNavigate}>
-          <Button variant="outline" className="w-full justify-start gap-3 rounded-xl">
-            <ChevronLeft className="h-4 w-4" />
-            Ir para App Principal
-          </Button>
-        </Link>
+        {showAppLink && (
+          <Link to="/app/dashboard" onClick={onNavigate}>
+            <Button variant="outline" className="w-full justify-start gap-3 rounded-xl">
+              <ChevronLeft className="h-4 w-4" />
+              Ir para App Principal
+            </Button>
+          </Link>
+        )}
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl"
