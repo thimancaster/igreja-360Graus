@@ -127,8 +127,16 @@ export default function Membros() {
             Cadastre e gerencie os membros da sua igreja
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => copyPortalLink()} className="gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => exportMembersToExcel(members || [])} className="gap-2">
+            <Download className="h-4 w-4" />
+            Exportar
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)} className="gap-2">
+            <Upload className="h-4 w-4" />
+            Importar
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => copyPortalLink()} className="gap-2">
             <Share2 className="h-4 w-4" />
             Link do Portal
           </Button>
