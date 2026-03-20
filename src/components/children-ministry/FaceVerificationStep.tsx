@@ -24,9 +24,10 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [loadingModels, setLoadingModels] = useState(false);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const pendingStreamRef = useRef<MediaStream | null>(null);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -44,6 +45,16 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
 
   const hasPhoto = !!personPhotoUrl;
 
+  // Callback ref to attach stream when video element mounts
+  const videoCallbackRef = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    if (node && pendingStreamRef.current) {
+      node.srcObject = pendingStreamRef.current;
+      node.play().catch(console.error);
+      pendingStreamRef.current = null;
+    }
+  }, []);
+
   const startCamera = async () => {
     try {
       setLoadingModels(true);
@@ -54,10 +65,15 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
         loadModelsOnce(),
       ]);
       streamRef.current = stream;
+      pendingStreamRef.current = stream;
+
+      // If video element already exists, attach immediately
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
+        pendingStreamRef.current = null;
       }
+
       setCameraActive(true);
       setLoadingModels(false);
     } catch (err) {
@@ -211,7 +227,7 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
               <p className="text-xs font-medium text-center text-muted-foreground">Câmera ao Vivo</p>
               <div className="aspect-square rounded-lg overflow-hidden border-2 border-muted bg-black">
                 <video
-                  ref={videoRef}
+                  ref={videoCallbackRef}
                   autoPlay
                   playsInline
                   muted
