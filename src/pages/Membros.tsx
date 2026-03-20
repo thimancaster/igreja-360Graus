@@ -30,8 +30,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { pageAnimation, itemAnimation } from '@/lib/pageAnimations';
 import { useMembers, useDeleteMember, Member } from '@/hooks/useMembers';
 import { MemberDialog } from '@/components/members/MemberDialog';
+import { MemberImportDialog } from '@/components/members/MemberImportDialog';
 import { BirthdayCard } from '@/components/members/BirthdayCard';
 import { useMemberContributions } from '@/hooks/useContributions';
+import { exportMembersToExcel } from '@/utils/memberImportHelpers';
 // Dynamic import for PDF - loaded only when user exports (see ContributionBooklet)
 import { useAuth } from '@/contexts/AuthContext';
 
