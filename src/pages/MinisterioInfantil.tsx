@@ -38,7 +38,7 @@ export default function MinisterioInfantil() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 lg:w-auto lg:inline-grid">
           <TabsTrigger value="dashboard" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboard</span>
