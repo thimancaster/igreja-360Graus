@@ -44,7 +44,30 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Server-side authorization: verify caller belongs to the target church
+    const { data: callerProfile } = await userClient
+      .from('profiles')
+      .select('church_id')
+      .eq('id', caller.id)
+      .single();
+
+    if (!callerProfile || callerProfile.church_id !== churchId) {
+      return new Response(JSON.stringify({ error: 'Forbidden: you do not belong to this church' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Server-side authorization: verify caller has admin role
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: hasAdminRole } = await adminClient.rpc('has_role', { _user_id: caller.id, _role: 'admin' });
+
+    if (!hasAdminRole) {
+      return new Response(JSON.stringify({ error: 'Forbidden: admin role required' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     if (directRegistration && temporaryPassword) {
       // Direct registration: create user with password
