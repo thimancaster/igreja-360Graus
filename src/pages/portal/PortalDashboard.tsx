@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Bell, Baby, ChevronRight, Clock, MapPin, CalendarDays, User, Sparkles, Heart, Radio, CalendarClock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { UrgentNotificationBanner } from "@/components/portal/UrgentNotificationBanner";
 import { useVolunteerStatus } from "@/hooks/useVolunteerStatus";
 import { useVolunteerSchedules } from "@/hooks/useVolunteerSchedules";
 import { useVolunteerAnnouncements } from "@/hooks/useVolunteerAnnouncements";
