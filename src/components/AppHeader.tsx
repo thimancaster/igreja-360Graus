@@ -27,7 +27,7 @@ export function AppHeader() {
     <header className="h-16 border-b border-white/10 glass-header sticky top-0 z-[60] overflow-visible">
       <div className="flex h-full items-center justify-between px-4 md:px-6 overflow-visible">
         <div className="flex items-center gap-4">
-          <SidebarTrigger className="text-foreground" />
+          <SidebarTrigger className="text-foreground shrink-0 relative z-[61]" />
           <div className="hidden md:block">
             <h2 className="text-lg font-semibold">Bem-vindo, {profile?.full_name || user?.user_metadata?.full_name || "Usuário"}</h2>
             <p className="text-sm text-muted-foreground">Gerencie as finanças com clareza</p>
