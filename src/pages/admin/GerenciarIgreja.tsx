@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Plus, Pencil, Trash2, Building2, CreditCard, Users } from 'lucide-react';
+import { AlertTriangle, Plus, Pencil, Trash2, Building2, CreditCard, Users, Palette, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { Tables, TablesUpdate } from '@/integrations/supabase/types';
 import { formatCNPJ, validateCNPJ } from '@/lib/cnpjUtils';
 import { pageVariants, pageTransition } from '@/lib/pageAnimations';
