@@ -560,6 +560,7 @@ export type Database = {
       }
       churches: {
         Row: {
+          accent_color: string | null
           address: string | null
           bank_account: string | null
           bank_agency: string | null
@@ -575,6 +576,9 @@ export type Database = {
           phone: string | null
           pix_key: string | null
           pix_key_type: string | null
+          pix_qr_image_url: string | null
+          primary_color: string | null
+          secondary_color: string | null
           state: string | null
           updated_at: string
           website: string | null
@@ -582,6 +586,7 @@ export type Database = {
           zip_code: string | null
         }
         Insert: {
+          accent_color?: string | null
           address?: string | null
           bank_account?: string | null
           bank_agency?: string | null
@@ -597,6 +602,9 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
+          pix_qr_image_url?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
           state?: string | null
           updated_at?: string
           website?: string | null
@@ -604,6 +612,7 @@ export type Database = {
           zip_code?: string | null
         }
         Update: {
+          accent_color?: string | null
           address?: string | null
           bank_account?: string | null
           bank_agency?: string | null
@@ -619,6 +628,9 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
+          pix_qr_image_url?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
           state?: string | null
           updated_at?: string
           website?: string | null

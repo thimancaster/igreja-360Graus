@@ -68,6 +68,12 @@ const PortalContributions = lazy(() => import('@/pages/portal/PortalContribution
 const PortalLiveService = lazy(() => import('@/pages/portal/PortalLiveService'));
 const PortalBooking = lazy(() => import('@/pages/portal/PortalBooking'));
 import { PortalLayout } from '@/components/portal/PortalLayout';
+import { useChurchTheme } from '@/hooks/useChurchTheme';
+
+function ChurchThemeProvider({ children }: { children: React.ReactNode }) {
+  useChurchTheme();
+  return <>{children}</>;
+}
 
 const App: React.FC = () => {
   return (
@@ -78,6 +84,7 @@ const App: React.FC = () => {
           <Sonner />
           <InstallPrompt />
           <AuthProvider>
+            <ChurchThemeProvider>
             <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><LoadingSpinner size="lg" /></div>}>
               <Routes>
                 {/* Rotas Públicas */}
@@ -142,6 +149,7 @@ const App: React.FC = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            </ChurchThemeProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

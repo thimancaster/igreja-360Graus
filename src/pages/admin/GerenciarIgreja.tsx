@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Plus, Pencil, Trash2, Building2, CreditCard, Users } from 'lucide-react';
+import { AlertTriangle, Plus, Pencil, Trash2, Building2, CreditCard, Users, Palette, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { Tables, TablesUpdate } from '@/integrations/supabase/types';
 import { formatCNPJ, validateCNPJ } from '@/lib/cnpjUtils';
 import { pageVariants, pageTransition } from '@/lib/pageAnimations';
@@ -190,6 +190,11 @@ const GerenciarIgreja = () => {
       bank_agency: churchData.bank_agency?.trim() === "" ? null : churchData.bank_agency,
       bank_account: churchData.bank_account?.trim() === "" ? null : churchData.bank_account,
       youtube_live_url: churchData.youtube_live_url?.trim() === "" ? null : churchData.youtube_live_url,
+      pix_qr_image_url: (churchData as any).pix_qr_image_url?.trim() === "" ? null : (churchData as any).pix_qr_image_url,
+      primary_color: (churchData as any).primary_color?.trim() === "" ? null : (churchData as any).primary_color,
+      secondary_color: (churchData as any).secondary_color?.trim() === "" ? null : (churchData as any).secondary_color,
+      accent_color: (churchData as any).accent_color?.trim() === "" ? null : (churchData as any).accent_color,
+      logo_url: churchData.logo_url?.trim() === "" ? null : churchData.logo_url,
     };
     updateChurchMutation.mutate(cleanedData);
   };
@@ -230,10 +235,11 @@ const GerenciarIgreja = () => {
 
       {churchData && (
         <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 max-w-lg">
+          <TabsList className="grid w-full grid-cols-4 max-w-2xl">
             <TabsTrigger value="dados" className="gap-2"><Building2 className="h-4 w-4" />Dados</TabsTrigger>
             <TabsTrigger value="financeiro" className="gap-2"><CreditCard className="h-4 w-4" />Financeiro</TabsTrigger>
             <TabsTrigger value="ministerios" className="gap-2"><Users className="h-4 w-4" />Ministérios</TabsTrigger>
+            <TabsTrigger value="personalizar" className="gap-2"><Palette className="h-4 w-4" />Personalizar</TabsTrigger>
           </TabsList>
 
           {/* Aba Dados da Igreja */}
@@ -360,6 +366,52 @@ const GerenciarIgreja = () => {
                     </div>
                   </div>
 
+                  <Separator />
+                  <h3 className="text-sm font-medium text-muted-foreground">Arte QR Code PIX</h3>
+                  <p className="text-xs text-muted-foreground">Suba a arte com o QR Code válido do seu PIX. Esta imagem será exibida no Portal do Membro em vez de um QR Code gerado automaticamente.</p>
+
+                  {(churchData as any).pix_qr_image_url ? (
+                    <div className="space-y-3">
+                      <div className="relative w-fit">
+                        <img src={(churchData as any).pix_qr_image_url} alt="QR Code PIX" className="max-w-[200px] rounded-xl border shadow-sm" />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-7 w-7 rounded-full"
+                          onClick={() => setChurchData({ ...churchData, pix_qr_image_url: null } as any)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const ext = file.name.split('.').pop();
+                            const path = `pix-qr/${churchData.id}.${ext}`;
+                            const { error: uploadError } = await supabase.storage.from('photos').upload(path, file, { upsert: true });
+                            if (uploadError) { toast.error('Erro ao fazer upload: ' + uploadError.message); return; }
+                            const { data: urlData } = supabase.storage.from('photos').getPublicUrl(path);
+                            setChurchData({ ...churchData, pix_qr_image_url: urlData.publicUrl } as any);
+                            toast.success('Imagem carregada! Clique em Salvar para confirmar.');
+                          }}
+                        />
+                        <div className="flex items-center gap-2 px-4 py-2 border border-dashed rounded-xl hover:bg-muted/50 transition-colors">
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Enviar arte do QR Code</span>
+                        </div>
+                      </label>
+                    </div>
+                  )}
+
                   <Button type="submit" disabled={updateChurchMutation.isPending}>
                     {updateChurchMutation.isPending && <LoadingSpinner size="sm" className="mr-2" />}
                     Salvar Alterações
@@ -422,6 +474,123 @@ const GerenciarIgreja = () => {
                 {!canManageMinistries && (
                   <p className="text-sm text-muted-foreground mt-4 text-center">Você não tem permissão para gerenciar ministérios.</p>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Aba Personalizar */}
+          <TabsContent value="personalizar" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Personalização Visual</CardTitle>
+                <CardDescription>Configure logo e cores da igreja. Essas cores serão aplicadas em todo o app automaticamente.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleChurchSubmit} className="space-y-6">
+                  {/* Logo Upload */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-muted-foreground">Logo da Igreja</h3>
+                    {churchData.logo_url ? (
+                      <div className="relative w-fit">
+                        <img src={churchData.logo_url} alt="Logo" className="h-24 w-24 rounded-2xl border shadow-sm object-cover" />
+                        <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-7 w-7 rounded-full"
+                          onClick={() => setChurchData({ ...churchData, logo_url: null })}
+                        ><X className="h-3 w-3" /></Button>
+                      </div>
+                    ) : (
+                      <label className="cursor-pointer">
+                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const ext = file.name.split('.').pop();
+                          const path = `logos/${churchData.id}.${ext}`;
+                          const { error: uploadError } = await supabase.storage.from('photos').upload(path, file, { upsert: true });
+                          if (uploadError) { toast.error('Erro ao enviar logo: ' + uploadError.message); return; }
+                          const { data: urlData } = supabase.storage.from('photos').getPublicUrl(path);
+                          setChurchData({ ...churchData, logo_url: urlData.publicUrl });
+                          toast.success('Logo carregada! Clique em Salvar.');
+                        }} />
+                        <div className="flex items-center gap-2 px-4 py-3 border border-dashed rounded-xl hover:bg-muted/50 transition-colors w-fit">
+                          <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Enviar logo da igreja</span>
+                        </div>
+                      </label>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  {/* Colors */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-muted-foreground">Cores do App</h3>
+                    <p className="text-xs text-muted-foreground">Defina as cores personalizadas da sua igreja. Deixe em branco para usar o tema padrão.</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="primary_color">Cor Primária</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" id="primary_color_picker" value={(churchData as any).primary_color || '#6366f1'}
+                            onChange={(e) => setChurchData({ ...churchData, primary_color: e.target.value } as any)}
+                            className="h-10 w-10 rounded-lg border cursor-pointer" />
+                          <Input value={(churchData as any).primary_color || ''} onChange={(e) => setChurchData({ ...churchData, primary_color: e.target.value } as any)}
+                            placeholder="#6366f1" className="font-mono text-sm" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="secondary_color">Cor Secundária</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" id="secondary_color_picker" value={(churchData as any).secondary_color || '#8b5cf6'}
+                            onChange={(e) => setChurchData({ ...churchData, secondary_color: e.target.value } as any)}
+                            className="h-10 w-10 rounded-lg border cursor-pointer" />
+                          <Input value={(churchData as any).secondary_color || ''} onChange={(e) => setChurchData({ ...churchData, secondary_color: e.target.value } as any)}
+                            placeholder="#8b5cf6" className="font-mono text-sm" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="accent_color">Cor de Destaque</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" id="accent_color_picker" value={(churchData as any).accent_color || '#f59e0b'}
+                            onChange={(e) => setChurchData({ ...churchData, accent_color: e.target.value } as any)}
+                            className="h-10 w-10 rounded-lg border cursor-pointer" />
+                          <Input value={(churchData as any).accent_color || ''} onChange={(e) => setChurchData({ ...churchData, accent_color: e.target.value } as any)}
+                            placeholder="#f59e0b" className="font-mono text-sm" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Preview */}
+                    {((churchData as any).primary_color || (churchData as any).secondary_color || (churchData as any).accent_color) && (
+                      <div className="p-4 rounded-xl border bg-muted/30 space-y-3">
+                        <p className="text-xs font-medium text-muted-foreground">Preview</p>
+                        <div className="flex gap-3">
+                          {(churchData as any).primary_color && (
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="h-12 w-12 rounded-xl shadow-sm" style={{ backgroundColor: (churchData as any).primary_color }} />
+                              <span className="text-[10px] text-muted-foreground">Primária</span>
+                            </div>
+                          )}
+                          {(churchData as any).secondary_color && (
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="h-12 w-12 rounded-xl shadow-sm" style={{ backgroundColor: (churchData as any).secondary_color }} />
+                              <span className="text-[10px] text-muted-foreground">Secundária</span>
+                            </div>
+                          )}
+                          {(churchData as any).accent_color && (
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="h-12 w-12 rounded-xl shadow-sm" style={{ backgroundColor: (churchData as any).accent_color }} />
+                              <span className="text-[10px] text-muted-foreground">Destaque</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <Button type="submit" disabled={updateChurchMutation.isPending}>
+                    {updateChurchMutation.isPending && <LoadingSpinner size="sm" className="mr-2" />}
+                    Salvar Personalização
+                  </Button>
+                </form>
               </CardContent>
             </Card>
           </TabsContent>

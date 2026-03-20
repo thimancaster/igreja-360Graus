@@ -54,7 +54,7 @@ export default function PortalContributions() {
       if (!profile?.church_id) return null;
       const { data, error } = await supabase
         .from("churches")
-        .select("name, pix_key, pix_key_type, bank_name, bank_agency, bank_account")
+        .select("name, pix_key, pix_key_type, bank_name, bank_agency, bank_account, pix_qr_image_url")
         .eq("id", profile.church_id)
         .single();
       if (error) throw error;
@@ -156,10 +156,14 @@ export default function PortalContributions() {
                   </div>
                 </div>
 
-                {/* QR Code */}
+                {/* QR Code - custom image or generated */}
                 <div className="flex justify-center">
                   <div className="bg-white p-4 rounded-2xl shadow-sm">
-                    <QRCodeSVG value={church.pix_key!} size={160} level="M" />
+                    {(church as any).pix_qr_image_url ? (
+                      <img src={(church as any).pix_qr_image_url} alt="QR Code PIX" className="max-w-[200px] rounded-lg" />
+                    ) : (
+                      <QRCodeSVG value={church.pix_key!} size={160} level="M" />
+                    )}
                   </div>
                 </div>
 
