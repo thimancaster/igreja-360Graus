@@ -80,7 +80,7 @@ export function AppSidebar() {
   if (canAccessAdmin) {
     menuItems = [...menuItems.slice(0, menuItems.length - 1), adminMenuItem, menuItems[menuItems.length - 1]];
   }
-  return <Sidebar collapsible="icon" className="border-r border-sidebar-border glass-sidebar">
+  return <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar lg:glass-sidebar">
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-glow px-[10px] py-[10px] mx-[10px] my-0 pr-[10px] pb-[10px] pt-[10px] pl-[10px] gap-[10px]">

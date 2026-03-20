@@ -195,7 +195,7 @@ export function PortalLayout({ children }: PortalLayoutProps) {
               <NavContent onNavigate={() => setMobileOpen(false)} />
             </SheetContent>
           </Sheet>
-          <h1 className="text-sm font-semibold text-muted-foreground">Portal do Membro</h1>
+          <h1 className="text-base font-bold text-foreground">Portal do Membro</h1>
         </header>
 
         <main className="flex-1 overflow-auto pb-20 lg:pb-0">{children}</main>
