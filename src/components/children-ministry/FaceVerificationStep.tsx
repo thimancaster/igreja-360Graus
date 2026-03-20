@@ -45,6 +45,16 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
 
   const hasPhoto = !!personPhotoUrl;
 
+  // Callback ref to attach stream when video element mounts
+  const videoCallbackRef = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    if (node && pendingStreamRef.current) {
+      node.srcObject = pendingStreamRef.current;
+      node.play().catch(console.error);
+      pendingStreamRef.current = null;
+    }
+  }, []);
+
   const startCamera = async () => {
     try {
       setLoadingModels(true);
@@ -55,10 +65,15 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
         loadModelsOnce(),
       ]);
       streamRef.current = stream;
+      pendingStreamRef.current = stream;
+
+      // If video element already exists, attach immediately
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
+        pendingStreamRef.current = null;
       }
+
       setCameraActive(true);
       setLoadingModels(false);
     } catch (err) {
