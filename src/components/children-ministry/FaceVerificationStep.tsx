@@ -227,7 +227,7 @@ export function FaceVerificationStep({ personName, personPhotoUrl, onVerified }:
               <p className="text-xs font-medium text-center text-muted-foreground">Câmera ao Vivo</p>
               <div className="aspect-square rounded-lg overflow-hidden border-2 border-muted bg-black">
                 <video
-                  ref={videoRef}
+                  ref={videoCallbackRef}
                   autoPlay
                   playsInline
                   muted
