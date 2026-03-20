@@ -109,7 +109,7 @@ export default function ParentAuthorizations() {
       className="flex-1 space-y-4 p-4"
     >
       <div>
-        <h1 className="text-2xl font-bold">Autorizações</h1>
+        <h1 className="text-2xl font-bold">Autorizações 🛡️</h1>
         <p className="text-sm text-muted-foreground">
           Autorize terceiros a buscar seus filhos
         </p>

@@ -78,7 +78,7 @@ export default function ParentHistory() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card>
+                  <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="py-4">
                       <div className="flex items-start justify-between gap-3">
                         {/* Left side - Date and event */}
