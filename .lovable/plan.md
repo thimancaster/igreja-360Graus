@@ -1,55 +1,120 @@
 
 
-# Plano: Varredura e Finalizacao do Sistema
+# Plano: Portal "Meus Filhos" Infantil + Funcionalidades MyKids
 
-## Problemas Encontrados
+## Analise do Concorrente (MyKids) -- O que eles tem e nos NAO temos
 
-### 1. Campos bancarios e YouTube NAO editaveis em nenhum lugar do admin
-A pagina `GerenciarIgreja.tsx` so salva `name`, `cnpj`, `address`, `city`, `state`. Os campos `pix_key`, `pix_key_type`, `bank_name`, `bank_agency`, `bank_account` e `youtube_live_url` nao aparecem no formulario. Resultado: portal do membro mostra "dados nao configurados" sem possibilidade de configurar.
+Com base nas imagens:
+1. **Etiquetas de seguranca** -- impressao de etiqueta/pulseira com numero, nome, turma, idade, codigo de seguranca, indicadores visuais (alergia, restricao alimentar, aniversariante, visitante, permissao de imagem, necessidades especiais)
+2. **Chamada de responsavel pelo app** -- notificacao de emergencia direta / chamar pais durante o culto
+3. **Relatorios de aula** -- compartilhar com os pais o que a crianca aprendeu
+4. **Totem/auto-cadastro de visitantes** -- cadastro simplificado por link
+5. **Check-in de pre-adolescentes** -- ja temos via turmas, OK
 
-### 2. Edge function `update-overdue` usa `getClaims()` inexistente
-O metodo `auth.getClaims(token)` nao existe no SDK do Supabase JS v2. Isso causa erro 401 constante ao carregar o Dashboard. Deve usar `auth.getUser()` no lugar.
+## Escopo deste Plano
 
-### 3. `GerenciarIgreja.tsx` nao salva campos existentes na tabela
-O `handleChurchSubmit` so inclui 5 campos no update. Campos como `address`, `phone`, `email`, `website`, `zip_code` ja existem na tabela mas nao sao editaveis.
+**Parte A -- Redesign visual "Meus Filhos" (portal)**: Tema infantil colorido, divertido, com animacoes ludicas.
 
-### 4. `Configuracoes.tsx` tambem nao tem campos bancarios/YouTube
-Mesma lacuna -- a aba "Igreja" so mostra nome, CNPJ, endereco, cidade e estado.
+**Parte B -- Features novas inspiradas no MyKids**: Etiqueta de seguranca + Chamada de emergencia + Relatorio de aula.
 
-## Alteracoes
+---
 
-### 1. `GerenciarIgreja.tsx` -- Adicionar aba "Dados Financeiros e Midia"
+## Parte A: Visual Infantil no Portal "Meus Filhos"
 
-Adicionar uma terceira aba ao `Tabs` com campos para:
-- **Chave PIX** (input texto)
-- **Tipo da Chave PIX** (select: CPF, CNPJ, Email, Telefone, Chave Aleatoria)
-- **Banco** (input texto)
-- **Agencia** (input texto)
-- **Conta** (input texto)
-- **URL YouTube ao Vivo** (input URL)
-- **Telefone da Igreja** (input)
-- **Email da Igreja** (input)
-- **Website** (input)
+### 1. `PortalChildren.tsx` -- Redesign completo
 
-Incluir esses campos no `handleChurchSubmit` para que sejam salvos via update na tabela `churches`.
+- Gradiente colorido de fundo (rosa/roxo/azul suave)
+- Tabs com icones maiores e cores vibrantes (cada aba com cor propria: verde, roxo, azul, laranja, rosa)
+- Icones animados com bounce/wiggle sutil via Framer Motion
+- Tipografia mais divertida (rounded, emojis nos titulos)
+- Header com ilustracao/emoji animado de criancas
 
-### 2. Edge function `update-overdue/index.ts` -- Corrigir autenticacao
+### 2. `ParentDashboard.tsx` -- Cards infantis coloridos
 
-Substituir `auth.getClaims(token)` por `auth.getUser()` que e o metodo correto para validar token JWT no Supabase JS v2.
+- Cards de cada filho com borda colorida (cor por turma) e cantos mais arredondados (`rounded-2xl`)
+- Avatar grande com moldura colorida animada (rotate ou pulse suave)
+- Badge de status "Presente" com cor verde vibrante e animacao pulsante
+- Acoes rapidas com icones coloridos grandes e fundo com gradiente pastel
+- Card "Filhos Presentes" com fundo gradiente animado (verde/azul)
+- Empty state com emoji animado de bebe
 
-### 3. `Configuracoes.tsx` -- Adicionar campos bancarios na aba Igreja
+### 3. Subpaginas (`ParentHistory`, `ParentAuthorizations`, `ParentEvents`, `ParentAnnouncements`)
 
-Adicionar os mesmos campos financeiros (PIX, banco, YouTube) na aba "Igreja" das configuracoes, para que admins possam editar de ambos os locais.
+- Aplicar mesma paleta colorida infantil
+- Cards com bordas laterais coloridas (tipo faixa de cor por tipo)
+- Badges com cores vibrantes em vez de cinza
+- Animacoes staggered mais expressivas
 
-### 4. Limpeza de tipos
+### 4. Cores infantis (CSS custom properties ou classes Tailwind)
 
-O `handleChurchSubmit` em `GerenciarIgreja.tsx` usa `ChurchUpdateData` que e `TablesUpdate<'churches'>` -- ja suporta todos os campos. Basta incluir os novos campos no objeto de update.
+Paleta: `kids-pink (#FF6B9D)`, `kids-purple (#C084FC)`, `kids-blue (#60A5FA)`, `kids-green (#4ADE80)`, `kids-orange (#FB923C)`, `kids-yellow (#FACC15)`
+
+---
+
+## Parte B: Features Novas do Ministerio Infantil
+
+### 5. Etiqueta de Seguranca (imprimivel)
+
+**`src/components/children-ministry/SecurityLabel.tsx`** -- Componente de etiqueta:
+- Nome, sobrenome, numero sequencial, turma, idade, data
+- Indicadores visuais: estrelas para alergia, restricao alimentar, necessidade especial, aniversariante, permissao de imagem, visitante
+- Codigo de seguranca (ultimos 8 chars do QR code)
+- Botao "Imprimir Etiqueta" no dialog pos check-in
+- Usa `window.print()` com CSS `@media print`
+
+### 6. Chamada de Emergencia do Responsavel
+
+**`src/components/children-ministry/EmergencyCallPanel.tsx`**:
+- Botao "Chamar Responsavel" em cada crianca presente no dashboard admin
+- Ao clicar, cria notificacao URGENTE para todos os responsaveis vinculados
+- Badge piscante na lista de presentes quando ha chamada ativa
+- No portal do membro, card vermelho animado aparece no topo quando ha chamada
+
+### 7. Relatorio de Aula
+
+**Migration**: Criar tabela `classroom_reports`:
+```sql
+CREATE TABLE classroom_reports (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  church_id uuid NOT NULL,
+  classroom text NOT NULL,
+  event_date date NOT NULL,
+  event_name text,
+  title text NOT NULL,
+  content text NOT NULL,
+  teacher_name text,
+  created_by uuid,
+  created_at timestamptz DEFAULT now()
+);
+```
+
+**`src/components/children-ministry/ClassroomReportPanel.tsx`** -- Admin: criar relatorios por turma/data.
+
+**`ParentDashboard.tsx`** -- Card "Relatorio de Aula" mostrando o ultimo relatorio da turma do filho.
+
+---
 
 ## Arquivos Afetados
 
 | Arquivo | Acao |
 |---------|------|
-| `src/pages/admin/GerenciarIgreja.tsx` | Modificar -- adicionar aba com campos financeiros/midia |
-| `supabase/functions/update-overdue/index.ts` | Modificar -- corrigir getClaims para getUser |
-| `src/pages/Configuracoes.tsx` | Modificar -- adicionar campos bancarios e YouTube |
+| `src/pages/portal/PortalChildren.tsx` | Reescrever -- tema infantil colorido |
+| `src/pages/parent/ParentDashboard.tsx` | Reescrever -- cards coloridos, relatorio de aula |
+| `src/pages/parent/ParentHistory.tsx` | Modificar -- cores infantis |
+| `src/pages/parent/ParentAuthorizations.tsx` | Modificar -- cores infantis |
+| `src/pages/parent/ParentEvents.tsx` | Modificar -- cores infantis |
+| `src/pages/parent/ParentAnnouncements.tsx` | Modificar -- cores infantis |
+| `src/components/children-ministry/SecurityLabel.tsx` | Criar -- etiqueta imprimivel |
+| `src/components/children-ministry/EmergencyCallPanel.tsx` | Criar -- chamada de emergencia |
+| `src/components/children-ministry/ClassroomReportPanel.tsx` | Criar -- relatorios de aula (admin) |
+| `src/components/children-ministry/CheckInPanel.tsx` | Modificar -- botao imprimir etiqueta |
+| `src/components/children-ministry/MinistryDashboard.tsx` | Modificar -- cores, botao emergencia |
+| `src/pages/MinisterioInfantil.tsx` | Modificar -- nova aba "Relatorios de Aula" |
+| Migration SQL | Criar -- tabela classroom_reports + RLS |
+
+## Fase 2 (futuro)
+
+- Link de auto-cadastro para visitantes (totem)
+- Pulseiras NFC
+- Integracao WhatsApp para chamar responsavel
 
