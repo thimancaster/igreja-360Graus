@@ -35,6 +35,9 @@ const navItems = [
   { href: "/portal/eventos", label: "Eventos", icon: CalendarDays },
   { href: "/portal/escalas", label: "Escalas", icon: Calendar },
   { href: "/portal/comunicados", label: "Comunicados", icon: Megaphone },
+  { href: "/portal/contribuicoes", label: "Contribuições", icon: Heart },
+  { href: "/portal/culto-ao-vivo", label: "Culto ao Vivo", icon: Radio },
+  { href: "/portal/agendar", label: "Agendar", icon: CalendarClock },
   { href: "/portal/filhos", label: "Meus Filhos", icon: Baby },
   { href: "/portal/perfil", label: "Meu Perfil", icon: User },
 ];
