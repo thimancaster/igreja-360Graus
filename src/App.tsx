@@ -124,6 +124,9 @@ const App: React.FC = () => {
                 <Route path="/portal/filhos" element={<ProtectedRoute><PortalLayout><PortalChildren /></PortalLayout></ProtectedRoute>} />
                 <Route path="/portal/perfil" element={<ProtectedRoute><PortalLayout><PortalProfile /></PortalLayout></ProtectedRoute>} />
                 <Route path="/portal/eventos" element={<ProtectedRoute><PortalLayout><PortalEvents /></PortalLayout></ProtectedRoute>} />
+                <Route path="/portal/contribuicoes" element={<ProtectedRoute><PortalLayout><PortalContributions /></PortalLayout></ProtectedRoute>} />
+                <Route path="/portal/culto-ao-vivo" element={<ProtectedRoute><PortalLayout><PortalLiveService /></PortalLayout></ProtectedRoute>} />
+                <Route path="/portal/agendar" element={<ProtectedRoute><PortalLayout><PortalBooking /></PortalLayout></ProtectedRoute>} />
 
                 {/* Legacy Parent Portal - redirects to unified portal */}
                 <Route path="/parent" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />

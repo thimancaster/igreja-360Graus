@@ -102,12 +102,14 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
       </ScrollArea>
 
       <div className="border-t p-4 space-y-2">
-        <Link to="/app/dashboard" onClick={onNavigate}>
-          <Button variant="outline" className="w-full justify-start gap-3 rounded-xl">
-            <ChevronLeft className="h-4 w-4" />
-            Ir para App Principal
-          </Button>
-        </Link>
+        {showAppLink && (
+          <Link to="/app/dashboard" onClick={onNavigate}>
+            <Button variant="outline" className="w-full justify-start gap-3 rounded-xl">
+              <ChevronLeft className="h-4 w-4" />
+              Ir para App Principal
+            </Button>
+          </Link>
+        )}
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl"
