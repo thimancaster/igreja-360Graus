@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { FaceCheckInMode } from "./FaceCheckInMode";
+import { SecurityLabel } from "./SecurityLabel";
 
 const EVENT_OPTIONS = [
   "Culto Matutino",
