@@ -87,7 +87,7 @@ export function AppSidebar() {
             <span className="text-primary-foreground font-bold text-sm">I360</span>
           </div>
           {!isCollapsed && <div className="flex flex-col">
-              <span className="font-semibold text-xl text-center border-accent border border-solid rounded-3xl shadow-md opacity-75 text-accent bg-primary-foreground">Igreja360</span>
+              <span className="font-semibold text-xl border-accent border border-solid shadow-md text-accent bg-primary-foreground text-center opacity-100 rounded-full">Igreja360</span>
               <span className="text-xs text-primary-foreground">Gestão Financeira</span>
             </div>}
         </div>
