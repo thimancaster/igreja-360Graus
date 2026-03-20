@@ -117,6 +117,10 @@ export default function MinisterioInfantil() {
           <MinistryCalendar />
         </TabsContent>
 
+        <TabsContent value="reports" className="space-y-4">
+          <ClassroomReportPanel />
+        </TabsContent>
+
         <TabsContent value="checkin" className="space-y-4">
           <CheckInPanel />
         </TabsContent>
