@@ -11,7 +11,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0 overflow-visible">
           <AppHeader />
           {children}
         </div>
