@@ -244,7 +244,7 @@ export function MemberImportDialog({ open, onOpenChange }: Props) {
                       {REQUIRED_FIELDS.includes(field) && <span className="text-destructive">*</span>}
                     </div>
                     <Select
-                      value={(mapping as Record<string, string>)[field] || '__none__'}
+                      value={(mapping as unknown as Record<string, string>)[field] || '__none__'}
                       onValueChange={v => updateMapping(field, v)}
                     >
                       <SelectTrigger className="flex-1">
