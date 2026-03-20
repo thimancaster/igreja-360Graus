@@ -446,8 +446,8 @@ export default function ParentDashboard() {
         open={childDialogOpen}
         onOpenChange={setChildDialogOpen}
         onSubmit={handleChildSubmit}
-        defaultValues={editingChild}
-        isEditing={!!editingChild}
+        child={editingChild}
+        isPending={createChild.isPending || updateChild.isPending}
       />
     </motion.div>
   );
