@@ -24,8 +24,8 @@ export function AppHeader() {
   };
 
   return (
-    <header className="h-16 border-b border-white/10 glass-header sticky top-0 z-50">
-      <div className="flex h-full items-center justify-between px-6">
+    <header className="h-16 border-b border-white/10 glass-header sticky top-0 z-[60] overflow-visible">
+      <div className="flex h-full items-center justify-between px-4 md:px-6 overflow-visible">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="text-foreground" />
           <div className="hidden md:block">
