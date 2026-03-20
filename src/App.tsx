@@ -84,6 +84,7 @@ const App: React.FC = () => {
           <Sonner />
           <InstallPrompt />
           <AuthProvider>
+            <ChurchThemeProvider>
             <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><LoadingSpinner size="lg" /></div>}>
               <Routes>
                 {/* Rotas Públicas */}
