@@ -367,7 +367,14 @@ export function MemberDialog({ open, onOpenChange, member }: MemberDialogProps) 
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+              const errorFields = Object.keys(errors);
+              console.error('Validation errors:', errors);
+              toast.error(`Corrija os campos obrigatórios: ${errorFields.map(f => {
+                const labels: Record<string, string> = { full_name: 'Nome', email: 'Email', phone: 'Telefone', birth_date: 'Data de Nascimento', status: 'Status' };
+                return labels[f] || f;
+              }).join(', ')}`);
+            })} className="space-y-4">
     <Tabs defaultValue="pessoal" className="w-full">
               <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full">
                 <TabsTrigger value="pessoal" className="relative">
