@@ -4,8 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type AppRole = 'admin' | 'tesoureiro' | 'pastor' | 'lider' | 'user' | 'parent' | 'membro';
 
-const MASTER_ADMIN_EMAIL = 'thimancaster@hotmail.com';
-
 export function useRole() {
   const { user, loading: authLoading } = useAuth();
 
@@ -73,7 +71,6 @@ export function useRole() {
     enabled: !!user?.id,
   });
 
-  // isLoading deve ser true se auth está carregando OU (tem user E query está carregando)
   const isLoading = authLoading || (!!user?.id && queryLoading);
 
   const hasRole = (role: AppRole): boolean => {
@@ -84,14 +81,12 @@ export function useRole() {
     return rolesList.some(role => hasRole(role));
   };
 
-  const isMasterAdmin = user?.email === MASTER_ADMIN_EMAIL;
-  const isAdmin = hasRole('admin') || isMasterAdmin;
-  const isTesoureiro = hasRole('tesoureiro') || isMasterAdmin;
-  const isPastor = hasRole('pastor') || isMasterAdmin;
-  const isLider = hasRole('lider') || isMasterAdmin;
+  const isAdmin = hasRole('admin');
+  const isTesoureiro = hasRole('tesoureiro');
+  const isPastor = hasRole('pastor');
+  const isLider = hasRole('lider');
   const isUser = hasRole('user');
   const isMembro = hasRole('membro');
-  // Parent is true if they have the role OR if they're linked as a guardian
   const isParent = hasRole('parent') || (isGuardian === true);
   
   // Permissões específicas
@@ -104,10 +99,8 @@ export function useRole() {
   const canViewMinistryTransactions = isLider;
   const canOnlyViewOwnTransactions = isUser && !isAdmin && !isTesoureiro && !isPastor && !isLider;
   
-  // Temporariamente, qualquer usuário logado é considerado privilegiado para acesso interno.
   const isPrivileged = !!user?.id;
 
-  // Função para verificar se o usuário pode acessar um ministério específico
   const canAccessMinistry = (ministryId: string): boolean => {
     if (isAdmin || isTesoureiro || isPastor) return true;
     if (isLider && userMinistries?.includes(ministryId)) return true;
@@ -119,7 +112,6 @@ export function useRole() {
     userMinistries: userMinistries || [],
     hasRole,
     hasAnyRole,
-    isMasterAdmin,
     isAdmin,
     isTesoureiro,
     isPastor,
@@ -129,7 +121,6 @@ export function useRole() {
     isParent,
     isPrivileged,
     isLoading,
-    // Permissões
     canManageUsers,
     canDeleteData,
     canManageTransactions,

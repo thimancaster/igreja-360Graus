@@ -38,6 +38,33 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Verify that the email is pre-approved: must exist as a guardian or member in this church
+    const { data: matchingGuardian } = await adminClient
+      .from('guardians')
+      .select('id')
+      .eq('church_id', church_id)
+      .eq('email', email.trim().toLowerCase())
+      .limit(1);
+
+    const { data: matchingMember } = await adminClient
+      .from('members')
+      .select('id')
+      .eq('church_id', church_id)
+      .eq('email', email.trim().toLowerCase())
+      .limit(1);
+
+    const isPreApproved = (matchingGuardian && matchingGuardian.length > 0) || 
+                          (matchingMember && matchingMember.length > 0);
+
+    if (!isPreApproved) {
+      return new Response(JSON.stringify({ 
+        error: 'Seu email não está cadastrado nesta igreja. Peça ao administrador para cadastrá-lo primeiro.' 
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Create user
     const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
       email,
@@ -47,7 +74,6 @@ Deno.serve(async (req) => {
     });
 
     if (authError) {
-      // Handle duplicate email
       if (authError.message?.includes('already been registered')) {
         return new Response(JSON.stringify({ error: 'Este email já está cadastrado. Faça login.' }), {
           status: 409,
@@ -71,19 +97,13 @@ Deno.serve(async (req) => {
       .insert({ user_id: userId, role: 'membro' });
 
     // Auto-link guardian if email matches
-    const { data: matchingGuardians } = await adminClient
-      .from('guardians')
-      .select('id')
-      .eq('church_id', church_id)
-      .eq('email', email)
-      .is('profile_id', null);
-
-    if (matchingGuardians && matchingGuardians.length > 0) {
-      for (const guardian of matchingGuardians) {
+    if (matchingGuardian && matchingGuardian.length > 0) {
+      for (const guardian of matchingGuardian) {
         await adminClient
           .from('guardians')
           .update({ profile_id: userId })
-          .eq('id', guardian.id);
+          .eq('id', guardian.id)
+          .is('profile_id', null);
       }
     }
 
