@@ -1,51 +1,60 @@
 
 
-# Plano: Filtros de Aniversariantes + Mensagem WhatsApp
+# Plano: Corrigir cadastro de membros + Integrar membros ao sistema de escalas
 
-## Situacao Atual
+## Problema 1: Membros nao estao sendo cadastrados
 
-O `BirthdayCard` mostra apenas aniversariantes do mes corrente via RPC `get_birthdays_this_month`. Sem filtros, sem acao de mensagem.
+### Diagnostico
 
-## Alteracoes
+O formulario de cadastro usa Zod validation com `form.handleSubmit(onSubmit)`. Se qualquer campo falhar na validacao (ex: um campo obrigatorio em outra aba do formulario), o `onSubmit` nunca e chamado e o erro aparece apenas no campo especifico -- que pode estar em outra aba invisivel para o usuario.
 
-### 1. Expandir `BirthdayCard.tsx` com filtros e acoes
+Alem disso, o bloco `catch {}` na linha 345 do `MemberDialog.tsx` engole erros silenciosamente sem feedback.
 
-Adicionar barra de filtros no topo do card:
-- **Filtro por periodo**: Hoje, Esta Semana, Este Mes (default: Hoje)
-- **Contagem** atualizada conforme filtro
-- Filtragem feita no frontend (ja temos todos os aniversariantes do mes)
+### Correcoes
 
-Para "Hoje": mostrar apenas membros cujo dia/mes = hoje.
-Para "Esta Semana": proximos 7 dias.
-Para "Este Mes": todos (comportamento atual).
+**`MemberDialog.tsx`**:
+- Adicionar `console.error` e `toast.error` no bloco `catch` para mostrar erros ao usuario
+- Adicionar indicador visual nas abas que contem erros de validacao (badge vermelho na tab)
+- Verificar se `form.formState.errors` tem erros e mostrar toast quando o submit falha por validacao
+- Relaxar validacao do `marital_status` para aceitar string vazia sem quebrar (ja aceita via `.or(z.literal(''))` mas verificar edge cases)
 
-### 2. Botao "Enviar Parabens" por membro
+## Problema 2: Membros vinculados a ministerios devem virar voluntarios automaticamente
 
-Em cada item da lista, adicionar icone WhatsApp clicavel que:
-- Abre link `https://wa.me/{phone}?text={mensagem}` (funciona sem API)
-- A mensagem padrao e editavel via dialog de configuracao
+### Situacao atual
 
-### 3. Dialog "Configurar Mensagem de Aniversario"
+Quando um membro e cadastrado com ministerios selecionados, apenas a tabela `member_ministries` e preenchida. O sistema de escalas (`Escalas`) usa a tabela `department_volunteers` para listar voluntarios disponiveis. Nao ha conexao entre as duas tabelas.
 
-Botao de engrenagem no header do card abre dialog com:
-- **Textarea** com a mensagem template (ex: "Feliz aniversario, {nome}! Com carinho, Pastor [Nome]")
-- Variaveis disponiveis: `{nome}`, `{igreja}` 
-- **Campo "Remetente"**: nome de quem assina (Pastor, Lider, etc)
-- Salvar no `localStorage` por enquanto (futuro: banco)
+### Solucao
 
-### 4. Botao "Enviar para todos do dia"
+**`useCreateMember` e `useUpdateMember` (useMembers.tsx)**:
+- Apos inserir/atualizar `member_ministries`, tambem criar/atualizar registros em `department_volunteers` para cada ministerio selecionado
+- Se o membro ja existe como voluntario no ministerio, pular (evitar duplicatas via constraint `23505`)
+- Status do voluntario: `active` (sem necessidade de aceitar termo, pois o admin esta cadastrando)
+- Mapear `member.full_name`, `member.email`, `member.phone` para `department_volunteers`
 
-Botao no header que gera links WhatsApp para todos os aniversariantes do filtro ativo, abrindo sequencialmente ou listando em um dialog.
+**Ao remover um ministerio do membro**:
+- Desativar (soft delete) o registro correspondente em `department_volunteers` (`is_active: false`, `status: 'inactive'`)
 
-### 5. Futuro (fase 2): Integracao API WhatsApp
+## Problema 3: Melhorias no sistema de escalas
 
-Quando conectar API do WhatsApp (Evolution API, Z-API, ou WhatsApp Business API), substituir `wa.me` por envio automatico via edge function. Nao implementado agora.
+### Melhorias planejadas
 
-## Arquivos Afetados
+1. **`ScheduleDialog.tsx`**: Mostrar apenas voluntarios ativos do ministerio selecionado (ja funciona, mas garantir que voluntarios criados automaticamente aparecam)
+
+2. **`VolunteerList.tsx`**: Adicionar coluna "Origem" para distinguir voluntarios convidados manualmente vs vinculados via cadastro de membro
+
+3. **`Escalas.tsx`**: Se o usuario e admin/pastor, auto-selecionar o primeiro ministerio disponivel para evitar tela vazia
+
+4. **`DepartmentSelector.tsx`**: Para admins, garantir que todos os ministerios aparecam (mesmo sem voluntarios)
+
+## Arquivos afetados
 
 | Arquivo | Acao |
 |---------|------|
-| `src/components/members/BirthdayCard.tsx` | Reescrever -- filtros + botao WhatsApp + config |
+| `src/components/members/MemberDialog.tsx` | Corrigir -- tratamento de erros, indicadores visuais de validacao |
+| `src/hooks/useMembers.tsx` | Modificar -- sincronizar `department_volunteers` ao salvar ministerios |
+| `src/pages/Escalas.tsx` | Melhorar -- auto-selecao de ministerio para admins |
+| `src/components/schedules/VolunteerList.tsx` | Melhorar -- coluna de origem |
 
-Nenhuma alteracao de banco necessaria.
+Nenhuma alteracao de banco necessaria -- as tabelas `department_volunteers` e `member_ministries` ja existem.
 
