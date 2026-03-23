@@ -25,7 +25,11 @@ export function useAutoUpdateOverdue() {
         });
         
         if (error) {
-          console.error("[useAutoUpdateOverdue] Erro ao atualizar:", error);
+          console.warn("[useAutoUpdateOverdue] Edge function falhou, tentando via RPC:", error.message);
+          // Fallback to RPC if edge function fails (e.g. stale session)
+          await supabase.rpc('update_overdue_transactions');
+          invalidateAllTransactionQueries(queryClient);
+          hasRun.current = true;
           return;
         }
         
