@@ -202,6 +202,25 @@ export function useCreateMember() {
           .insert(ministryLinks);
         
         if (linkError) console.error('Error linking ministries:', linkError);
+
+        // Auto-create department_volunteers for each ministry
+        for (const mid of ministry_ids) {
+          const { error: volError } = await supabase
+            .from('department_volunteers')
+            .insert({
+              church_id: profile.church_id,
+              ministry_id: mid,
+              full_name: memberFields.full_name || member.full_name,
+              email: memberFields.email || null,
+              phone: memberFields.phone || null,
+              status: 'active',
+              is_active: true,
+              role: 'voluntário',
+            });
+          if (volError && volError.code !== '23505') {
+            console.error('Error creating volunteer:', volError);
+          }
+        }
       }
       
       return member;
