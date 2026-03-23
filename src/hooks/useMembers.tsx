@@ -254,6 +254,13 @@ export function useUpdateMember() {
 
       // Update ministry links if provided
       if (ministry_ids !== undefined) {
+        // Get current ministries before removing
+        const { data: currentLinks } = await supabase
+          .from('member_ministries')
+          .select('ministry_id')
+          .eq('member_id', id);
+        const currentMinistryIds = (currentLinks || []).map(l => l.ministry_id);
+
         // Remove existing links
         await supabase
           .from('member_ministries')
@@ -270,6 +277,62 @@ export function useUpdateMember() {
           await supabase
             .from('member_ministries')
             .insert(ministryLinks);
+        }
+
+        // Get member's church_id for volunteer sync
+        const { data: memberRow } = await supabase
+          .from('members')
+          .select('church_id, full_name, email, phone')
+          .eq('id', id)
+          .single();
+
+        if (memberRow) {
+          // Deactivate volunteers for removed ministries
+          const removedMinistries = currentMinistryIds.filter(mid => !ministry_ids.includes(mid));
+          for (const mid of removedMinistries) {
+            await supabase
+              .from('department_volunteers')
+              .update({ is_active: false, status: 'inactive' })
+              .eq('ministry_id', mid)
+              .eq('church_id', memberRow.church_id)
+              .eq('full_name', memberRow.full_name);
+          }
+
+          // Create/reactivate volunteers for added ministries
+          const addedMinistries = ministry_ids.filter(mid => !currentMinistryIds.includes(mid));
+          for (const mid of addedMinistries) {
+            // Try to reactivate first
+            const { data: existing } = await supabase
+              .from('department_volunteers')
+              .select('id')
+              .eq('ministry_id', mid)
+              .eq('church_id', memberRow.church_id)
+              .eq('full_name', memberRow.full_name)
+              .maybeSingle();
+
+            if (existing) {
+              await supabase
+                .from('department_volunteers')
+                .update({ is_active: true, status: 'active', email: memberFields.email || null, phone: memberFields.phone || null })
+                .eq('id', existing.id);
+            } else {
+              const { error: volError } = await supabase
+                .from('department_volunteers')
+                .insert({
+                  church_id: memberRow.church_id,
+                  ministry_id: mid,
+                  full_name: memberRow.full_name,
+                  email: memberFields.email || null,
+                  phone: memberFields.phone || null,
+                  status: 'active',
+                  is_active: true,
+                  role: 'voluntário',
+                });
+              if (volError && volError.code !== '23505') {
+                console.error('Error creating volunteer:', volError);
+              }
+            }
+          }
         }
       }
       
