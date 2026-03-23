@@ -2,6 +2,7 @@ import { LayoutDashboard, ArrowLeftRight, Upload, Sheet, FileText, Settings, Use
 import { NavLink } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, useSidebar } from "@/components/ui/sidebar";
 import { useRole } from "@/hooks/useRole";
+import { cn } from "@/lib/utils";
 
 const baseMenuItems = [{
   title: "Dashboard",
