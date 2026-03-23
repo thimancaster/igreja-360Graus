@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Verify the user is authenticated via JWT claims (no server round-trip)
+    // Verify the user is authenticated via JWT claims
     const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -35,13 +35,30 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use service role to update overdue transactions
+    const userId = claimsData.claims.sub as string;
+
+    // Get the caller's church_id to scope the update
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
+    const { data: profile, error: profileError } = await adminClient
+      .from('profiles')
+      .select('church_id')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile?.church_id) {
+      return new Response(JSON.stringify({ error: 'Church not found for user' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Update overdue transactions ONLY for the caller's church
     const { data, error } = await adminClient
       .from('transactions')
       .update({ status: 'Vencido', updated_at: new Date().toISOString() })
       .eq('status', 'Pendente')
+      .eq('church_id', profile.church_id)
       .lt('due_date', new Date().toISOString().split('T')[0])
       .select('id');
 
