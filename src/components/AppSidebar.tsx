@@ -82,13 +82,13 @@ export function AppSidebar() {
   }
   return <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar lg:glass-sidebar">
       <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-glow px-[10px] py-[10px] mx-[10px] my-0 pr-[10px] pb-[10px] pt-[10px] pl-[10px] gap-[10px]">
-            <span className="text-primary-foreground font-bold text-sm">I360</span>
+        <div className={cn("flex items-center", isCollapsed ? "justify-center" : "gap-3")}>
+          <div className="h-8 w-8 min-w-[2rem] rounded-lg bg-primary flex items-center justify-center shrink-0">
+            <span className="text-primary-foreground font-bold text-[10px] leading-none">I360</span>
           </div>
-          {!isCollapsed && <div className="flex flex-col">
-              <span className="font-semibold text-xl border-accent border border-solid shadow-md text-accent bg-primary-foreground text-center opacity-100 rounded-full">Igreja360</span>
-              <span className="text-xs text-primary-foreground">Gestão Financeira</span>
+          {!isCollapsed && <div className="flex flex-col min-w-0">
+              <span className="font-semibold text-lg text-sidebar-foreground leading-tight">Igreja 360</span>
+              <span className="text-xs text-sidebar-foreground/60">Gestão Completa</span>
             </div>}
         </div>
       </SidebarHeader>
