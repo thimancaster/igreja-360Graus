@@ -342,6 +342,7 @@ export function useUpdateMember() {
       queryClient.invalidateQueries({ queryKey: ['members'] });
       queryClient.invalidateQueries({ queryKey: ['member'] });
       queryClient.invalidateQueries({ queryKey: ['birthdays'] });
+      queryClient.invalidateQueries({ queryKey: ['department-volunteers'] });
       toast.success('Membro atualizado com sucesso!');
     },
     onError: (error: Error) => {
