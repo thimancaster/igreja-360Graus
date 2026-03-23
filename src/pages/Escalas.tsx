@@ -76,9 +76,9 @@ export default function Escalas() {
     }
   }, [statusLoading, hasPendingInvites, navigate]);
 
-  // Auto-select first ministry if user only has one
+  // Auto-select first ministry for all users
   useEffect(() => {
-    if (!selectedMinistry && activeMinistries.length === 1) {
+    if (!selectedMinistry && activeMinistries.length > 0) {
       setSelectedMinistry(activeMinistries[0].ministry_id);
     }
   }, [activeMinistries, selectedMinistry]);

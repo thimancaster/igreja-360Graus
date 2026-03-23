@@ -228,6 +228,7 @@ export function useCreateMember() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] });
       queryClient.invalidateQueries({ queryKey: ['birthdays'] });
+      queryClient.invalidateQueries({ queryKey: ['department-volunteers'] });
       toast.success('Membro cadastrado com sucesso!');
     },
     onError: (error: Error) => {

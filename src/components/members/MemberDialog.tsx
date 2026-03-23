@@ -342,8 +342,9 @@ export function MemberDialog({ open, onOpenChange, member }: MemberDialogProps) 
       onOpenChange(false);
       form.reset();
       setTransferFile(null);
-    } catch {
-      // Errors handled in hooks / toast
+    } catch (err: any) {
+      console.error('Erro ao salvar membro:', err);
+      toast.error(err?.message || 'Erro ao salvar membro. Tente novamente.');
     }
   };
 
