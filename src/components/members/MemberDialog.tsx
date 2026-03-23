@@ -368,13 +368,38 @@ export function MemberDialog({ open, onOpenChange, member }: MemberDialogProps) 
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <Tabs defaultValue="pessoal" className="w-full">
+    <Tabs defaultValue="pessoal" className="w-full">
               <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full">
-                <TabsTrigger value="pessoal">Pessoal</TabsTrigger>
-                <TabsTrigger value="familia">Família</TabsTrigger>
-                <TabsTrigger value="fe">Fé</TabsTrigger>
-                <TabsTrigger value="transfer">Transferência</TabsTrigger>
-                <TabsTrigger value="docs">Documentos</TabsTrigger>
+                <TabsTrigger value="pessoal" className="relative">
+                  Pessoal
+                  {(form.formState.errors.full_name || form.formState.errors.email || form.formState.errors.phone || form.formState.errors.birth_date || form.formState.errors.status) && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="familia" className="relative">
+                  Família
+                  {(form.formState.errors.marital_status || form.formState.errors.spouse_name || form.formState.errors.children_names) && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="fe" className="relative">
+                  Fé
+                  {(form.formState.errors.baptism_date || form.formState.errors.baptism_church || form.formState.errors.holy_spirit_baptism) && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="transfer" className="relative">
+                  Transferência
+                  {(form.formState.errors.previous_church || form.formState.errors.departure_reason) && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="docs" className="relative">
+                  Documentos
+                  {(form.formState.errors.transfer_letter_url) && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" />
+                  )}
+                </TabsTrigger>
               </TabsList>
 
               {/* PESSOAL */}
