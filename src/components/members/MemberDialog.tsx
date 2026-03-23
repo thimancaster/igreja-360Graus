@@ -342,8 +342,9 @@ export function MemberDialog({ open, onOpenChange, member }: MemberDialogProps) 
       onOpenChange(false);
       form.reset();
       setTransferFile(null);
-    } catch {
-      // Errors handled in hooks / toast
+    } catch (err: any) {
+      console.error('Erro ao salvar membro:', err);
+      toast.error(err?.message || 'Erro ao salvar membro. Tente novamente.');
     }
   };
 
@@ -367,14 +368,46 @@ export function MemberDialog({ open, onOpenChange, member }: MemberDialogProps) 
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <Tabs defaultValue="pessoal" className="w-full">
+          <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+              const errorFields = Object.keys(errors);
+              console.error('Validation errors:', errors);
+              toast.error(`Corrija os campos obrigatórios: ${errorFields.map(f => {
+                const labels: Record<string, string> = { full_name: 'Nome', email: 'Email', phone: 'Telefone', birth_date: 'Data de Nascimento', status: 'Status' };
+                return labels[f] || f;
+              }).join(', ')}`);
+            })} className="space-y-4">
+    <Tabs defaultValue="pessoal" className="w-full">
               <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full">
-                <TabsTrigger value="pessoal">Pessoal</TabsTrigger>
-                <TabsTrigger value="familia">Família</TabsTrigger>
-                <TabsTrigger value="fe">Fé</TabsTrigger>
-                <TabsTrigger value="transfer">Transferência</TabsTrigger>
-                <TabsTrigger value="docs">Documentos</TabsTrigger>
+                <TabsTrigger value="pessoal" className="relative">
+                  Pessoal
+                  {(form.formState.errors.full_name || form.formState.errors.email || form.formState.errors.phone || form.formState.errors.birth_date || form.formState.errors.status) && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="familia" className="relative">
+                  Família
+                  {(form.formState.errors.marital_status || form.formState.errors.spouse_name || form.formState.errors.children_names) && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="fe" className="relative">
+                  Fé
+                  {(form.formState.errors.baptism_date || form.formState.errors.baptism_church || form.formState.errors.holy_spirit_baptism) && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="transfer" className="relative">
+                  Transferência
+                  {(form.formState.errors.previous_church || form.formState.errors.departure_reason) && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="docs" className="relative">
+                  Documentos
+                  {(form.formState.errors.transfer_letter_url) && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" />
+                  )}
+                </TabsTrigger>
               </TabsList>
 
               {/* PESSOAL */}
