@@ -197,7 +197,10 @@ export default function Membros() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Members List */}
-        <motion.div variants={itemAnimation} className="lg:col-span-2">
+        <motion.div variants={itemAnimation} className="lg:col-span-2 space-y-3">
+          {/* Duplicate detection banner */}
+          <DuplicateMembersBanner groups={duplicateGroups} onSelectMember={handleEdit} />
+
           <Card>
             <CardHeader className="pb-3">
               <div className="flex flex-col md:flex-row md:items-center gap-3">
@@ -207,10 +210,10 @@ export default function Membros() {
                     placeholder="Buscar por nome, email ou telefone..."
                     className="pl-10"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => { setSearchTerm(e.target.value); setVisibleCount(50); }}
                   />
                 </div>
-                <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+                <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as any); setVisibleCount(50); }}>
                   <SelectTrigger className="w-full md:w-40">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
@@ -221,6 +224,11 @@ export default function Membros() {
                   </SelectContent>
                 </Select>
               </div>
+              {debouncedSearch && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {filteredMembers.length} resultado(s) encontrado(s)
+                </p>
+              )}
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[500px]">
@@ -237,12 +245,9 @@ export default function Membros() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {filteredMembers.map((member, index) => (
-                      <motion.div
+                    {visibleMembers.map((member) => (
+                      <div
                         key={member.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
                         className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                       >
                         <div className="flex-1 min-w-0">
@@ -306,8 +311,20 @@ export default function Membros() {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </motion.div>
+                      </div>
                     ))}
+
+                    {/* Load more */}
+                    {visibleCount < filteredMembers.length && (
+                      <Button
+                        variant="outline"
+                        className="w-full mt-2"
+                        onClick={() => setVisibleCount(prev => prev + 50)}
+                      >
+                        <ChevronDown className="h-4 w-4 mr-2" />
+                        Mostrar mais ({filteredMembers.length - visibleCount} restantes)
+                      </Button>
+                    )}
                   </div>
                 )}
               </ScrollArea>
