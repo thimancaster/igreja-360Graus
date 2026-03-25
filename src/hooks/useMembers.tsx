@@ -103,21 +103,33 @@ export function useMembers() {
     queryFn: async () => {
       if (!profile?.church_id) return [];
       
-      const { data, error } = await supabase
-        .from('members')
-        .select(`
-          *,
-          member_ministries (
-            ministry_id,
-            role,
-            ministries:ministry_id (name)
-          )
-        `)
-        .eq('church_id', profile.church_id)
-        .order('full_name');
+      const PAGE_SIZE = 1000;
+      let allData: Member[] = [];
+      let from = 0;
+      let hasMore = true;
       
-      if (error) throw error;
-      return data as Member[];
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('members')
+          .select(`
+            *,
+            member_ministries (
+              ministry_id,
+              role,
+              ministries:ministry_id (name)
+            )
+          `)
+          .eq('church_id', profile.church_id)
+          .order('full_name')
+          .range(from, from + PAGE_SIZE - 1);
+        
+        if (error) throw error;
+        allData = allData.concat(data as Member[]);
+        hasMore = data.length === PAGE_SIZE;
+        from += PAGE_SIZE;
+      }
+      
+      return allData;
     },
     enabled: !!profile?.church_id,
   });
