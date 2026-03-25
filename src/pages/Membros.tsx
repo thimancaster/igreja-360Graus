@@ -45,23 +45,32 @@ export default function Membros() {
   const { profile } = useAuth();
   
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebouncedValue(searchTerm, 200);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(50);
+
+  const duplicateGroups = useDuplicateMembers(members);
 
   const filteredMembers = useMemo(() => {
     if (!members) return [];
+    const search = debouncedSearch.toLowerCase();
     return members.filter(member => {
-      const matchesSearch = member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.phone?.includes(searchTerm);
+      const matchesSearch = !search ||
+        member.full_name.toLowerCase().includes(search) ||
+        member.email?.toLowerCase().includes(search) ||
+        member.phone?.includes(debouncedSearch);
       const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [members, searchTerm, statusFilter]);
+  }, [members, debouncedSearch, statusFilter]);
+
+  // Reset visible count when filters change
+  const visibleMembers = useMemo(() => filteredMembers.slice(0, visibleCount), [filteredMembers, visibleCount]);
 
   const stats = useMemo(() => {
     if (!members) return { total: 0, active: 0, inactive: 0 };
