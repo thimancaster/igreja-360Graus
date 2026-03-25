@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import {
   Users, Plus, Search, Filter, Edit2, Trash2, Mail, Phone, Calendar,
-  ChevronDown, UserCheck, UserX, MoreHorizontal, FileText, Share2, Copy,
+  ChevronDown, ChevronUp, UserCheck, UserX, MoreHorizontal, FileText, Share2, Copy,
   Upload, Download
 } from 'lucide-react';
 import { toast } from 'sonner';
