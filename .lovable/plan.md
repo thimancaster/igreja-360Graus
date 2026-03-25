@@ -1,60 +1,103 @@
 
 
-# Plano: Corrigir cadastro de membros + Integrar membros ao sistema de escalas
+# Plano: Corrigir visibilidade de membros + Vulnerabilidades de seguranca
 
-## Problema 1: Membros nao estao sendo cadastrados
+## Problema principal: Membros novos nao aparecem
 
-### Diagnostico
+**Causa raiz**: O Supabase tem um limite padrao de 1000 linhas por consulta. Com exatamente 1000 membros ja cadastrados, qualquer novo membro e ignorado pela query -- mesmo sendo inserido com sucesso no banco. Por isso o toast "Membro cadastrado com sucesso!" aparece, mas o membro nao aparece na lista, o contador nao muda, e a busca nao encontra.
 
-O formulario de cadastro usa Zod validation com `form.handleSubmit(onSubmit)`. Se qualquer campo falhar na validacao (ex: um campo obrigatorio em outra aba do formulario), o `onSubmit` nunca e chamado e o erro aparece apenas no campo especifico -- que pode estar em outra aba invisivel para o usuario.
+### Correcao
 
-Alem disso, o bloco `catch {}` na linha 345 do `MemberDialog.tsx` engole erros silenciosamente sem feedback.
+**`src/hooks/useMembers.tsx`** -- `useMembers()`:
+- Implementar paginacao com contagem total usando duas queries:
+  1. `supabase.from('members').select('*', { count: 'exact', head: true })` para obter o total real
+  2. Query paginada com `.range(from, to)` para buscar os dados
+- Alternativa mais simples: usar um loop que busca paginas de 1000 ate nao ter mais dados, concatenando os resultados (abordagem "fetch all with pagination")
+- A abordagem recomendada e a segunda (fetch all), pois a UI ja renderiza todos os membros em uma lista scrollavel sem paginacao visual
 
-### Correcoes
+**`src/pages/Membros.tsx`**:
+- O `stats.total` passara a refletir o total real (todos os membros retornados)
+- Nenhuma mudanca necessaria na UI se o fetch-all funcionar
 
-**`MemberDialog.tsx`**:
-- Adicionar `console.error` e `toast.error` no bloco `catch` para mostrar erros ao usuario
-- Adicionar indicador visual nas abas que contem erros de validacao (badge vermelho na tab)
-- Verificar se `form.formState.errors` tem erros e mostrar toast quando o submit falha por validacao
-- Relaxar validacao do `marital_status` para aceitar string vazia sem quebrar (ja aceita via `.or(z.literal(''))` mas verificar edge cases)
+### Implementacao tecnica (fetch all)
 
-## Problema 2: Membros vinculados a ministerios devem virar voluntarios automaticamente
+```typescript
+export function useMembers() {
+  const { profile } = useAuth();
+  return useQuery({
+    queryKey: ['members', profile?.church_id],
+    queryFn: async () => {
+      if (!profile?.church_id) return [];
+      const PAGE_SIZE = 1000;
+      let allData: Member[] = [];
+      let from = 0;
+      let hasMore = true;
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('members')
+          .select(`*, member_ministries(ministry_id, role, ministries:ministry_id(name))`)
+          .eq('church_id', profile.church_id)
+          .order('full_name')
+          .range(from, from + PAGE_SIZE - 1);
+        if (error) throw error;
+        allData = allData.concat(data as Member[]);
+        hasMore = data.length === PAGE_SIZE;
+        from += PAGE_SIZE;
+      }
+      return allData;
+    },
+    enabled: !!profile?.church_id,
+  });
+}
+```
 
-### Situacao atual
+---
 
-Quando um membro e cadastrado com ministerios selecionados, apenas a tabela `member_ministries` e preenchida. O sistema de escalas (`Escalas`) usa a tabela `department_volunteers` para listar voluntarios disponiveis. Nao ha conexao entre as duas tabelas.
+## Vulnerabilidades de seguranca (scan results)
 
-### Solucao
+### 1. CRITICO: Qualquer usuario pode se dar role admin
 
-**`useCreateMember` e `useUpdateMember` (useMembers.tsx)**:
-- Apos inserir/atualizar `member_ministries`, tambem criar/atualizar registros em `department_volunteers` para cada ministerio selecionado
-- Se o membro ja existe como voluntario no ministerio, pular (evitar duplicatas via constraint `23505`)
-- Status do voluntario: `active` (sem necessidade de aceitar termo, pois o admin esta cadastrando)
-- Mapear `member.full_name`, `member.email`, `member.phone` para `department_volunteers`
+A policy INSERT em `user_roles` tem `has_role(auth.uid(), 'admin') OR (user_id = auth.uid())`. A segunda clausula permite que qualquer usuario autenticado insira `role = 'admin'` para si mesmo.
 
-**Ao remover um ministerio do membro**:
-- Desativar (soft delete) o registro correspondente em `department_volunteers` (`is_active: false`, `status: 'inactive'`)
+**Correcao** (migracao SQL):
+```sql
+DROP POLICY IF EXISTS "..." ON public.user_roles;
+CREATE POLICY "Only admins can insert roles"
+  ON public.user_roles FOR INSERT TO authenticated
+  WITH CHECK (public.has_role(auth.uid(), 'admin'::app_role));
+```
 
-## Problema 3: Melhorias no sistema de escalas
+### 2. CRITICO: guardians_safe sem RLS
 
-### Melhorias planejadas
+A view `guardians_safe` expos PII (nome, email, telefone, CPF) sem nenhuma policy. Qualquer usuario autenticado pode ler dados de todas as igrejas.
 
-1. **`ScheduleDialog.tsx`**: Mostrar apenas voluntarios ativos do ministerio selecionado (ja funciona, mas garantir que voluntarios criados automaticamente aparecam)
+**Correcao** (migracao SQL):
+```sql
+ALTER TABLE public.guardians_safe ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view guardians of their church"
+  ON public.guardians_safe FOR SELECT TO authenticated
+  USING (church_id = public.get_user_church_id());
+```
 
-2. **`VolunteerList.tsx`**: Adicionar coluna "Origem" para distinguir voluntarios convidados manualmente vs vinculados via cadastro de membro
+### 3. Dados bancarios da igreja expostos a todos os membros
 
-3. **`Escalas.tsx`**: Se o usuario e admin/pastor, auto-selecionar o primeiro ministerio disponivel para evitar tela vazia
+A tabela `churches` contem `bank_account`, `bank_agency`, `pix_key`, `cnpj` visiveis para qualquer membro. Nao sera alterada neste ciclo para evitar quebrar funcionalidades existentes, mas sera documentada como divida tecnica.
 
-4. **`DepartmentSelector.tsx`**: Para admins, garantir que todos os ministerios aparecam (mesmo sem voluntarios)
+---
 
 ## Arquivos afetados
 
 | Arquivo | Acao |
 |---------|------|
-| `src/components/members/MemberDialog.tsx` | Corrigir -- tratamento de erros, indicadores visuais de validacao |
-| `src/hooks/useMembers.tsx` | Modificar -- sincronizar `department_volunteers` ao salvar ministerios |
-| `src/pages/Escalas.tsx` | Melhorar -- auto-selecao de ministerio para admins |
-| `src/components/schedules/VolunteerList.tsx` | Melhorar -- coluna de origem |
+| `src/hooks/useMembers.tsx` | Corrigir query para buscar todos os membros (sem limite de 1000) |
+| Migracao SQL | Corrigir policy de `user_roles` (remover self-assignment) |
+| Migracao SQL | Adicionar RLS a `guardians_safe` |
 
-Nenhuma alteracao de banco necessaria -- as tabelas `department_volunteers` e `member_ministries` ja existem.
+## Impacto
+
+- Membros novos passarao a aparecer imediatamente apos cadastro
+- Contadores refletirao o total real
+- Busca funcionara para todos os membros
+- Privilege escalation bloqueada
+- PII de responsaveis protegida por church_id
 
