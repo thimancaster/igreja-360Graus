@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function Escalas() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { isAdmin, isPastor, isTesoureiro, isLider, isLoading: roleLoading } = useRole();
   const { isVolunteer, hasPendingInvites, activeMinistries, isLoading: statusLoading } = useVolunteerStatus();
 
@@ -36,6 +37,23 @@ export default function Escalas() {
   const [selectedSchedule, setSelectedSchedule] = useState<VolunteerSchedule | null>(null);
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
+
+  // Get current user's volunteer ID
+  const { data: myVolunteerData } = useQuery({
+    queryKey: ["my-volunteer-id", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("department_volunteers")
+        .select("id, full_name")
+        .eq("profile_id", user.id)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   // Determine if user can edit schedules
   const canEdit = isAdmin || isPastor || isLider;
