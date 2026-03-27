@@ -5,14 +5,38 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Check, Clock } from "lucide-react";
-import { useVolunteerSchedules } from "@/hooks/useVolunteerSchedules";
+import { useVolunteerSchedules, VolunteerSchedule } from "@/hooks/useVolunteerSchedules";
+import { VolunteerAvailabilityManager } from "@/components/schedules/VolunteerAvailabilityManager";
+import { ScheduleSwapManager } from "@/components/schedules/ScheduleSwapManager";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function PortalSchedules() {
+  const { user } = useAuth();
   const [currentMonth] = useState(new Date());
+  const [selectedSchedule, setSelectedSchedule] = useState<VolunteerSchedule | null>(null);
   const { mySchedules, mySchedulesLoading, confirmSchedule, isConfirming } =
     useVolunteerSchedules(undefined, currentMonth);
+
+  // Get volunteer ID for current user
+  const { data: volunteerData } = useQuery({
+    queryKey: ["portal-volunteer-id", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("department_volunteers")
+        .select("id, full_name")
+        .eq("profile_id", user.id)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   if (mySchedulesLoading) {
     return (
@@ -64,7 +88,10 @@ export default function PortalSchedules() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card>
+                  <Card
+                    className={selectedSchedule?.id === schedule.id ? "ring-2 ring-primary" : ""}
+                    onClick={() => setSelectedSchedule(schedule)}
+                  >
                     <CardContent className="py-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-1">
@@ -95,7 +122,10 @@ export default function PortalSchedules() {
                           ) : (
                             <Button
                               size="sm"
-                              onClick={() => confirmSchedule(schedule.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                confirmSchedule(schedule.id);
+                              }}
                               disabled={isConfirming}
                             >
                               Confirmar
@@ -141,6 +171,21 @@ export default function PortalSchedules() {
             </div>
           )}
         </>
+      )}
+
+      {/* Availability & Swap Management */}
+      {volunteerData && (
+        <div className="space-y-4">
+          <VolunteerAvailabilityManager
+            volunteerId={volunteerData.id}
+            volunteerName={volunteerData.full_name}
+            compact
+          />
+          <ScheduleSwapManager
+            volunteerId={volunteerData.id}
+            schedule={selectedSchedule}
+          />
+        </div>
       )}
     </motion.div>
   );

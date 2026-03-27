@@ -2473,6 +2473,54 @@ export type Database = {
           },
         ]
       }
+      volunteer_availability: {
+        Row: {
+          church_id: string
+          created_at: string
+          end_date: string
+          id: string
+          reason: string | null
+          start_date: string
+          updated_at: string
+          volunteer_id: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          end_date: string
+          id?: string
+          reason?: string | null
+          start_date: string
+          updated_at?: string
+          volunteer_id: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          end_date?: string
+          id?: string
+          reason?: string | null
+          start_date?: string
+          updated_at?: string
+          volunteer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_availability_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_availability_volunteer_id_fkey"
+            columns: ["volunteer_id"]
+            isOneToOne: false
+            referencedRelation: "department_volunteers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       volunteer_commitment_terms: {
         Row: {
           church_id: string
@@ -2510,6 +2558,74 @@ export type Database = {
             columns: ["church_id"]
             isOneToOne: false
             referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteer_schedule_swaps: {
+        Row: {
+          church_id: string
+          created_at: string
+          id: string
+          original_schedule_id: string
+          reason: string | null
+          requester_id: string
+          responded_at: string | null
+          status: Database["public"]["Enums"]["swap_status"]
+          target_volunteer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          id?: string
+          original_schedule_id: string
+          reason?: string | null
+          requester_id: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["swap_status"]
+          target_volunteer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          id?: string
+          original_schedule_id?: string
+          reason?: string | null
+          requester_id?: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["swap_status"]
+          target_volunteer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_schedule_swaps_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_schedule_swaps_original_schedule_id_fkey"
+            columns: ["original_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "volunteer_schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_schedule_swaps_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "department_volunteers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_schedule_swaps_target_volunteer_id_fkey"
+            columns: ["target_volunteer_id"]
+            isOneToOne: false
+            referencedRelation: "department_volunteers"
             referencedColumns: ["id"]
           },
         ]
@@ -2695,6 +2811,16 @@ export type Database = {
       }
     }
     Functions: {
+      check_volunteer_conflict: {
+        Args: {
+          _date: string
+          _end: string
+          _exclude_id?: string
+          _start: string
+          _volunteer_id: string
+        }
+        Returns: boolean
+      }
       generate_receipt_number: {
         Args: { p_church_id: string }
         Returns: string
@@ -2745,6 +2871,7 @@ export type Database = {
         | "user"
         | "parent"
         | "membro"
+      swap_status: "pending" | "accepted" | "rejected" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2881,6 +3008,7 @@ export const Constants = {
         "parent",
         "membro",
       ],
+      swap_status: ["pending", "accepted", "rejected", "cancelled"],
     },
   },
 } as const

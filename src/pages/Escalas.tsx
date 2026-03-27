@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Users, Bell, Settings } from "lucide-react";
+import { Calendar, Users, Bell, CalendarOff, ArrowLeftRight } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { useVolunteerStatus } from "@/hooks/useVolunteerStatus";
 import { useDepartmentVolunteers } from "@/hooks/useDepartmentVolunteers";
@@ -17,11 +17,17 @@ import {
   InviteVolunteerDialog,
   MySchedulesCard,
   VolunteerAnnouncementsPanel,
+  VolunteerAvailabilityManager,
+  ScheduleSwapManager,
 } from "@/components/schedules";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Escalas() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { isAdmin, isPastor, isTesoureiro, isLider, isLoading: roleLoading } = useRole();
   const { isVolunteer, hasPendingInvites, activeMinistries, isLoading: statusLoading } = useVolunteerStatus();
 
@@ -31,6 +37,23 @@ export default function Escalas() {
   const [selectedSchedule, setSelectedSchedule] = useState<VolunteerSchedule | null>(null);
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
+
+  // Get current user's volunteer ID
+  const { data: myVolunteerData } = useQuery({
+    queryKey: ["my-volunteer-id", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("department_volunteers")
+        .select("id, full_name")
+        .eq("profile_id", user.id)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   // Determine if user can edit schedules
   const canEdit = isAdmin || isPastor || isLider;
@@ -202,13 +225,27 @@ export default function Escalas() {
             </TabsContent>
           )}
 
-          <TabsContent value="my-schedules">
+          <TabsContent value="my-schedules" className="space-y-4">
             <MySchedulesCard
               schedules={mySchedules}
               isLoading={mySchedulesLoading}
               onConfirm={confirmSchedule}
               isConfirming={isConfirming}
             />
+
+            {/* Availability & Swaps for volunteers */}
+            {myVolunteerData && (
+              <div className="grid gap-4 md:grid-cols-2">
+                <VolunteerAvailabilityManager
+                  volunteerId={myVolunteerData.id}
+                  volunteerName={myVolunteerData.full_name}
+                />
+                <ScheduleSwapManager
+                  volunteerId={myVolunteerData.id}
+                  schedule={selectedSchedule}
+                />
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="announcements">
