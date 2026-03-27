@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Users, Bell, Settings } from "lucide-react";
+import { Calendar, Users, Bell, CalendarOff, ArrowLeftRight } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { useVolunteerStatus } from "@/hooks/useVolunteerStatus";
 import { useDepartmentVolunteers } from "@/hooks/useDepartmentVolunteers";
@@ -17,8 +17,13 @@ import {
   InviteVolunteerDialog,
   MySchedulesCard,
   VolunteerAnnouncementsPanel,
+  VolunteerAvailabilityManager,
+  ScheduleSwapManager,
 } from "@/components/schedules";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Escalas() {
   const navigate = useNavigate();
