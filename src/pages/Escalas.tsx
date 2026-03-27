@@ -225,13 +225,27 @@ export default function Escalas() {
             </TabsContent>
           )}
 
-          <TabsContent value="my-schedules">
+          <TabsContent value="my-schedules" className="space-y-4">
             <MySchedulesCard
               schedules={mySchedules}
               isLoading={mySchedulesLoading}
               onConfirm={confirmSchedule}
               isConfirming={isConfirming}
             />
+
+            {/* Availability & Swaps for volunteers */}
+            {myVolunteerData && (
+              <div className="grid gap-4 md:grid-cols-2">
+                <VolunteerAvailabilityManager
+                  volunteerId={myVolunteerData.id}
+                  volunteerName={myVolunteerData.full_name}
+                />
+                <ScheduleSwapManager
+                  volunteerId={myVolunteerData.id}
+                  schedule={selectedSchedule}
+                />
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="announcements">
