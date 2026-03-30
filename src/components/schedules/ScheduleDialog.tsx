@@ -21,7 +21,9 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DepartmentVolunteer } from "@/hooks/useDepartmentVolunteers";
 import { VolunteerSchedule, CreateScheduleData } from "@/hooks/useVolunteerSchedules";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ScheduleDialogProps {
   open: boolean;
@@ -51,7 +53,7 @@ export function ScheduleDialog({
   hasConflict,
 }: ScheduleDialogProps) {
   const isEditing = !!selectedSchedule;
-  
+
   const [volunteerId, setVolunteerId] = useState(selectedSchedule?.volunteer_id || "");
   const [shiftStart, setShiftStart] = useState(selectedSchedule?.shift_start?.slice(0, 5) || "09:00");
   const [shiftEnd, setShiftEnd] = useState(selectedSchedule?.shift_end?.slice(0, 5) || "12:00");
@@ -60,6 +62,25 @@ export function ScheduleDialog({
   );
   const [notes, setNotes] = useState(selectedSchedule?.notes || "");
   const [error, setError] = useState("");
+
+  // Check for volunteer unavailability on the selected date
+  const dateStr = selectedDate ? format(selectedDate, "yyyy-MM-dd") : null;
+  const { data: unavailability } = useQuery({
+    queryKey: ["volunteer-availability-check", volunteerId, dateStr],
+    queryFn: async () => {
+      if (!volunteerId || !dateStr) return null;
+      const { data } = await supabase
+        .from("volunteer_availability")
+        .select("id, start_date, end_date, reason")
+        .eq("volunteer_id", volunteerId)
+        .lte("start_date", dateStr)
+        .gte("end_date", dateStr)
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!volunteerId && !!dateStr && open,
+  });
 
   useEffect(() => {
     if (open) {
@@ -83,10 +104,10 @@ export function ScheduleDialog({
       return;
     }
 
-    const dateStr = format(selectedDate, "yyyy-MM-dd");
+    const date = format(selectedDate, "yyyy-MM-dd");
 
     // Check for conflicts
-    if (hasConflict(volunteerId, dateStr, shiftStart, shiftEnd, selectedSchedule?.id)) {
+    if (hasConflict(volunteerId, date, shiftStart, shiftEnd, selectedSchedule?.id)) {
       setError("Este voluntário já está escalado neste horário");
       return;
     }
@@ -107,7 +128,7 @@ export function ScheduleDialog({
         await onSave({
           ministry_id: ministryId,
           volunteer_id: volunteerId,
-          schedule_date: dateStr,
+          schedule_date: date,
           shift_start: shiftStart,
           shift_end: shiftEnd,
           schedule_type: scheduleType,
@@ -123,7 +144,6 @@ export function ScheduleDialog({
 
   const handleDelete = async () => {
     if (!selectedSchedule || !onDelete) return;
-    
     try {
       await onDelete(selectedSchedule.id);
       onOpenChange(false);
@@ -142,7 +162,6 @@ export function ScheduleDialog({
     setError("");
   };
 
-  // Reset form when dialog opens with new data
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
       setVolunteerId(selectedSchedule?.volunteer_id || "");
@@ -190,6 +209,19 @@ export function ScheduleDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Unavailability warning */}
+          {unavailability && (
+            <div className="flex items-start gap-2 p-2.5 rounded-md bg-destructive/10 border border-destructive/30 text-sm text-destructive">
+              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Voluntário indisponível nesta data</p>
+                {unavailability.reason && (
+                  <p className="text-xs mt-0.5 opacity-80">Motivo: {unavailability.reason}</p>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">

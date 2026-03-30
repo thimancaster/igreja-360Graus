@@ -8,3 +8,4 @@ export { VolunteerAnnouncementsPanel } from "./VolunteerAnnouncementsPanel";
 export { CommitmentTermDialog } from "./CommitmentTermDialog";
 export { VolunteerAvailabilityManager } from "./VolunteerAvailabilityManager";
 export { ScheduleSwapManager } from "./ScheduleSwapManager";
+export { TeamAvailabilityCalendar } from "./TeamAvailabilityCalendar";

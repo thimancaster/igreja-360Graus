@@ -32,7 +32,6 @@ const Relatorios = lazy(() => import('@/pages/Relatorios'));
 const Configuracoes = lazy(() => import('@/pages/Configuracoes'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const GerenciarUsuarios = lazy(() => import('@/pages/admin/GerenciarUsuarios'));
-// GerenciarMinisterios foi absorvido por GerenciarIgreja
 const GerenciarIgreja = lazy(() => import('@/pages/admin/GerenciarIgreja'));
 const GerenciarCategorias = lazy(() => import('@/pages/admin/GerenciarCategorias'));
 const GerenciarDados = lazy(() => import('@/pages/admin/GerenciarDados'));
@@ -47,14 +46,6 @@ const Escalas = lazy(() => import('@/pages/Escalas'));
 const AceitarTermoVoluntario = lazy(() => import('@/pages/AceitarTermoVoluntario'));
 const Eventos = lazy(() => import('@/pages/Eventos'));
 const EventRegistrationPage = lazy(() => import('@/pages/EventRegistration'));
-
-// Parent Portal pages (kept for backward compatibility)
-const ParentDashboard = lazy(() => import('@/pages/parent/ParentDashboard'));
-const ParentAuthorizations = lazy(() => import('@/pages/parent/ParentAuthorizations'));
-const ParentHistory = lazy(() => import('@/pages/parent/ParentHistory'));
-const ParentAnnouncements = lazy(() => import('@/pages/parent/ParentAnnouncements'));
-const ParentEvents = lazy(() => import('@/pages/parent/ParentEvents'));
-import { ParentLayout } from '@/components/parent/ParentLayout';
 
 // Portal do Membro (unified)
 const PortalAuth = lazy(() => import('@/pages/portal/PortalAuth'));
@@ -85,70 +76,60 @@ const App: React.FC = () => {
           <InstallPrompt />
           <AuthProvider>
             <ChurchThemeProvider>
-            <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><LoadingSpinner size="lg" /></div>}>
-              <Routes>
-                {/* Rotas Públicas */}
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/landing" element={<LandingPage />} />
-                <Route path="/faq" element={<FAQPage />} />
+              <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><LoadingSpinner size="lg" /></div>}>
+                <Routes>
+                  {/* Rotas Públicas */}
+                  <Route path="/auth" element={<AuthPage />} />
+                  <Route path="/landing" element={<LandingPage />} />
+                  <Route path="/faq" element={<FAQPage />} />
 
-                {/* Rota raiz: redireciona dependendo do auth */}
-                <Route path="/" element={<AuthRedirect />} /> 
+                  {/* Rota raiz: redireciona dependendo do auth */}
+                  <Route path="/" element={<AuthRedirect />} />
 
-                {/* Rotas protegidas com layout (sidebar + header) */}
-                <Route path="/app/dashboard" element={<ProtectedRoute><AppRoute><AppLayout><Dashboard /></AppLayout></AppRoute></ProtectedRoute>} />
-                <Route path="/app/transacoes" element={<ProtectedRoute><AppRoute><AppLayout><Transacoes /></AppLayout></AppRoute></ProtectedRoute>} />
-                <Route path="/app/membros" element={<ProtectedRoute><AppRoute><AppLayout><Membros /></AppLayout></AppRoute></ProtectedRoute>} />
-                <Route path="/app/contribuicoes" element={<ProtectedRoute><AppRoute><AppLayout><Contribuicoes /></AppLayout></AppRoute></ProtectedRoute>} />
-                <Route path="/app/importacao" element={<ProtectedRoute><AppRoute><AppLayout><Importacao /></AppLayout></AppRoute></ProtectedRoute>} />
-                <Route path="/app/integracoes" element={<ProtectedRoute><AppRoute><AppLayout><Integracoes /></AppLayout></AppRoute></ProtectedRoute>} />
-                <Route path="/app/relatorios" element={<ProtectedRoute><AppRoute><AppLayout><Relatorios /></AppLayout></AppRoute></ProtectedRoute>} />
-                <Route path="/app/admin" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><Admin /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
-                <Route path="/app/admin/usuarios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarUsuarios /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
-                <Route path="/app/admin/ministerios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarIgreja /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
-                <Route path="/app/admin/igreja" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarIgreja /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
-                <Route path="/app/admin/categorias" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarCategorias /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
-                <Route path="/app/admin/dados" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarDados /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
-                <Route path="/app/admin/configuracoes-sistema" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><ConfiguracoesSistema /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
-                <Route path="/app/configuracoes" element={<ProtectedRoute><AppRoute><AppLayout><Configuracoes /></AppLayout></AppRoute></ProtectedRoute>} />
-                <Route path="/app/ministerio-infantil" element={<ProtectedRoute><AppRoute><AppLayout><MinisterioInfantil /></AppLayout></AppRoute></ProtectedRoute>} />
-                <Route path="/app/escalas" element={<ProtectedRoute><AppRoute><Escalas /></AppRoute></ProtectedRoute>} />
-                <Route path="/app/eventos" element={<ProtectedRoute><AppRoute><AppLayout><Eventos /></AppLayout></AppRoute></ProtectedRoute>} />
-                <Route path="/app/voluntario/aceitar-termo" element={<ProtectedRoute><AppRoute><AceitarTermoVoluntario /></AppRoute></ProtectedRoute>} />
-                <Route path="/inscricao/:eventId" element={<EventRegistrationPage />} />
-                <Route path="/app/*" element={<ProtectedRoute><AppRoute><AppLayout><NotFound /></AppLayout></AppRoute></ProtectedRoute>} />
+                  {/* Rotas protegidas com layout (sidebar + header) */}
+                  <Route path="/app/dashboard" element={<ProtectedRoute><AppRoute><AppLayout><Dashboard /></AppLayout></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/transacoes" element={<ProtectedRoute><AppRoute><AppLayout><Transacoes /></AppLayout></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/membros" element={<ProtectedRoute><AppRoute><AppLayout><Membros /></AppLayout></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/contribuicoes" element={<ProtectedRoute><AppRoute><AppLayout><Contribuicoes /></AppLayout></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/importacao" element={<ProtectedRoute><AppRoute><AppLayout><Importacao /></AppLayout></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/integracoes" element={<ProtectedRoute><AppRoute><AppLayout><Integracoes /></AppLayout></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/relatorios" element={<ProtectedRoute><AppRoute><AppLayout><Relatorios /></AppLayout></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/admin" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><Admin /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/admin/usuarios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarUsuarios /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/admin/ministerios" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarIgreja /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/admin/igreja" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarIgreja /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/admin/categorias" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarCategorias /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/admin/dados" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><GerenciarDados /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/admin/configuracoes-sistema" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><ConfiguracoesSistema /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/configuracoes" element={<ProtectedRoute><AppRoute><AppLayout><Configuracoes /></AppLayout></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/ministerio-infantil" element={<ProtectedRoute><AppRoute><AppLayout><MinisterioInfantil /></AppLayout></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/escalas" element={<ProtectedRoute><AppRoute><Escalas /></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/eventos" element={<ProtectedRoute><AppRoute><AppLayout><Eventos /></AppLayout></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/voluntario/aceitar-termo" element={<ProtectedRoute><AppRoute><AceitarTermoVoluntario /></AppRoute></ProtectedRoute>} />
+                  <Route path="/inscricao/:eventId" element={<EventRegistrationPage />} />
+                  <Route path="/app/*" element={<ProtectedRoute><AppRoute><AppLayout><NotFound /></AppLayout></AppRoute></ProtectedRoute>} />
 
-                {/* Rotas de fluxo de criação/seleção (fora do layout principal) */}
-                <Route path="/create-church" element={<ProtectedRoute><CreateChurchPage /></ProtectedRoute>} />
-                <Route path="/church-confirmation" element={<ProtectedRoute><ChurchConfirmation /></ProtectedRoute>} />
-                <Route path="/select-church" element={<ProtectedRoute><SelectChurch /></ProtectedRoute>} />
+                  {/* Rotas de fluxo de criação/seleção (fora do layout principal) */}
+                  <Route path="/create-church" element={<ProtectedRoute><CreateChurchPage /></ProtectedRoute>} />
+                  <Route path="/church-confirmation" element={<ProtectedRoute><ChurchConfirmation /></ProtectedRoute>} />
+                  <Route path="/select-church" element={<ProtectedRoute><SelectChurch /></ProtectedRoute>} />
 
-                {/* Portal do Membro (unified) */}
-                <Route path="/portal/auth" element={<PortalAuth />} />
-                <Route path="/portal" element={<ProtectedRoute><PortalLayout><PortalDashboard /></PortalLayout></ProtectedRoute>} />
-                <Route path="/portal/escalas" element={<ProtectedRoute><PortalLayout><PortalSchedules /></PortalLayout></ProtectedRoute>} />
-                <Route path="/portal/comunicados" element={<ProtectedRoute><PortalLayout><PortalAnnouncements /></PortalLayout></ProtectedRoute>} />
-                <Route path="/portal/filhos" element={<ProtectedRoute><PortalLayout><PortalChildren /></PortalLayout></ProtectedRoute>} />
-                <Route path="/portal/perfil" element={<ProtectedRoute><PortalLayout><PortalProfile /></PortalLayout></ProtectedRoute>} />
-                <Route path="/portal/eventos" element={<ProtectedRoute><PortalLayout><PortalEvents /></PortalLayout></ProtectedRoute>} />
-                <Route path="/portal/contribuicoes" element={<ProtectedRoute><PortalLayout><PortalContributions /></PortalLayout></ProtectedRoute>} />
-                <Route path="/portal/culto-ao-vivo" element={<ProtectedRoute><PortalLayout><PortalLiveService /></PortalLayout></ProtectedRoute>} />
-                <Route path="/portal/agendar" element={<ProtectedRoute><PortalLayout><PortalBooking /></PortalLayout></ProtectedRoute>} />
+                  {/* Portal do Membro (unified) */}
+                  <Route path="/portal/auth" element={<PortalAuth />} />
+                  <Route path="/portal" element={<ProtectedRoute><PortalLayout><PortalDashboard /></PortalLayout></ProtectedRoute>} />
+                  <Route path="/portal/escalas" element={<ProtectedRoute><PortalLayout><PortalSchedules /></PortalLayout></ProtectedRoute>} />
+                  <Route path="/portal/comunicados" element={<ProtectedRoute><PortalLayout><PortalAnnouncements /></PortalLayout></ProtectedRoute>} />
+                  <Route path="/portal/filhos" element={<ProtectedRoute><PortalLayout><PortalChildren /></PortalLayout></ProtectedRoute>} />
+                  <Route path="/portal/perfil" element={<ProtectedRoute><PortalLayout><PortalProfile /></PortalLayout></ProtectedRoute>} />
+                  <Route path="/portal/eventos" element={<ProtectedRoute><PortalLayout><PortalEvents /></PortalLayout></ProtectedRoute>} />
+                  <Route path="/portal/contribuicoes" element={<ProtectedRoute><PortalLayout><PortalContributions /></PortalLayout></ProtectedRoute>} />
+                  <Route path="/portal/culto-ao-vivo" element={<ProtectedRoute><PortalLayout><PortalLiveService /></PortalLayout></ProtectedRoute>} />
+                  <Route path="/portal/agendar" element={<ProtectedRoute><PortalLayout><PortalBooking /></PortalLayout></ProtectedRoute>} />
 
-                {/* Legacy Parent Portal - redirects to unified portal */}
-                <Route path="/parent" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
-                <Route path="/parent/children" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
-                <Route path="/parent/authorizations" element={<ProtectedRoute><ParentLayout><ParentAuthorizations /></ParentLayout></ProtectedRoute>} />
-                <Route path="/parent/history" element={<ProtectedRoute><ParentLayout><ParentHistory /></ParentLayout></ProtectedRoute>} />
-                <Route path="/parent/announcements" element={<ProtectedRoute><ParentLayout><ParentAnnouncements /></ParentLayout></ProtectedRoute>} />
-                <Route path="/parent/events" element={<ProtectedRoute><ParentLayout><ParentEvents /></ParentLayout></ProtectedRoute>} />
-                <Route path="/parent/notifications" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
-                <Route path="/parent/settings" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
-
-                {/* Fallback global */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
+                  {/* Fallback global */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </ChurchThemeProvider>
           </AuthProvider>
         </BrowserRouter>

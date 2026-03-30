@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Users, Bell, CalendarOff, ArrowLeftRight } from "lucide-react";
+import { Calendar, Users, Bell, CalendarOff, ArrowLeftRight, Send } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { useVolunteerStatus } from "@/hooks/useVolunteerStatus";
 import { useDepartmentVolunteers } from "@/hooks/useDepartmentVolunteers";
@@ -19,11 +19,23 @@ import {
   VolunteerAnnouncementsPanel,
   VolunteerAvailabilityManager,
   ScheduleSwapManager,
+  TeamAvailabilityCalendar,
 } from "@/components/schedules";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 
 export default function Escalas() {
   const navigate = useNavigate();
@@ -37,6 +49,15 @@ export default function Escalas() {
   const [selectedSchedule, setSelectedSchedule] = useState<VolunteerSchedule | null>(null);
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
+
+  // State for volunteer swap flow
+  const [selectedScheduleForSwap, setSelectedScheduleForSwap] = useState<VolunteerSchedule | null>(null);
+
+  // State for new announcement dialog
+  const [showAnnouncementDialog, setShowAnnouncementDialog] = useState(false);
+  const [announcementTitle, setAnnouncementTitle] = useState("");
+  const [announcementContent, setAnnouncementContent] = useState("");
+  const [announcementPinned, setAnnouncementPinned] = useState(false);
 
   // Get current user's volunteer ID
   const { data: myVolunteerData } = useQuery({
@@ -90,6 +111,8 @@ export default function Escalas() {
     unreadCount,
     myAnnouncementsLoading,
     markAsRead,
+    createAnnouncement,
+    isCreating: isCreatingAnnouncement,
   } = useVolunteerAnnouncements();
 
   // Redirect to accept term if has pending invites
@@ -120,6 +143,30 @@ export default function Escalas() {
     }
   };
 
+  // When a volunteer clicks "Trocar" on one of their schedules
+  const handleRequestSwap = (schedule: any) => {
+    // Cast to VolunteerSchedule for the SwapManager
+    setSelectedScheduleForSwap(schedule as VolunteerSchedule);
+  };
+
+  const handleSendAnnouncement = async () => {
+    if (!announcementTitle.trim() || !announcementContent.trim() || !selectedMinistry) return;
+    try {
+      await createAnnouncement({
+        ministry_id: selectedMinistry,
+        title: announcementTitle.trim(),
+        content: announcementContent.trim(),
+        is_published: announcementPinned, // publish immediately when pinned; else save as draft
+      });
+      setShowAnnouncementDialog(false);
+      setAnnouncementTitle("");
+      setAnnouncementContent("");
+      setAnnouncementPinned(false);
+    } catch {
+      // Error handled by hook
+    }
+  };
+
   if (roleLoading || statusLoading) {
     return (
       <AppLayout>
@@ -138,7 +185,7 @@ export default function Escalas() {
           <Calendar className="h-16 w-16 text-muted-foreground" />
           <h1 className="text-2xl font-bold">Acesso Restrito</h1>
           <p className="text-muted-foreground text-center max-w-md">
-            Você não tem acesso às escalas de voluntários. 
+            Você não tem acesso às escalas de voluntários.
             Aguarde um convite de algum líder de ministério para participar.
           </p>
         </div>
@@ -181,6 +228,12 @@ export default function Escalas() {
               <Calendar className="h-4 w-4" />
               Minhas Escalas
             </TabsTrigger>
+            {canEdit && selectedMinistry && (
+              <TabsTrigger value="team-availability" className="gap-2">
+                <CalendarOff className="h-4 w-4" />
+                Disponibilidade
+              </TabsTrigger>
+            )}
             <TabsTrigger value="announcements" className="gap-2 relative">
               <Bell className="h-4 w-4" />
               Comunicados
@@ -192,6 +245,7 @@ export default function Escalas() {
             </TabsTrigger>
           </TabsList>
 
+          {/* ── TAB: Calendário ── */}
           <TabsContent value="calendar" className="space-y-4">
             {selectedMinistry ? (
               <ScheduleCalendar
@@ -212,6 +266,7 @@ export default function Escalas() {
             )}
           </TabsContent>
 
+          {/* ── TAB: Voluntários ── */}
           {canEdit && selectedMinistry && (
             <TabsContent value="volunteers">
               <VolunteerList
@@ -225,12 +280,14 @@ export default function Escalas() {
             </TabsContent>
           )}
 
+          {/* ── TAB: Minhas Escalas ── */}
           <TabsContent value="my-schedules" className="space-y-4">
             <MySchedulesCard
               schedules={mySchedules}
               isLoading={mySchedulesLoading}
               onConfirm={confirmSchedule}
               isConfirming={isConfirming}
+              onRequestSwap={handleRequestSwap}
             />
 
             {/* Availability & Swaps for volunteers */}
@@ -242,13 +299,33 @@ export default function Escalas() {
                 />
                 <ScheduleSwapManager
                   volunteerId={myVolunteerData.id}
-                  schedule={selectedSchedule}
+                  schedule={selectedScheduleForSwap}
                 />
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="announcements">
+          {/* ── TAB: Disponibilidade da Equipe (líderes) ── */}
+          {canEdit && selectedMinistry && (
+            <TabsContent value="team-availability" className="space-y-4">
+              <TeamAvailabilityCalendar ministryId={selectedMinistry} />
+            </TabsContent>
+          )}
+
+          {/* ── TAB: Comunicados ── */}
+          <TabsContent value="announcements" className="space-y-4">
+            {canEdit && selectedMinistry && (
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => setShowAnnouncementDialog(true)}
+                >
+                  <Send className="h-4 w-4" />
+                  Novo Comunicado
+                </Button>
+              </div>
+            )}
             <VolunteerAnnouncementsPanel
               announcements={myAnnouncements}
               isLoading={myAnnouncementsLoading}
@@ -258,7 +335,7 @@ export default function Escalas() {
           </TabsContent>
         </Tabs>
 
-        {/* Schedule Dialog */}
+        {/* ── Schedule Dialog ── */}
         {selectedMinistry && (
           <ScheduleDialog
             open={showScheduleDialog}
@@ -275,7 +352,7 @@ export default function Escalas() {
           />
         )}
 
-        {/* Invite Dialog */}
+        {/* ── Invite Dialog ── */}
         {selectedMinistry && (
           <InviteVolunteerDialog
             open={showInviteDialog}
@@ -285,6 +362,58 @@ export default function Escalas() {
             isLoading={isInviting}
           />
         )}
+
+        {/* ── New Announcement Dialog ── */}
+        <Dialog open={showAnnouncementDialog} onOpenChange={setShowAnnouncementDialog}>
+          <DialogContent className="sm:max-w-[480px]">
+            <DialogHeader>
+              <DialogTitle>Novo Comunicado</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-2">
+              <div className="grid gap-1.5">
+                <Label htmlFor="ann-title">Título</Label>
+                <Input
+                  id="ann-title"
+                  value={announcementTitle}
+                  onChange={(e) => setAnnouncementTitle(e.target.value)}
+                  placeholder="Ex: Mudança de horário no sábado"
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="ann-content">Mensagem</Label>
+                <Textarea
+                  id="ann-content"
+                  value={announcementContent}
+                  onChange={(e) => setAnnouncementContent(e.target.value)}
+                  placeholder="Escreva o comunicado para os voluntários do ministério..."
+                  rows={4}
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch
+                  id="ann-pinned"
+                  checked={announcementPinned}
+                  onCheckedChange={setAnnouncementPinned}
+                />
+                <Label htmlFor="ann-pinned" className="cursor-pointer">
+                  Fixar comunicado no topo
+                </Label>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowAnnouncementDialog(false)}>
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSendAnnouncement}
+                disabled={isCreatingAnnouncement || !announcementTitle.trim() || !announcementContent.trim()}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Enviar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
