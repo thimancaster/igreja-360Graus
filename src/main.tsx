@@ -1,8 +1,18 @@
-import React from "react"; // Adicionar esta linha
+import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import ErrorBoundary from "./components/ErrorBoundary.tsx"; // Importar ErrorBoundary
+import ErrorBoundary from "./components/ErrorBoundary.tsx";
+
+// ── Apply dark mode by default (user preference via localStorage, else dark) ──
+const savedTheme = localStorage.getItem("igreja360-theme");
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+if (savedTheme === "light") {
+  document.documentElement.classList.add("light");
+} else {
+  // Default: dark
+  document.documentElement.classList.add("dark");
+}
 
 // Register push notification service worker
 if ("serviceWorker" in navigator) {
