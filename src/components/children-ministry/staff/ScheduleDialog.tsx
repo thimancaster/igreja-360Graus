@@ -88,7 +88,7 @@ export function ScheduleDialog({ open, onOpenChange, selectedDate }: ScheduleDia
 
     await createMutation.mutateAsync({
       staff_id: data.staff_id,
-      classroom: data.classroom || undefined,
+      classroom: data.classroom === "all" || !data.classroom ? undefined : data.classroom,
       shift_start: shiftStart.toISOString(),
       shift_end: shiftEnd.toISOString(),
       role: data.role,
@@ -146,7 +146,7 @@ export function ScheduleDialog({ open, onOpenChange, selectedDate }: ScheduleDia
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Todas as salas</SelectItem>
+                      <SelectItem value="all">Todas as salas</SelectItem>
                       {classrooms?.map((classroom) => (
                         <SelectItem key={classroom.id} value={classroom.classroom_name}>
                           {classroom.classroom_name}
