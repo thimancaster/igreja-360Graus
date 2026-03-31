@@ -32,7 +32,7 @@ function ImageCard({
   label,
   badge,
   badgeVariant = "secondary",
-  overlay = "from-black/70 via-black/40 to-transparent",
+  overlay = "from-black/90 via-black/50 to-black/10",
   className = "",
 }: {
   to: string;
@@ -56,7 +56,7 @@ function ImageCard({
           />
           <div className={`absolute inset-0 bg-gradient-to-t ${overlay}`} />
           <div className="absolute bottom-0 left-0 right-0 p-4">
-            <h3 className="text-white font-bold text-lg tracking-wide drop-shadow-lg uppercase">
+            <h3 className="text-white font-extrabold text-lg tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] uppercase">
               {label}
             </h3>
           </div>

@@ -59,17 +59,17 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       {/* Sidebar header with gradient */}
-      <div className="bg-gradient-to-br from-primary to-secondary p-6">
+      <div className="bg-gradient-to-br from-primary/10 to-secondary/10 border-b p-6">
         <div className="flex items-center gap-3">
-          <Avatar className="h-14 w-14 border-2 border-white/30 shadow-lg">
+          <Avatar className="h-14 w-14 border-2 border-primary/20 shadow-sm">
             <AvatarImage src={profile?.avatar_url || undefined} />
-            <AvatarFallback className="bg-white/20 text-white font-bold text-lg">
+            <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
               {profile?.full_name?.[0] || "M"}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <h2 className="font-bold text-white truncate">{profile?.full_name || "Membro"}</h2>
-            <p className="text-sm text-white/70">Portal do Membro</p>
+            <h2 className="font-bold text-foreground truncate">{profile?.full_name || "Membro"}</h2>
+            <p className="text-sm text-muted-foreground">Portal do Membro</p>
           </div>
         </div>
       </div>
@@ -90,7 +90,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
                   "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
                   isActive
                     ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    : "text-foreground/80 hover:bg-muted hover:text-foreground"
                 )}
               >
                 <item.icon className="h-5 w-5" />

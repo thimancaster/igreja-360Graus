@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 /** Converts #RRGGBB → "H S% L%" for use in CSS hsl() */
-function hexToHSL(hex: string): string | null {
-  if (!hex || !hex.startsWith('#')) return null;
+function hexToHSL(hex: string | null | undefined): string | null {
+  if (typeof hex !== 'string' || !hex.startsWith('#')) return null;
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;
   const b = parseInt(hex.slice(5, 7), 16) / 255;
@@ -25,8 +25,8 @@ function hexToHSL(hex: string): string | null {
 }
 
 /** Lightens a hex color slightly for gradient end-stop */
-function lightenHex(hex: string, amount = 15): string {
-  if (!hex.startsWith('#')) return hex;
+function lightenHex(hex: string | null | undefined, amount = 15): string {
+  if (typeof hex !== 'string' || !hex.startsWith('#')) return hex || '#f97316';
   let r = parseInt(hex.slice(1, 3), 16);
   let g = parseInt(hex.slice(3, 5), 16);
   let b = parseInt(hex.slice(5, 7), 16);
