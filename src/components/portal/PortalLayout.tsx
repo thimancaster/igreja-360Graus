@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/useRole";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
+import { useVolunteerStatus } from "@/hooks/useVolunteerStatus";
 import { useVolunteerAnnouncements } from "@/hooks/useVolunteerAnnouncements";
 import {
   Home,
@@ -54,7 +55,13 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const { signOut, profile } = useAuth();
   const { isAdmin, isTesoureiro, isPastor, isLider } = useRole();
+  const { isVolunteer } = useVolunteerStatus();
   const showAppLink = isAdmin || isTesoureiro || isPastor || isLider;
+
+  const filteredNavItems = navItems.filter(item => {
+    if (item.href === "/portal/escalas" && !isVolunteer) return false;
+    return true;
+  });
 
   return (
     <div className="flex h-full flex-col">
@@ -76,7 +83,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
 
       <ScrollArea className="flex-1 p-3">
         <nav className="flex flex-col gap-1">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const isActive =
               location.pathname === item.href ||
               (item.href !== "/portal" && location.pathname.startsWith(item.href));
