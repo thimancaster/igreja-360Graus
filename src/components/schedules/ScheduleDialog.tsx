@@ -61,6 +61,9 @@ export function ScheduleDialog({
     selectedSchedule?.schedule_type || "primary"
   );
   const [notes, setNotes] = useState(selectedSchedule?.notes || "");
+  const [acceptUntil, setAcceptUntil] = useState(
+    selectedSchedule?.accept_until?.slice(0, 16) || ""
+  );
   const [error, setError] = useState("");
 
   // Check for volunteer unavailability on the selected date
@@ -84,18 +87,24 @@ export function ScheduleDialog({
 
   useEffect(() => {
     if (open) {
-      setVolunteerId(selectedSchedule?.volunteer_id || "");
+      setVolunteerId(selectedSchedule?.volunteer_id || "open");
       setShiftStart(selectedSchedule?.shift_start?.slice(0, 5) || "09:00");
       setShiftEnd(selectedSchedule?.shift_end?.slice(0, 5) || "12:00");
       setScheduleType(selectedSchedule?.schedule_type || "primary");
       setNotes(selectedSchedule?.notes || "");
+      setAcceptUntil(selectedSchedule?.accept_until?.slice(0, 16) || "");
       setError("");
     }
   }, [open, selectedSchedule]);
 
   const handleSubmit = async () => {
     if (!volunteerId) {
-      setError("Selecione um voluntário");
+      setError("Selecione um voluntário ou crie uma Vaga Aberta");
+      return;
+    }
+
+    if (volunteerId === "open" && !acceptUntil) {
+      setError("É necessário definir um prazo limite para Vagas Abertas");
       return;
     }
 
@@ -107,7 +116,7 @@ export function ScheduleDialog({
     const date = format(selectedDate, "yyyy-MM-dd");
 
     // Check for conflicts
-    if (hasConflict(volunteerId, date, shiftStart, shiftEnd, selectedSchedule?.id)) {
+    if (volunteerId !== "open" && hasConflict(volunteerId, date, shiftStart, shiftEnd, selectedSchedule?.id)) {
       setError("Este voluntário já está escalado neste horário");
       return;
     }
@@ -115,24 +124,29 @@ export function ScheduleDialog({
     setError("");
 
     try {
+      const volId = volunteerId === "open" ? null : volunteerId;
+      const acceptValue = acceptUntil ? new Date(acceptUntil).toISOString() : null;
+
       if (isEditing && onUpdate) {
         await onUpdate({
           id: selectedSchedule.id,
-          volunteer_id: volunteerId,
+          volunteer_id: volId,
           shift_start: shiftStart,
           shift_end: shiftEnd,
           schedule_type: scheduleType,
           notes: notes || null,
+          accept_until: acceptValue,
         });
       } else {
         await onSave({
           ministry_id: ministryId,
-          volunteer_id: volunteerId,
+          volunteer_id: volId,
           schedule_date: date,
           shift_start: shiftStart,
           shift_end: shiftEnd,
           schedule_type: scheduleType,
           notes: notes || undefined,
+          accept_until: acceptValue,
         });
       }
       onOpenChange(false);
@@ -154,21 +168,23 @@ export function ScheduleDialog({
   };
 
   const resetForm = () => {
-    setVolunteerId("");
+    setVolunteerId("open");
     setShiftStart("09:00");
     setShiftEnd("12:00");
     setScheduleType("primary");
     setNotes("");
+    setAcceptUntil("");
     setError("");
   };
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
-      setVolunteerId(selectedSchedule?.volunteer_id || "");
+      setVolunteerId(selectedSchedule?.volunteer_id || "open");
       setShiftStart(selectedSchedule?.shift_start?.slice(0, 5) || "09:00");
       setShiftEnd(selectedSchedule?.shift_end?.slice(0, 5) || "12:00");
       setScheduleType(selectedSchedule?.schedule_type || "primary");
       setNotes(selectedSchedule?.notes || "");
+      setAcceptUntil(selectedSchedule?.accept_until?.slice(0, 16) || "");
       setError("");
     }
     onOpenChange(newOpen);
@@ -198,9 +214,12 @@ export function ScheduleDialog({
             <Label htmlFor="volunteer">Voluntário</Label>
             <Select value={volunteerId} onValueChange={setVolunteerId}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o voluntário" />
+                <SelectValue placeholder="Selecione o voluntário ou Vaga Aberta" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="open" className="font-bold text-primary">
+                  🔔 Vaga Aberta (Auto-Escalação)
+                </SelectItem>
                 {activeVolunteers.map((volunteer) => (
                   <SelectItem key={volunteer.id} value={volunteer.id}>
                     {volunteer.full_name}
@@ -208,6 +227,27 @@ export function ScheduleDialog({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="accept-until">Data Limite de Resposta (opcional)</Label>
+            <Input
+              id="accept-until"
+              type="datetime-local"
+              value={acceptUntil}
+              onChange={(e) => setAcceptUntil(e.target.value)}
+              className={volunteerId === "open" && !acceptUntil ? "border-destructive ring-destructive" : ""}
+            />
+            {volunteerId === "open" && !acceptUntil && (
+              <p className="text-[10px] text-destructive font-medium -mt-1">
+                Uma vaga aberta obriga que você determine até quando ela ficará solta.
+              </p>
+            )}
+            {volunteerId !== "open" && (
+              <p className="text-[10px] text-muted-foreground -mt-1">
+                Coloque um limite caso queira dar prazo para o voluntário aceitar.
+              </p>
+            )}
           </div>
 
           {/* Unavailability warning */}

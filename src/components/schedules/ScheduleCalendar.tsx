@@ -4,7 +4,7 @@ import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Plus, User, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, User, Clock, BellRing } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { VolunteerSchedule } from "@/hooks/useVolunteerSchedules";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -143,28 +143,36 @@ export function ScheduleCalendar({
 
                 {/* Schedules for this day */}
                 <div className="space-y-1">
-                  {daySchedules.slice(0, 3).map((schedule) => (
+                  {daySchedules.slice(0, 3).map((schedule) => {
+                    const isOpenSlot = !schedule.volunteer_id;
+                    return (
                     <div
                       key={schedule.id}
                       className={cn(
-                        "text-xs p-1 rounded truncate cursor-pointer hover:opacity-80",
-                        schedule.schedule_type === 'primary'
-                          ? "bg-primary/20 text-primary-foreground"
-                          : "bg-secondary/40 text-secondary-foreground",
-                        !schedule.confirmed && "border-l-2 border-warning"
+                        "text-xs p-1 rounded truncate cursor-pointer hover:opacity-80 transition-colors border",
+                        isOpenSlot 
+                          ? "bg-amber-500/10 text-amber-600 border-amber-500/30 dark:text-amber-400 font-semibold"
+                          : schedule.schedule_type === 'primary'
+                            ? "bg-primary/5 text-foreground border-primary/20"
+                            : "bg-secondary/20 text-foreground border-secondary/20",
+                        !schedule.confirmed && !isOpenSlot && "border-l-2 border-l-destructive"
                       )}
                       onClick={(e) => {
                         e.stopPropagation();
                         onScheduleClick?.(schedule);
                       }}
-                      title={`${schedule.volunteer_name} - ${schedule.shift_start.slice(0, 5)} às ${schedule.shift_end.slice(0, 5)}`}
+                      title={`${isOpenSlot ? 'Vaga Aberta' : schedule.volunteer_name} - ${schedule.shift_start.slice(0, 5)} às ${schedule.shift_end.slice(0, 5)}`}
                     >
                       <div className="flex items-center gap-1">
-                        <User className="h-2.5 w-2.5 flex-shrink-0" />
-                        <span className="truncate">{schedule.volunteer_name}</span>
+                        {isOpenSlot ? (
+                          <BellRing className="h-2.5 w-2.5 flex-shrink-0 animate-pulse" />
+                        ) : (
+                          <User className="h-2.5 w-2.5 flex-shrink-0 text-muted-foreground" />
+                        )}
+                        <span className="truncate">{isOpenSlot ? "Vaga Aberta" : schedule.volunteer_name}</span>
                       </div>
                     </div>
-                  ))}
+                  )})}
                   {daySchedules.length > 3 && (
                     <div className="text-xs text-muted-foreground text-center">
                       +{daySchedules.length - 3} mais
@@ -177,19 +185,23 @@ export function ScheduleCalendar({
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-primary/20" />
+        <div className="flex flex-wrap items-center gap-4 mt-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-primary/5 border border-primary/20" />
             <span>Titular</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-secondary/40" />
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-secondary/20 border border-secondary/20" />
             <span>Reserva</span>
           </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded border-l-2 border-warning bg-muted" />
-                    <span>Não confirmado</span>
-                  </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded bg-amber-500/10 border border-amber-500/30" />
+            <span>Vaga Aberta</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded border-l-2 border-l-destructive bg-muted" />
+            <span>Não confirmado</span>
+          </div>
         </div>
       </CardContent>
     </Card>
