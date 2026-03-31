@@ -72,7 +72,7 @@
     --accent:              14 89% 52%;
     --accent-foreground:   0 0% 100%;
     --muted:               0 0% 14%;
-    --muted-foreground:    0 0% 55%;
+    --muted-foreground:    0 0% 65%;
     --destructive:         0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --border:              0 0% 100% / 0.08;
@@ -166,7 +166,7 @@
     --accent:             14 89% 48%;
     --accent-foreground:  0 0% 100%;
     --muted:              0 0% 93%;
-    --muted-foreground:   0 0% 42%;
+    --muted-foreground:   0 0% 35%;
     --destructive:        0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --border:             0 0% 88%;
@@ -213,6 +213,13 @@
   html          { color-scheme: dark; }
   .light        { color-scheme: light; }
 
+  /* ── Light mode: sidebar foreground adapts to dark text ── */
+  .light .sidebar-aurora {
+    background:
+      radial-gradient(ellipse 200px 250px at 30% 0%, hsl(24 95% 50% / 0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 150px 200px at 80% 5%, hsl(38 92% 46% / 0.05) 0%, transparent 70%);
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Geist', 'Inter', system-ui, sans-serif;
@@ -230,6 +237,67 @@
     font-family: 'GeistMono', monospace;
     font-feature-settings: "tnum" 1;
   }
+}
+
+/* ═══════════════════════════════════════
+   LIGHT MODE GLASS OVERRIDES
+   CSS class-level overrides because backdrop-filter
+   brightness values are hardcoded in class definitions.
+   These ensure header/sidebar are white in light mode.
+═══════════════════════════════════════ */
+
+.light .glass {
+  background: hsl(0 0% 100% / 0.72);
+  border-color: hsl(0 0% 0% / 0.08);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04),
+              inset 0 1px 0 rgba(255,255,255,0.95);
+}
+.light .glass-strong {
+  backdrop-filter: blur(48px) saturate(180%) brightness(1.02);
+  -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.02);
+  background: hsl(0 0% 100% / 0.90);
+  border-color: hsl(0 0% 0% / 0.07);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04),
+              inset 0 1px 0 rgba(255,255,255,1);
+}
+.light .glass-ultra {
+  backdrop-filter: blur(56px) saturate(170%) brightness(1.01);
+  -webkit-backdrop-filter: blur(56px) saturate(170%) brightness(1.01);
+  background: hsl(0 0% 100% / 0.96);
+  border-color: hsl(0 0% 0% / 0.06);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.05),
+              inset 0 1px 0 rgba(255,255,255,1);
+}
+.light .glass-thin {
+  background: hsl(0 0% 0% / 0.03);
+  border-color: hsl(0 0% 0% / 0.07);
+  box-shadow: none;
+}
+/* Header: white glass with subtle bottom border */
+.light .glass-header {
+  backdrop-filter: blur(48px) saturate(180%) brightness(1.02);
+  -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.02);
+  background: hsl(0 0% 100% / 0.92);
+  border-bottom: 1px solid hsl(0 0% 0% / 0.07);
+  box-shadow: 0 1px 0 hsl(0 0% 0% / 0.04),
+              0 4px 16px rgba(0,0,0,0.05);
+}
+/* Sidebar: white glass */
+.light .glass-sidebar {
+  backdrop-filter: blur(40px) saturate(160%);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  background: hsl(0 0% 100% / 0.96);
+}
+/* Cards hover in light: lighter lift */
+.light .glass-card:hover {
+  box-shadow: 0 12px 32px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,1);
+  border-color: hsl(24 95% 50% / 0.25);
+}
+/* Stat cards in light */
+.light .stat-card:hover {
+  box-shadow: 0 0 0 1px hsl(24 95% 50% / 0.20),
+              0 12px 32px rgba(0,0,0,0.10),
+              inset 0 1px 0 rgba(255,255,255,1);
 }
 
 /* ═══════════════════════════════════════
