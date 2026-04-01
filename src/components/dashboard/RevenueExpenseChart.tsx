@@ -53,7 +53,7 @@ export const RevenueExpenseChart = ({ data, isLoading }: RevenueExpenseChartProp
       transition={{ duration: 0.6, delay: 0.3 }}
       className="col-span-full"
     >
-      <Card className="overflow-hidden border-border/50 bg-gradient-to-br from-card to-card/80">
+      <Card className="overflow-hidden border-border/50 glass-card">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-lg">
             <motion.div
@@ -82,17 +82,17 @@ export const RevenueExpenseChart = ({ data, isLoading }: RevenueExpenseChartProp
                     <stop offset="95%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 50% / 0.15)" />
                 <XAxis 
                   dataKey="monthLabel" 
                   tickLine={false}
                   axisLine={false}
-                  className="text-xs fill-muted-foreground"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                 />
                 <YAxis 
                   tickLine={false}
                   axisLine={false}
-                  className="text-xs fill-muted-foreground"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                   tickFormatter={(value) => `R$${(value / 1000).toFixed(0)}k`}
                 />
                 <ChartTooltip 

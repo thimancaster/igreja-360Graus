@@ -1,18 +1,11 @@
 import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO, isBefore, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -36,26 +29,21 @@ import {
   CalendarCheck,
   CalendarX,
   Loader2,
-  ChevronRight,
+  Sparkles,
+  Star,
 } from "lucide-react";
 import { useMinistryEvents, MinistryEvent } from "@/hooks/useMinistryEvents";
 import { useParentChildren } from "@/hooks/useParentData";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 
-const EVENT_TYPE_COLORS: Record<string, string> = {
-  service: "bg-blue-500",
-  special: "bg-purple-500",
-  activity: "bg-green-500",
-  meeting: "bg-orange-500",
-};
-
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  service: "Culto",
-  special: "Especial",
-  activity: "Atividade",
-  meeting: "Reunião",
+const EVENT_TYPE_CONFIG: Record<string, { gradient: string; icon: string; label: string }> = {
+  service:  { gradient: "from-blue-400 to-indigo-500",    icon: "⛪", label: "Culto" },
+  special:  { gradient: "from-purple-400 to-violet-500",  icon: "✨", label: "Especial" },
+  activity: { gradient: "from-emerald-400 to-green-500",  icon: "🎮", label: "Atividade" },
+  meeting:  { gradient: "from-amber-400 to-orange-500",   icon: "📋", label: "Reunião" },
 };
 
 export default function ParentEvents() {
@@ -78,7 +66,7 @@ export default function ParentEvents() {
   });
 
   const guardianId = guardianData?.id;
-  
+  const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [registrationDialogOpen, setRegistrationDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<MinistryEvent | null>(null);
   const [selectedChildId, setSelectedChildId] = useState<string>("");
@@ -87,27 +75,13 @@ export default function ParentEvents() {
     const today = startOfDay(new Date());
     const upcoming: MinistryEvent[] = [];
     const past: MinistryEvent[] = [];
-
     events.forEach((event) => {
       const eventDate = startOfDay(parseISO(event.start_datetime));
-      if (isBefore(eventDate, today)) {
-        past.push(event);
-      } else {
-        upcoming.push(event);
-      }
+      isBefore(eventDate, today) ? past.push(event) : upcoming.push(event);
     });
-
     return {
-      upcomingEvents: upcoming.sort(
-        (a, b) =>
-          new Date(a.start_datetime).getTime() -
-          new Date(b.start_datetime).getTime()
-      ),
-      pastEvents: past.sort(
-        (a, b) =>
-          new Date(b.start_datetime).getTime() -
-          new Date(a.start_datetime).getTime()
-      ),
+      upcomingEvents: upcoming.sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()),
+      pastEvents:     past.sort((a, b) => new Date(b.start_datetime).getTime() - new Date(a.start_datetime).getTime()),
     };
   }, [events]);
 
@@ -119,208 +93,222 @@ export default function ParentEvents() {
 
   const confirmRegistration = () => {
     if (!selectedEvent || !selectedChildId || !guardianId) return;
-
-    registerChild({
-      eventId: selectedEvent.id,
-      childId: selectedChildId,
-      guardianId,
-    });
+    registerChild({ eventId: selectedEvent.id, childId: selectedChildId, guardianId });
     setRegistrationDialogOpen(false);
   };
 
   if (isLoading) {
     return (
       <div className="space-y-4 p-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-10 w-full" />
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-32 w-full" />
-        ))}
+        <Skeleton className="h-10 w-52 rounded-2xl" />
+        <div className="flex gap-2">
+          <Skeleton className="h-10 flex-1 rounded-2xl" />
+          <Skeleton className="h-10 flex-1 rounded-2xl" />
+        </div>
+        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-40 w-full rounded-3xl" />)}
       </div>
     );
   }
 
-  const EventCard = ({
-    event,
-    showRegister = false,
-    index = 0,
-  }: {
-    event: MinistryEvent;
-    showRegister?: boolean;
-    index?: number;
-  }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-    >
-      <Card className="overflow-hidden active:scale-[0.98] transition-transform">
-        <div className={`h-1 ${EVENT_TYPE_COLORS[event.event_type]}`} />
-        <CardHeader className="pb-2">
-          <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-base leading-snug">
-              {event.title}
-            </CardTitle>
-            <Badge variant="secondary" className="shrink-0 text-xs">
-              {EVENT_TYPE_LABELS[event.event_type]}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {event.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {event.description}
-            </p>
-          )}
+  const EventCard = ({ event, showRegister = false, index = 0 }: { event: MinistryEvent; showRegister?: boolean; index?: number }) => {
+    const config = EVENT_TYPE_CONFIG[event.event_type] || EVENT_TYPE_CONFIG.activity;
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.06, type: "spring", stiffness: 300, damping: 25 }}
+        whileHover={{ y: -3, scale: 1.01 }}
+      >
+        <Card className="overflow-hidden border-0 rounded-[2rem] shadow-lg shadow-black/5 dark:shadow-black/20 bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl hover:shadow-xl transition-all duration-300 group">
+          {/* Gradient top stripe */}
+          <div className={`h-1.5 bg-gradient-to-r ${config.gradient}`} />
+          <CardContent className="p-5">
+            <div className="flex items-start gap-4">
+              {/* Event type icon */}
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${config.gradient} flex items-center justify-center text-2xl shadow-md shrink-0 group-hover:scale-110 transition-transform`}>
+                {config.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-extrabold text-base leading-snug text-zinc-800 dark:text-zinc-100">{event.title}</h3>
+                  <Badge className={`shrink-0 text-xs rounded-full bg-gradient-to-r ${config.gradient} text-white border-0 shadow-sm`}>
+                    {config.label}
+                  </Badge>
+                </div>
+                {event.description && (
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{event.description}</p>
+                )}
+                <div className="flex flex-wrap gap-3 mt-3 text-xs text-muted-foreground font-medium">
+                  <span className="flex items-center gap-1.5 bg-muted/50 rounded-full px-2.5 py-1">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {format(parseISO(event.start_datetime), "dd 'de' MMMM", { locale: ptBR })}
+                  </span>
+                  {!event.all_day && (
+                    <span className="flex items-center gap-1.5 bg-muted/50 rounded-full px-2.5 py-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {format(parseISO(event.start_datetime), "HH:mm")}
+                    </span>
+                  )}
+                  {event.location && (
+                    <span className="flex items-center gap-1.5 bg-muted/50 rounded-full px-2.5 py-1">
+                      <MapPin className="h-3.5 w-3.5" />
+                      <span className="truncate max-w-[100px]">{event.location}</span>
+                    </span>
+                  )}
+                  {event.max_capacity && (
+                    <span className="flex items-center gap-1.5 bg-muted/50 rounded-full px-2.5 py-1">
+                      <Users className="h-3.5 w-3.5" />
+                      {event.max_capacity} vagas
+                    </span>
+                  )}
+                </div>
+                {showRegister && event.registration_required && (
+                  <Button
+                    onClick={() => handleRegister(event)}
+                    className={cn("mt-4 w-full rounded-2xl text-white font-bold shadow-md bg-gradient-to-r", config.gradient)}
+                    variant="default"
+                  >
+                    <CalendarCheck className="h-4 w-4 mr-2" />
+                    Inscrever Criança
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  };
 
-          <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4" />
-              {format(parseISO(event.start_datetime), "dd/MM", { locale: ptBR })}
-            </span>
-            {!event.all_day && (
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" />
-                {format(parseISO(event.start_datetime), "HH:mm")}
-              </span>
-            )}
-            {event.location && (
-              <span className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4" />
-                <span className="truncate max-w-[120px]">{event.location}</span>
-              </span>
-            )}
-            {event.max_capacity && (
-              <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4" />
-                {event.max_capacity} vagas
-              </span>
-            )}
-          </div>
-
-          {showRegister && event.registration_required && (
-            <Button
-              onClick={() => handleRegister(event)}
-              className="w-full mt-2"
-              variant="outline"
-            >
-              <CalendarCheck className="h-4 w-4 mr-2" />
-              Inscrever Criança
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
+  const tabs: { value: "upcoming" | "past"; label: string; count: number; icon: typeof Calendar }[] = [
+    { value: "upcoming", label: "Próximos", count: upcomingEvents.length, icon: Calendar },
+    { value: "past",     label: "Anteriores", count: pastEvents.length,    icon: CalendarX },
+  ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-4 p-4"
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5 p-4 pb-24 sm:pb-4">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Eventos 🎉</h1>
-        <p className="text-sm text-muted-foreground">
-          Atividades do ministério infantil
-        </p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-emerald-500 to-sky-500 bg-clip-text text-transparent">
+          Eventos 🎉
+        </h1>
+        <p className="text-sm font-medium text-muted-foreground mt-0.5">Atividades do ministério infantil</p>
       </div>
 
-      <Tabs defaultValue="upcoming" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 h-11">
-          <TabsTrigger value="upcoming" className="gap-2 text-sm">
-            <Calendar className="h-4 w-4" />
-            Próximos ({upcomingEvents.length})
-          </TabsTrigger>
-          <TabsTrigger value="past" className="gap-2 text-sm">
-            <CalendarX className="h-4 w-4" />
-            Anteriores
-          </TabsTrigger>
-        </TabsList>
+      {/* Tab Pills */}
+      <div className="flex gap-2 p-1.5 rounded-2xl bg-muted/40 backdrop-blur-sm border border-border/50">
+        {tabs.map(({ value, label, count, icon: Icon }) => (
+          <button
+            key={value}
+            onClick={() => setActiveTab(value)}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
+              activeTab === value
+                ? "bg-white dark:bg-zinc-800 text-foreground shadow-md"
+                : "text-muted-foreground hover:bg-white/40 dark:hover:bg-zinc-800/40"
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            {label}
+            <span className={cn(
+              "text-xs px-1.5 py-0.5 rounded-full font-black",
+              activeTab === value ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+            )}>
+              {count}
+            </span>
+          </button>
+        ))}
+      </div>
 
-        <TabsContent value="upcoming" className="space-y-3 mt-4">
-          {upcomingEvents.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <Calendar className="h-10 w-10 text-muted-foreground mb-3" />
-                <p className="font-medium">Nenhum evento programado</p>
-                <p className="text-sm text-muted-foreground text-center mt-1">
-                  Novos eventos serão exibidos aqui
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            upcomingEvents.map((event, index) => (
-              <EventCard key={event.id} event={event} showRegister index={index} />
-            ))
-          )}
-        </TabsContent>
-
-        <TabsContent value="past" className="space-y-3 mt-4">
-          {pastEvents.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <CalendarX className="h-10 w-10 text-muted-foreground mb-3" />
-                <p className="font-medium">Nenhum evento anterior</p>
-              </CardContent>
-            </Card>
-          ) : (
-            pastEvents.slice(0, 10).map((event, index) => (
-              <div key={event.id} className="opacity-70">
-                <EventCard event={event} index={index} />
-              </div>
-            ))
-          )}
-        </TabsContent>
-      </Tabs>
+      {/* Content */}
+      <AnimatePresence mode="wait">
+        {activeTab === "upcoming" && (
+          <motion.div
+            key="upcoming"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-3"
+          >
+            {upcomingEvents.length === 0 ? (
+              <Card className="rounded-3xl border-0 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl">
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-4">
+                    <Calendar className="h-8 w-8 text-emerald-500" />
+                  </div>
+                  <p className="font-bold text-base">Nenhum evento programado</p>
+                  <p className="text-sm text-muted-foreground text-center mt-1">Fique atento — novos eventos aparecerão aqui!</p>
+                </CardContent>
+              </Card>
+            ) : (
+              upcomingEvents.map((event, index) => <EventCard key={event.id} event={event} showRegister index={index} />)
+            )}
+          </motion.div>
+        )}
+        {activeTab === "past" && (
+          <motion.div
+            key="past"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-3"
+          >
+            {pastEvents.length === 0 ? (
+              <Card className="rounded-3xl border-0 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl">
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-900/30 flex items-center justify-center mb-4">
+                    <CalendarX className="h-8 w-8 text-slate-400" />
+                  </div>
+                  <p className="font-bold text-base">Nenhum evento anterior</p>
+                </CardContent>
+              </Card>
+            ) : (
+              pastEvents.slice(0, 10).map((event, index) => (
+                <div key={event.id} className="opacity-60">
+                  <EventCard event={event} index={index} />
+                </div>
+              ))
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Registration Dialog */}
-      <Dialog
-        open={registrationDialogOpen}
-        onOpenChange={setRegistrationDialogOpen}
-      >
-        <DialogContent className="max-w-sm mx-4">
+      <Dialog open={registrationDialogOpen} onOpenChange={setRegistrationDialogOpen}>
+        <DialogContent className="max-w-sm mx-4 rounded-3xl border-0 glass-ultra">
           <DialogHeader>
-            <DialogTitle>Inscrever Criança</DialogTitle>
-            <DialogDescription>
-              Selecione a criança para o evento "{selectedEvent?.title}"
+            <DialogTitle className="text-lg font-extrabold">🎟️ Inscrever Criança</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Selecione a criança para participar de <strong>"{selectedEvent?.title}"</strong>
             </DialogDescription>
           </DialogHeader>
-
           <div className="py-4">
             <Select value={selectedChildId} onValueChange={setSelectedChildId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma criança" />
+              <SelectTrigger className="rounded-2xl h-12 border-border/50">
+                <SelectValue placeholder="Escolha uma criança 👧👦" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-2xl">
                 {children.map((child) => (
-                  <SelectItem key={child.id} value={child.id}>
-                    {child.full_name} - {child.classroom}
+                  <SelectItem key={child.id} value={child.id} className="rounded-xl">
+                    {child.full_name} — {child.classroom}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-
           <DialogFooter className="flex-col gap-2 sm:flex-row">
-            <Button
-              variant="outline"
-              onClick={() => setRegistrationDialogOpen(false)}
-              className="w-full sm:w-auto"
-            >
+            <Button variant="outline" onClick={() => setRegistrationDialogOpen(false)} className="w-full sm:w-auto rounded-2xl">
               Cancelar
             </Button>
             <Button
               onClick={confirmRegistration}
               disabled={!selectedChildId || isRegistering}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto rounded-2xl bg-gradient-to-r from-emerald-500 to-sky-500 text-white font-bold"
             >
-              {isRegistering ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <CalendarCheck className="h-4 w-4 mr-2" />
-              )}
-              Confirmar
+              {isRegistering ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CalendarCheck className="h-4 w-4 mr-2" />}
+              Confirmar Inscrição
             </Button>
           </DialogFooter>
         </DialogContent>

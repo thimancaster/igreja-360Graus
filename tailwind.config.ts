@@ -77,6 +77,19 @@ export default {
           3: "hsl(var(--aurora-3))",
           4: "hsl(var(--aurora-4))",
         },
+        // Semantic status colors
+        success: {
+          DEFAULT:    "hsl(142 71% 45%)",
+          foreground: "hsl(0 0% 100%)",
+        },
+        warning: {
+          DEFAULT:    "hsl(38 92% 50%)",
+          foreground: "hsl(0 0% 5%)",
+        },
+        info: {
+          DEFAULT:    "hsl(217 91% 60%)",
+          foreground: "hsl(0 0% 100%)",
+        },
       },
 
       borderRadius: {

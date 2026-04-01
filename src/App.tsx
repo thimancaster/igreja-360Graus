@@ -59,7 +59,15 @@ const PortalContributions = lazy(() => import('@/pages/portal/PortalContribution
 const PortalLiveService = lazy(() => import('@/pages/portal/PortalLiveService'));
 const PortalBooking = lazy(() => import('@/pages/portal/PortalBooking'));
 import { PortalLayout } from '@/components/portal/PortalLayout';
+import { ParentLayout } from '@/components/parent/ParentLayout';
 import { useChurchTheme } from '@/hooks/useChurchTheme';
+
+// Portal do Responsável (parent)
+const ParentDashboard = lazy(() => import('@/pages/parent/ParentDashboard'));
+const ParentEvents = lazy(() => import('@/pages/parent/ParentEvents'));
+const ParentAnnouncements = lazy(() => import('@/pages/parent/ParentAnnouncements'));
+const ParentAuthorizations = lazy(() => import('@/pages/parent/ParentAuthorizations'));
+const ParentHistory = lazy(() => import('@/pages/parent/ParentHistory'));
 
 function ChurchThemeProvider({ children }: { children: React.ReactNode }) {
   useChurchTheme();
@@ -125,6 +133,13 @@ const App: React.FC = () => {
                   <Route path="/portal/contribuicoes" element={<ProtectedRoute><PortalLayout><PortalContributions /></PortalLayout></ProtectedRoute>} />
                   <Route path="/portal/culto-ao-vivo" element={<ProtectedRoute><PortalLayout><PortalLiveService /></PortalLayout></ProtectedRoute>} />
                   <Route path="/portal/agendar" element={<ProtectedRoute><PortalLayout><PortalBooking /></PortalLayout></ProtectedRoute>} />
+
+                  {/* Portal do Responsável (parent) */}
+                  <Route path="/parent" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
+                  <Route path="/parent/events" element={<ProtectedRoute><ParentLayout><ParentEvents /></ParentLayout></ProtectedRoute>} />
+                  <Route path="/parent/announcements" element={<ProtectedRoute><ParentLayout><ParentAnnouncements /></ParentLayout></ProtectedRoute>} />
+                  <Route path="/parent/authorizations" element={<ProtectedRoute><ParentLayout><ParentAuthorizations /></ParentLayout></ProtectedRoute>} />
+                  <Route path="/parent/history" element={<ProtectedRoute><ParentLayout><ParentHistory /></ParentLayout></ProtectedRoute>} />
 
                   {/* Fallback global */}
                   <Route path="*" element={<NotFound />} />

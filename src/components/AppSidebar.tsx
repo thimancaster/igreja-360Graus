@@ -71,8 +71,7 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r border-sidebar-border"
-      style={{ background: "hsl(var(--sidebar))" }}
+      className="border-r border-sidebar-border glass-sidebar"
     >
       {/* ── Aurora overlay (adapts via .light .sidebar-aurora) ── */}
       <div className="sidebar-aurora" aria-hidden="true" />
@@ -129,7 +128,7 @@ export function AppSidebar() {
                           isCollapsed ? "justify-center" : "",
                           isActive
                             ? "nav-active text-white font-medium"
-                            : "text-sidebar-foreground/70 font-normal hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                            : "text-sidebar-foreground font-normal hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                         )}
                       >
                         {/* Icon */}
@@ -195,7 +194,7 @@ export function AppSidebar() {
                 <p className="text-xs font-semibold text-sidebar-foreground truncate">
                   {profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0]}
                 </p>
-                <p className="text-[10px] text-sidebar-foreground/50 truncate">{user?.email}</p>
+                <p className="text-[10px] text-sidebar-foreground/60 truncate">{user?.email}</p>
               </motion.div>
             )}
           </AnimatePresence>

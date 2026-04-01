@@ -80,14 +80,21 @@
     --ring:                24 95% 53%;
 
     /* ── Sidebar ── */
-    --sidebar:                    0 0% 5%;
-    --sidebar-foreground:         0 0% 97%;
+    --sidebar:                    0 0% 7%;
+    --sidebar-foreground:         0 0% 96%;
     --sidebar-primary:            24 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:             0 0% 11%;
-    --sidebar-accent-foreground:  0 0% 97%;
-    --sidebar-border:             0 0% 100% / 0.06;
+    --sidebar-accent:             0 0% 14%;
+    --sidebar-accent-foreground:  0 0% 96%;
+    --sidebar-border:             0 0% 100% / 0.08;
     --sidebar-ring:               24 95% 53%;
+
+    /* ── Chart colors (used by Recharts / shadcn ChartContainer) ── */
+    --chart-1: 142 76% 40%;   /* emerald green  — Receitas / Pagas */
+    --chart-2: 142 71% 45%;   /* lighter green */
+    --chart-3: 24 95% 53%;    /* orange brand   — primary */
+    --chart-4: 38 92% 50%;    /* amber           — Pendentes */
+    --chart-5: 0 84% 60%;     /* red             — Despesas / Vencidas */
 
     /* ── Apple Liquid Glass ── */
     /* Dark material: heavy blur + tint + saturation boost */
@@ -174,13 +181,20 @@
     --ring:               24 95% 50%;
 
     --sidebar:                    0 0% 100%;
-    --sidebar-foreground:         0 0% 5%;
+    --sidebar-foreground:         0 0% 10%;
     --sidebar-primary:            24 95% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:             0 0% 96%;
-    --sidebar-accent-foreground:  0 0% 5%;
-    --sidebar-border:             0 0% 88%;
+    --sidebar-accent:             0 0% 94%;
+    --sidebar-accent-foreground:  0 0% 10%;
+    --sidebar-border:             0 0% 85%;
     --sidebar-ring:               24 95% 50%;
+
+    /* ── Chart colors — light mode ── */
+    --chart-1: 142 76% 36%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 24 95% 50%;
+    --chart-4: 38 92% 46%;
+    --chart-5: 0 84% 55%;
 
     /* Apple Light Glass — milky/frosted white */
     --glass-bg:        0 0% 100% / 0.85;
@@ -213,11 +227,11 @@
   html          { color-scheme: dark; }
   .light        { color-scheme: light; }
 
-  /* ── Light mode: sidebar foreground adapts to dark text ── */
+  /* ── Light mode: subtle aurora ── */
   .light .sidebar-aurora {
     background:
-      radial-gradient(ellipse 200px 250px at 30% 0%, hsl(24 95% 50% / 0.07) 0%, transparent 70%),
-      radial-gradient(ellipse 150px 200px at 80% 5%, hsl(38 92% 46% / 0.05) 0%, transparent 70%);
+      radial-gradient(ellipse 200px 250px at 30% 0%, hsl(24 95% 50% / 0.04) 0%, transparent 70%),
+      radial-gradient(ellipse 150px 200px at 80% 5%, hsl(38 92% 46% / 0.03) 0%, transparent 70%);
   }
 
   body {
@@ -284,9 +298,9 @@
 }
 /* Sidebar: white glass */
 .light .glass-sidebar {
-  backdrop-filter: blur(40px) saturate(160%);
-  -webkit-backdrop-filter: blur(40px) saturate(160%);
-  background: hsl(0 0% 100% / 0.96);
+  backdrop-filter: blur(40px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(160%) !important;
+  background: hsl(0 0% 100% / 0.85) !important;
 }
 /* Cards hover in light: lighter lift */
 .light .glass-card:hover {
@@ -298,6 +312,110 @@
   box-shadow: 0 0 0 1px hsl(24 95% 50% / 0.20),
               0 12px 32px rgba(0,0,0,0.10),
               inset 0 1px 0 rgba(255,255,255,1);
+}
+
+/* ═══════════════════════════════════════
+   SIDEBAR — FIXES PARA DARK/LIGHT COLAPSADO
+   O Radix Sidebar às vezes injeta background inline;
+   forçamos a consistência via [data-*] e !important nos casos críticos.
+═══════════════════════════════════════ */
+
+/* Garantir que o fundo do Sidebar seja sempre o correto */
+[data-sidebar="sidebar"] {
+  background-color: hsl(var(--sidebar)) !important;
+  color: hsl(var(--sidebar-foreground)) !important;
+}
+
+/* Menu items: garantir legibilidade em dark/light */
+[data-sidebar="menu-button"] {
+  color: hsl(var(--sidebar-foreground) / 0.85);
+}
+[data-sidebar="menu-button"]:hover,
+[data-sidebar="menu-button"]:focus {
+  background-color: hsl(var(--sidebar-accent));
+  color: hsl(var(--sidebar-accent-foreground));
+}
+
+/* Sidebar collapsed: garantir fundo escuro no dark mode */
+:root [data-state="collapsed"] [data-sidebar="sidebar"] {
+  background-color: hsl(var(--sidebar)) !important;
+}
+
+/* Correção para o painel de conteúdo da sidebar colapsada */
+[data-sidebar="content"] {
+  background-color: transparent;
+  color: hsl(var(--sidebar-foreground));
+}
+
+/* ═══════════════════════════════════════
+   CALENDAR CARDS — CONTRASTE EM DARK MODE
+═══════════════════════════════════════ */
+.calendar-day-card {
+  background: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+.calendar-day-card.is-today {
+  background: hsl(var(--primary) / 0.12);
+  border-color: hsl(var(--primary) / 0.5);
+}
+.light .calendar-day-card {
+  background: hsl(0 0% 97%);
+  border-color: hsl(0 0% 88%);
+}
+.light .calendar-day-card.is-today {
+  background: hsl(24 95% 50% / 0.08);
+  border-color: hsl(24 95% 50% / 0.4);
+}
+
+/* ═══════════════════════════════════════
+   CHART TOOLTIP — GLASSMORPHISM
+═══════════════════════════════════════ */
+.recharts-tooltip-wrapper .recharts-default-tooltip,
+[data-chart] .recharts-tooltip-wrapper > div {
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  background: hsl(var(--glass-bg-strong)) !important;
+  border: 1px solid hsl(var(--glass-border)) !important;
+  border-radius: 12px !important;
+  color: hsl(var(--foreground)) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+.light [data-chart] .recharts-tooltip-wrapper > div,
+.light .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: hsl(0 0% 100% / 0.95) !important;
+  border-color: hsl(0 0% 0% / 0.08) !important;
+  color: hsl(0 0% 5%) !important;
+}
+
+/* ═══════════════════════════════════════
+   CARDS E SUPERFÍCIES — CONSISTÊNCIA GLOBAL
+   Cards sempre legíveis em dark e light
+═══════════════════════════════════════ */
+
+/* Card base em dark: usa surface + border sutil */
+:root .glass-card,
+:root [data-slot="card"] {
+  color: hsl(var(--foreground));
+}
+
+/* Garantir que títulos dentro de cards sejam sempre legíveis */
+[data-slot="card"] h1,
+[data-slot="card"] h2,
+[data-slot="card"] h3,
+[data-slot="card"] h4 {
+  color: hsl(var(--foreground));
+}
+
+/* Select dropdowns herdando o tema corretamente */
+[data-radix-select-content] {
+  background: hsl(var(--popover)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+.light [data-radix-select-content] {
+  background: hsl(0 0% 100%) !important;
+  border-color: hsl(0 0% 85%) !important;
 }
 
 /* ═══════════════════════════════════════
@@ -373,11 +491,24 @@
     box-shadow: 0 1px 0 hsl(0 0% 100% / 0.06), 0 4px 24px rgba(0,0,0,0.30);
   }
 
-  /* Sidebar: dark tinted glass */
+  /* Sidebar: dark tinted glass — overrides Tailwind's bg-sidebar in all states */
   .glass-sidebar {
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
-    background: hsl(var(--sidebar) / 0.92);
+    background: hsl(var(--sidebar)) !important;
+    color: hsl(var(--sidebar-foreground)) !important;
+  }
+  
+  /* Sidebar collapsed (icon-only) state — keep same dark bg */
+  .glass-sidebar [data-collapsible="icon"],
+  .glass-sidebar[data-state="collapsed"],
+  [data-state="collapsed"] .glass-sidebar {
+    background: hsl(var(--sidebar)) !important;
+  }
+  
+  /* Ensure no child of sidebar picks up bg-background */
+  .glass-sidebar > * {
+    background-color: transparent;
   }
 
   /* ── Brand aurora overlay for sidebar ── */

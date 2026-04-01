@@ -52,7 +52,7 @@ export const MonthlyComparisonChart = ({ data, isLoading }: MonthlyComparisonCha
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6, delay: 0.4 }}
     >
-      <Card className="h-full overflow-hidden border-border/50 bg-gradient-to-br from-card to-card/80">
+      <Card className="h-full overflow-hidden border-border/50 glass-card">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-lg">
             <motion.div
@@ -69,17 +69,17 @@ export const MonthlyComparisonChart = ({ data, isLoading }: MonthlyComparisonCha
           <ChartContainer config={chartConfig} className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 50% / 0.15)" vertical={false} />
                 <XAxis 
                   dataKey="monthLabel" 
                   tickLine={false}
                   axisLine={false}
-                  className="text-xs fill-muted-foreground"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                 />
                 <YAxis 
                   tickLine={false}
                   axisLine={false}
-                  className="text-xs fill-muted-foreground"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                   tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                 />
                 <ChartTooltip 

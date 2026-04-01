@@ -7,7 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Baby, Clock, MapPin, Plus, History, Calendar, Megaphone,
-  ChevronRight, AlertCircle, Pencil, Heart, AlertTriangle, QrCode, FileText
+  ChevronRight, AlertCircle, Pencil, Heart, AlertTriangle, QrCode, FileText,
+  Users, Activity, Ticket, Award
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useParentChildren, useParentPresentChildren } from "@/hooks/useParentData";
@@ -19,6 +20,7 @@ import { format, differenceInMinutes, differenceInYears } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Kids color palette
 const CLASSROOM_COLORS: Record<string, string> = {
@@ -35,6 +37,7 @@ const getClassroomColor = (classroom: string) =>
   CLASSROOM_COLORS[classroom] || "from-pink-400 to-purple-400";
 
 export default function ParentDashboard() {
+  const { user, profile } = useAuth();
   const { data: children, isLoading: loadingChildren } = useParentChildren();
   const { data: presentChildren, isLoading: loadingPresent } = useParentPresentChildren();
   const { parentAnnouncements, unreadCount } = useAnnouncements();
@@ -44,6 +47,7 @@ export default function ParentDashboard() {
   const [childDialogOpen, setChildDialogOpen] = useState(false);
   const [editingChild, setEditingChild] = useState<any>(null);
   const [expandedQrId, setExpandedQrId] = useState<string | null>(null);
+  const [showChildrenList, setShowChildrenList] = useState(false); // Controls expanding "Minhas Turmas"
 
   // Fetch latest classroom report for children
   const { data: latestReport } = useQuery({
@@ -102,345 +106,316 @@ export default function ParentDashboard() {
   if (loadingChildren || loadingPresent) {
     return (
       <div className="space-y-4 p-4">
-        <Skeleton className="h-24 w-full rounded-2xl" />
-        <Skeleton className="h-48 w-full rounded-2xl" />
+        <Skeleton className="h-24 w-full rounded-3xl" />
+        <Skeleton className="h-48 w-full rounded-3xl" />
         <div className="grid grid-cols-2 gap-4">
-          <Skeleton className="h-24 w-full rounded-2xl" />
-          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-3xl" />
+          <Skeleton className="h-32 w-full rounded-3xl" />
         </div>
       </div>
     );
   }
 
   const recentAnnouncements = parentAnnouncements?.slice(0, 2) || [];
+  const firstName = profile?.full_name?.split(" ")[0] || "Papai/Mamãe";
+  
+  // Decide what to show on "Upcoming Fun" (Próximas Aventuras)
+  const upcomingEvent = recentAnnouncements[0];
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 space-y-4 p-4">
-      {/* Welcome */}
-      <motion.div
-        initial={{ y: -10, opacity: 0 }}
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 space-y-6 sm:space-y-8 p-1 pb-24 sm:pb-4">
+      
+      {/* 1. HEADER (Mundo Kids & Avatar) */}
+      <div className="flex items-center justify-between mt-2">
+        <div className="space-y-1">
+          <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-pink-500 via-purple-500 to-sky-500 bg-clip-text text-transparent tracking-tight">
+            Mundo Kids
+          </h1>
+          <p className="font-bold text-lg sm:text-2xl text-zinc-800 dark:text-zinc-100 flex items-center gap-2">
+            Olá, {firstName}! <motion.span animate={{ rotate: [0, 20, 0] }} transition={{ duration: 0.6, repeat: 2, repeatDelay: 2 }} className="inline-block text-2xl">👋</motion.span>
+          </p>
+          <p className="text-sm font-medium text-muted-foreground/80">Bem-vindo(a) à central da família.</p>
+        </div>
+        <motion.div whileHover={{ scale: 1.05 }} className="relative shrink-0">
+          <div className="absolute inset-0 bg-gradient-to-tr from-pink-400 to-sky-400 rounded-full blur-md opacity-30" />
+          <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-white dark:border-zinc-800 shadow-xl shadow-pink-500/20 relative z-10 bg-white">
+            <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url} />
+            <AvatarFallback className="bg-gradient-to-br from-pink-400 to-purple-500 text-white font-bold text-xl sm:text-3xl">
+              {firstName[0]}
+            </AvatarFallback>
+          </Avatar>
+        </motion.div>
+      </div>
+
+      {/* 2. UPCOMING FUN (Próximas Aventuras) */}
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 200, damping: 15 }}
-        className="space-y-1"
+        transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
       >
-        <h1 className="text-2xl font-bold tracking-tight">
-          Olá! <motion.span animate={{ rotate: [0, 20, 0] }} transition={{ duration: 0.6, repeat: 2, repeatDelay: 2 }} className="inline-block">👋</motion.span>
-        </h1>
-        <p className="text-muted-foreground">Acompanhe seus filhos em tempo real 💜</p>
+        <Card className="relative overflow-hidden border-0 rounded-[2.5rem] bg-gradient-to-br from-white/80 to-white/40 dark:from-zinc-900/80 dark:to-zinc-900/40 backdrop-blur-2xl shadow-xl shadow-sky-500/5 hover:shadow-2xl transition-all duration-500 group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-amber-300 via-orange-300 to-transparent rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700" />
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-gradient-to-tr from-sky-300 via-indigo-300 to-transparent rounded-full blur-2xl opacity-30" />
+          
+          <CardContent className="p-6 sm:p-8 relative z-10 flex items-center gap-6">
+            <div className="rounded-3xl bg-amber-100 dark:bg-amber-900/30 p-4 h-24 w-24 flex items-center justify-center shrink-0 shadow-inner">
+              <span className="text-5xl drop-shadow-sm">🎢</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-xs font-bold mb-2 uppercase tracking-wide">
+                <Calendar className="h-3 w-3" /> Próximas Aventuras
+              </div>
+              <h2 className="text-xl sm:text-2xl font-extrabold truncate text-zinc-800 dark:text-zinc-100">
+                {upcomingEvent ? upcomingEvent.title : "Dia das Crianças Especial"}
+              </h2>
+              <p className="text-sm font-medium text-muted-foreground line-clamp-2 mt-1">
+                {upcomingEvent ? upcomingEvent.content : "No próximo domingo, venha celebrar no Culto da Família com a gente! Traga seus filhos para um dia inesquecível."}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
-      {/* Present Children */}
-      {presentChildren && presentChildren.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="border-0 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 shadow-lg shadow-emerald-100/50 dark:shadow-none rounded-2xl overflow-hidden">
-            <div className="p-4 space-y-3">
-              <h2 className="flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-300">
-                <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-                  <MapPin className="h-5 w-5" />
-                </motion.div>
-                Filhos Presentes ✅
-              </h2>
-              {presentChildren.map((checkIn: any, i: number) => (
-                <motion.div
-                  key={checkIn.id}
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="rounded-xl border-0 bg-white/80 dark:bg-card/80 backdrop-blur p-3 space-y-3 shadow-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`rounded-full p-0.5 bg-gradient-to-br ${getClassroomColor(checkIn.children?.classroom)}`}>
-                        <Avatar className="h-12 w-12 border-2 border-white">
-                          <AvatarImage src={checkIn.children?.photo_url || undefined} />
-                          <AvatarFallback className="bg-white text-sm font-bold">
-                            {checkIn.children?.full_name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <div>
-                        <p className="font-bold">{checkIn.children?.full_name}</p>
-                        <p className="text-sm text-muted-foreground">{checkIn.children?.classroom}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge className="gap-1 bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300">
-                        <Clock className="h-3 w-3" />
-                        {getTimePresent(checkIn.checked_in_at)}
-                      </Badge>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Entrada: {format(new Date(checkIn.checked_in_at), "HH:mm", { locale: ptBR })}
-                      </p>
-                    </div>
-                  </div>
-
-                  {checkIn.qr_code && (
-                    <div className="border-t border-emerald-100 dark:border-emerald-900/30 pt-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full gap-2 rounded-xl border-emerald-200 dark:border-emerald-800"
-                        onClick={() => setExpandedQrId(expandedQrId === checkIn.id ? null : checkIn.id)}
-                      >
-                        <QrCode className="h-4 w-4" />
-                        {expandedQrId === checkIn.id ? "Ocultar QR Code" : "Mostrar QR Code para Retirada"}
-                      </Button>
-                      <AnimatePresence>
-                        {expandedQrId === checkIn.id && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="flex flex-col items-center gap-2 pt-3">
-                              <div className="rounded-xl border-2 border-emerald-200 bg-white p-4">
-                                <QRCodeSVG value={checkIn.qr_code} size={200} level="H" includeMargin={false} />
-                              </div>
-                              <p className="text-xs text-muted-foreground text-center max-w-[240px]">
-                                Apresente este QR Code para a retirada da criança
-                              </p>
-                              <Badge variant="outline" className="text-xs font-mono">
-                                {checkIn.label_number || checkIn.qr_code.slice(-8)}
-                              </Badge>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
+      {/* 3. QUATRO BOTÕES PÍLULA (Mockup: Register, Classes, Check-In, Activities) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { id: "register", label: "Cadastrar", icon: <Plus className="h-7 w-7" />, color: "from-pink-400 to-rose-500 text-white", action: handleAddChild },
+          { id: "classes", label: "Minhas Turmas", icon: <Users className="h-7 w-7" />, color: "from-sky-400 to-blue-500 text-white", action: () => setShowChildrenList(!showChildrenList), badge: children?.length },
+          { id: "checkin", label: "Check-in VIP", icon: <QrCode className="h-7 w-7" />, color: "from-amber-400 to-orange-500 text-white", action: () => {
+              if (presentChildren && presentChildren.length > 0) {
+                setExpandedQrId(presentChildren[0].id);
+              } else {
+                 goToTab("overview");
+              }
+          }, badge: presentChildren?.length },
+          { id: "activities", label: "Histórico", icon: <Activity className="h-7 w-7" />, color: "from-violet-400 to-purple-500 text-white", action: () => goToTab("history") },
+        ].map((btn, i) => (
+          <motion.div
+            key={btn.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 + (i * 0.1), type: "spring", stiffness: 300, damping: 20 }}
+            whileHover={{ scale: 1.03, y: -5 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={btn.action}
+            className="cursor-pointer"
+          >
+            <div className={`h-full rounded-[2rem] bg-gradient-to-br ${btn.color} p-5 shadow-lg shadow-${btn.color.split("-")[1].split(" ")[0]}/30 relative overflow-hidden group`}>
+              <div className="absolute -top-10 -right-10 w-24 h-24 bg-white/20 blur-xl rounded-full group-hover:scale-150 transition-transform duration-500" />
+              <div className="flex flex-col items-center justify-center text-center gap-3 relative z-10 h-[100px]">
+                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm shadow-inner shadow-white/10">
+                  {btn.icon}
+                </div>
+                <span className="font-extrabold text-sm sm:text-base tracking-wide drop-shadow-sm">{btn.label}</span>
+                {btn.badge !== undefined && btn.badge > 0 && (
+                  <Badge className="absolute -top-2 -right-2 bg-white text-zinc-800 hover:bg-white border-none font-black text-xs h-6 w-6 flex items-center justify-center p-0 rounded-full shadow-lg">
+                    {btn.badge}
+                  </Badge>
+                )}
+              </div>
             </div>
-          </Card>
-        </motion.div>
-      )}
+          </motion.div>
+        ))}
+      </div>
 
-      {/* Classroom Report Card */}
-      {latestReport && (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <Card className="border-0 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-2xl shadow-sm">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <div className="rounded-full bg-amber-100 dark:bg-amber-900/30 p-2 shrink-0">
-                  <FileText className="h-5 w-5 text-amber-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-amber-600 font-semibold uppercase tracking-wide">Relatório de Aula</p>
-                  <p className="font-bold text-sm mt-0.5 truncate">{latestReport.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {latestReport.classroom} • {format(new Date(latestReport.event_date), "dd/MM", { locale: ptBR })}
-                    {latestReport.teacher_name && ` • ${latestReport.teacher_name}`}
-                  </p>
-                  <p className="text-sm mt-2 line-clamp-2 text-muted-foreground">{latestReport.content}</p>
-                </div>
+      {/* 4. CENTRAL DOS PAIS (Parent Hub: Event Calendar & Leader Board) */}
+      <div className="space-y-4 pt-4">
+        <h2 className="font-extrabold text-xl ml-2 flex items-center gap-2">
+          Central dos Pais <span className="text-2xl">🏡</span>
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card onClick={() => goToTab("events")} className="cursor-pointer border-0 rounded-[2.5rem] bg-white/60 dark:bg-black/20 backdrop-blur-xl shadow-lg hover:shadow-xl hover:bg-white/80 dark:hover:bg-white/5 transition-all group overflow-hidden relative">
+            <div className="absolute right-0 top-0 h-full w-32 bg-gradient-to-l from-emerald-400/10 to-transparent pointer-events-none" />
+            <CardContent className="p-6 flex items-center gap-5 relative z-10">
+              <div className="h-16 w-16 rounded-[1.5rem] bg-gradient-to-br from-emerald-400 to-teal-500 shadow-inner flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform">
+                <Calendar className="h-8 w-8" />
               </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg text-zinc-800 dark:text-zinc-100">Calendário de Eventos</h3>
+                <p className="text-sm font-medium text-muted-foreground mt-0.5">Programação completa de aulas e recados</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-zinc-400 group-hover:text-emerald-500 transition-colors" />
             </CardContent>
           </Card>
-        </motion.div>
-      )}
 
-      {/* Unread announcements */}
-      {unreadCount > 0 && (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <div onClick={() => goToTab("announcements")} className="cursor-pointer active:scale-[0.98] transition-transform">
-            <Card className="border-0 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 rounded-2xl shadow-sm">
-              <CardContent className="flex items-center justify-between py-4">
-                <div className="flex items-center gap-3">
+          <Card onClick={() => goToTab("announcements")} className="cursor-pointer border-0 rounded-[2.5rem] bg-white/60 dark:bg-black/20 backdrop-blur-xl shadow-lg hover:shadow-xl hover:bg-white/80 dark:hover:bg-white/5 transition-all group overflow-hidden relative">
+            <div className="absolute right-0 top-0 h-full w-32 bg-gradient-to-l from-amber-400/10 to-transparent pointer-events-none" />
+            <CardContent className="p-6 flex items-center gap-5 relative z-10">
+              <div className="h-16 w-16 rounded-[1.5rem] bg-gradient-to-br from-amber-400 to-orange-500 shadow-inner flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform">
+                <Award className="h-8 w-8" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg text-zinc-800 dark:text-zinc-100">Quadro de Heróis</h3>
+                <p className="text-sm font-medium text-muted-foreground mt-0.5">Avisos urgentes e conquistas da turma</p>
+              </div>
+              <Badge variant="destructive" className="ml-1 h-6 w-6 p-0 flex items-center justify-center rounded-full text-xs font-bold shadow-md opacity-90">
+                {unreadCount > 0 ? unreadCount : "!"}
+              </Badge>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* ==== HIDDEN PANELS REVEALED BY BUTTONS ==== */}
+      
+      {/* VIP PASS PANEL (Revealed when Check-In VIP button is clicked, or always if we want, but following mockup it's hidden) */}
+      <AnimatePresence>
+        {expandedQrId && presentChildren && presentChildren.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden mt-6"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between ml-1">
+                <h2 className="flex items-center gap-2 font-extrabold text-xl text-foreground">
+                  🎟️ VIP Heroes Aguardando
+                </h2>
+                <Button variant="ghost" size="sm" onClick={() => setExpandedQrId(null)} className="rounded-full text-muted-foreground">
+                  Fechar
+                </Button>
+              </div>
+              {presentChildren.map((checkIn: any, i: number) => {
+                const gradient = getClassroomColor(checkIn.children?.classroom);
+                const isExpanded = expandedQrId === checkIn.id;
+                if (!isExpanded) return null; // Show only the selected one, or all? Let's show all that are expanded.
+                
+                return (
                   <motion.div
-                    className="rounded-full bg-rose-100 dark:bg-rose-900/30 p-2"
-                    animate={{ scale: [1, 1.05, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    key={checkIn.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative overflow-hidden rounded-[2.5rem] border border-amber-400 dark:border-amber-500 shadow-[0_0_30px_rgba(251,191,36,0.3)] bg-gradient-to-br from-white/90 to-white/70 dark:from-black/80 dark:to-black/60 backdrop-blur-2xl"
                   >
-                    <Megaphone className="h-5 w-5 text-rose-600" />
-                  </motion.div>
-                  <div>
-                    <p className="font-bold text-sm">
-                      {unreadCount} {unreadCount === 1 ? "comunicado novo" : "comunicados novos"} 📬
-                    </p>
-                    <p className="text-xs text-muted-foreground">Toque para ver</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-              </CardContent>
-            </Card>
-          </div>
-        </motion.div>
-      )}
+                    <div className={`absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br ${gradient} rounded-full blur-3xl opacity-30`} />
+                    <div className={`absolute -bottom-10 -left-10 w-40 h-40 bg-gradient-to-tr ${gradient} rounded-full blur-3xl opacity-30`} />
 
-      {/* Children Grid */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-bold text-lg">Meus Filhos 👧👦</h2>
-          <Button size="sm" onClick={handleAddChild} className="gap-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white border-0">
-            <Plus className="h-4 w-4" />
-            Cadastrar
-          </Button>
-        </div>
-
-        {children && children.length > 0 ? (
-          <div className="grid gap-3">
-            {children.map((child: any, index: number) => (
-              <motion.div
-                key={child.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.08, type: "spring", stiffness: 200, damping: 20 }}
-              >
-                <Card className="overflow-hidden border-0 rounded-2xl shadow-md hover:shadow-lg transition-shadow active:scale-[0.98]">
-                  <div className={`h-1.5 bg-gradient-to-r ${getClassroomColor(child.classroom)}`} />
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className={`rounded-full p-0.5 bg-gradient-to-br ${getClassroomColor(child.classroom)}`}>
-                        <Avatar className="h-16 w-16 border-2 border-white">
-                          <AvatarImage src={child.photo_url || undefined} />
-                          <AvatarFallback className="text-lg font-bold bg-white">
-                            {child.full_name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
+                    <div className="p-6 relative z-10 flex flex-col items-center">
+                      <div className="w-full flex items-center justify-between mb-6">
+                         <div className="flex items-center gap-3">
+                           <Avatar className="h-10 w-10 border-2 border-white dark:border-zinc-800">
+                             <AvatarImage src={checkIn.children?.photo_url || undefined} />
+                             <AvatarFallback className="font-bold text-xs">{(checkIn.children?.full_name || "U")[0]}</AvatarFallback>
+                           </Avatar>
+                           <div>
+                             <p className="font-bold">{checkIn.children?.full_name}</p>
+                             <Badge variant="outline" className="text-[10px] h-4 mt-0.5">{checkIn.children?.classroom}</Badge>
+                           </div>
+                         </div>
+                         <div className="inline-flex items-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2.5 py-1 gap-1 text-[10px] font-bold">
+                           <Clock className="h-3 w-3" /> {getTimePresent(checkIn.checked_in_at)}
+                         </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold truncate">{child.full_name}</h3>
-                        <p className="text-sm text-muted-foreground">{child.classroom}</p>
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {child.birth_date && (
-                            <Badge variant="outline" className="text-xs rounded-full bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-950/30 dark:border-sky-800 dark:text-sky-300">
-                              🎂 {getAge(child.birth_date)}
-                            </Badge>
-                          )}
-                          {child.allergies && (
-                            <Badge className="text-xs rounded-full bg-red-50 border-red-200 text-red-700 dark:bg-red-950/30 dark:border-red-800 dark:text-red-300 gap-0.5">
-                              <AlertTriangle className="h-3 w-3" />
-                              Alergia
-                            </Badge>
-                          )}
+
+                      {/* Confetti relative container */}
+                      <div className="relative w-full flex flex-col items-center justify-center py-4">
+                        {['left-[10%]', 'right-[15%]', 'left-[80%]', 'right-[80%]'].map((pos, i) => (
+                          <motion.div 
+                            key={`confetti-${i}`}
+                            className={`absolute top-0 w-2.5 h-2.5 rounded-sm ${i % 2 === 0 ? 'bg-amber-400' : 'bg-sky-400'} ${pos}`}
+                            animate={{ y: [0, 150], opacity: [1, 0], rotate: [0, 360] }}
+                            transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4 }}
+                          />
+                        ))}
+                        <div className="rounded-[2rem] p-4 bg-white shadow-2xl shadow-indigo-500/10 border-4 border-amber-400/30 relative z-10">
+                          <QRCodeSVG value={checkIn.qr_code} size={220} level="H" includeMargin={false} />
                         </div>
+                        <Badge className="font-mono font-bold mt-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 border-0 tracking-widest px-4 py-1.5 rounded-xl">
+                          CODE: {checkIn.label_number || checkIn.qr_code.slice(-8)}
+                        </Badge>
                       </div>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="shrink-0 rounded-full"
-                        onClick={() => handleEditChild(child)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
                     </div>
-
-                    {(child.allergies || child.medications || child.special_needs) && (
-                      <div className="mt-3 pt-3 border-t border-dashed space-y-1.5">
-                        {child.allergies && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                            <span className="text-red-500">⚠️</span>
-                            <span className="truncate">Alergias: {child.allergies}</span>
-                          </p>
-                        )}
-                        {child.medications && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                            <span>💊</span>
-                            <span className="truncate">Medicações: {child.medications}</span>
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <Card className="border-0 rounded-2xl bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20">
-            <CardContent className="flex flex-col items-center justify-center py-10">
-              <motion.span
-                className="text-5xl mb-3"
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                👶
-              </motion.span>
-              <p className="font-bold text-center">Nenhum filho cadastrado</p>
-              <p className="text-sm text-muted-foreground text-center mt-1">
-                Cadastre seus filhos para acompanhar no ministério infantil
-              </p>
-              <Button onClick={handleAddChild} className="mt-4 gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white border-0">
-                <Plus className="h-4 w-4" />
-                Cadastrar Filho
-              </Button>
-            </CardContent>
-          </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
 
-      {/* Quick Actions */}
-      <div className="space-y-3">
-        <h2 className="font-bold text-lg">Ações Rápidas ⚡</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { tab: "authorizations", icon: "🛡️", label: "Autorizações", gradient: "from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20" },
-            { tab: "history", icon: "📋", label: "Histórico", gradient: "from-sky-50 to-blue-50 dark:from-sky-950/20 dark:to-blue-950/20" },
-            { tab: "events", icon: "🎉", label: "Eventos", gradient: "from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20" },
-            { tab: "announcements", icon: "📢", label: "Comunicados", gradient: "from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20", badge: unreadCount },
-          ].map(({ tab, icon, label, gradient, badge }, i) => (
-            <motion.div
-              key={tab}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 + i * 0.08 }}
-              onClick={() => goToTab(tab)}
-              className="cursor-pointer"
-            >
-              <Card className={`h-full border-0 rounded-2xl bg-gradient-to-br ${gradient} shadow-sm hover:shadow-md active:scale-[0.96] transition-all`}>
-                <CardContent className="flex flex-col items-center justify-center py-6 text-center relative">
-                  <motion.span className="text-3xl mb-2" whileHover={{ scale: 1.2, rotate: 5 }}>
-                    {icon}
-                  </motion.span>
-                  <p className="font-bold text-sm">{label}</p>
-                  {badge && badge > 0 && (
-                    <Badge variant="destructive" className="absolute top-2 right-2 h-5 min-w-5 px-1.5 rounded-full text-xs">
-                      {badge}
-                    </Badge>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+      {/* CHILDREN LIST PANEL (Revealed when "Minhas Turmas" button is clicked) */}
+      <AnimatePresence>
+        {showChildrenList && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden mt-6"
+          >
+            <div className="space-y-4 pt-4 border-t border-white/40 dark:border-white/10">
+              <div className="flex items-center justify-between ml-1">
+                <h2 className="font-extrabold text-xl">Meus Alunos / Filhos 👧👦</h2>
+                <Button size="sm" variant="ghost" onClick={() => setShowChildrenList(false)} className="rounded-full text-muted-foreground">
+                  Ocultar
+                </Button>
+              </div>
 
-      {/* Recent Announcements */}
-      {recentAnnouncements.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-bold text-lg">Comunicados Recentes 📣</h2>
-            <Button variant="ghost" size="sm" className="gap-1 text-primary" onClick={() => goToTab("announcements")}>
-              Ver todos <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {recentAnnouncements.map((announcement: any) => (
-              <div key={announcement.id} onClick={() => goToTab("announcements")} className="cursor-pointer">
-                <Card className={`rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow active:scale-[0.98] ${!announcement.is_read ? "bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20" : ""}`}>
-                  <CardContent className="py-3">
-                    <div className="flex items-start gap-3">
-                      <div className={`rounded-full p-2 shrink-0 ${announcement.priority === "urgent" ? "bg-red-100" : "bg-muted"}`}>
-                        {announcement.priority === "urgent" ? (
-                          <AlertCircle className="h-4 w-4 text-red-600" />
-                        ) : (
-                          <Megaphone className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm truncate">{announcement.title}</p>
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{announcement.content}</p>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
-                    </div>
+              {children && children.length > 0 ? (
+                <div className="grid gap-3">
+                  {children.map((child: any, index: number) => (
+                    <motion.div
+                      key={child.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.08, type: "spring", stiffness: 200, damping: 20 }}
+                    >
+                      <Card className="overflow-hidden border border-white/40 dark:border-white/5 rounded-[2rem] shadow-lg shadow-[rgba(0,0,0,0.03)] bg-white/60 dark:bg-black/20 backdrop-blur hover:shadow-xl transition-all">
+                        <div className={`h-2 bg-gradient-to-r ${getClassroomColor(child.classroom)}`} />
+                        <CardContent className="p-5">
+                          <div className="flex items-start sm:items-center gap-4">
+                            <div className={`rounded-full p-1 bg-gradient-to-br ${getClassroomColor(child.classroom)} shadow-md shrink-0`}>
+                              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-[3px] border-white dark:border-zinc-800">
+                                <AvatarImage src={child.photo_url || undefined} />
+                                <AvatarFallback className="text-xl font-extrabold bg-white dark:bg-zinc-800 dark:text-white">
+                                  {child.full_name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
+                            <div className="flex-1 min-w-0 py-1">
+                              <h3 className="font-extrabold text-lg sm:text-xl truncate bg-gradient-to-r from-zinc-800 to-zinc-500 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent">
+                                {child.full_name}
+                              </h3>
+                              <p className="text-sm font-medium text-muted-foreground">{child.classroom}</p>
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                {child.birth_date && (
+                                  <Badge variant="outline" className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-card border-sky-200 text-sky-600 dark:border-sky-800 dark:text-sky-400 shadow-sm">
+                                    🎂 {getAge(child.birth_date)}
+                                  </Badge>
+                                )}
+                                {child.allergies && (
+                                  <Badge className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-700 border-0">
+                                    <AlertTriangle className="h-3 w-3 mr-1" /> Alergia
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <Button
+                              size="icon"
+                              variant="secondary"
+                              className="shrink-0 rounded-full h-10 w-10 bg-black/5 dark:bg-white/10 hover:bg-black/10 text-muted-foreground hover:text-foreground"
+                              onClick={() => handleEditChild(child)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <Card className="border-0 rounded-3xl bg-white/40 dark:bg-black/20 backdrop-blur pb-4">
+                  <CardContent className="flex flex-col items-center justify-center pt-8 text-center text-muted-foreground">
+                    <p>Você não cadastrou nenuma criança ainda!</p>
                   </CardContent>
                 </Card>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <PortalChildDialog
         open={childDialogOpen}

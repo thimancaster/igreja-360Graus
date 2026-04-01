@@ -197,7 +197,7 @@ export const QuickActionsBar: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-center gap-3 bg-muted/50 p-2 rounded-lg"
+      className="flex items-center gap-3 glass-thin p-2 rounded-xl"
     >
       <span className="text-sm font-medium text-muted-foreground px-2">
         Ações Rápidas:

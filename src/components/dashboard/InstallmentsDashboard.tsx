@@ -28,9 +28,9 @@ import {
 } from "recharts";
 
 const COLORS = {
-  paid: "hsl(var(--chart-2))",
-  pending: "hsl(var(--chart-4))",
-  overdue: "hsl(var(--chart-1))",
+  paid: "hsl(142, 71%, 45%)",     /* emerald green */
+  pending: "hsl(38, 92%, 50%)",   /* amber */
+  overdue: "hsl(0, 84%, 60%)",    /* red */
 };
 
 interface DetailSheetState {
@@ -303,7 +303,16 @@ export function InstallmentsDashboard() {
                     wrapperStyle={{ fontSize: "12px" }}
                     formatter={(value) => <span className="text-xs sm:text-sm">{value}</span>}
                   />
-                  <Tooltip formatter={(value) => `${value} parcela(s)`} />
+                  <Tooltip 
+                    formatter={(value) => `${value} parcela(s)`}
+                    contentStyle={{
+                      background: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      color: 'hsl(var(--foreground))',
+                      fontSize: '12px',
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -321,11 +330,12 @@ export function InstallmentsDashboard() {
             <CardContent>
               <ResponsiveContainer width="100%" height={200} className="sm:!h-[250px]">
                 <BarChart data={stats.monthlyProjection}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 50% / 0.2)" vertical={false} />
                   <XAxis 
                     dataKey="monthLabel" 
-                    className="text-xs"
-                    tick={{ fontSize: 10 }}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
                   />
                   <YAxis
                     tickFormatter={(value) =>
@@ -334,18 +344,26 @@ export function InstallmentsDashboard() {
                         compactDisplay: "short",
                       }).format(value)
                     }
-                    className="text-xs"
-                    tick={{ fontSize: 10 }}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
                     width={45}
                   />
                   <Tooltip
                     formatter={(value: number) => formatCurrency(value)}
                     labelFormatter={(label) => `Mês: ${label}`}
+                    contentStyle={{
+                      background: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      color: 'hsl(var(--foreground))',
+                      fontSize: '12px',
+                    }}
                   />
                   <Bar
                     dataKey="totalDue"
                     name="Parcelas a Vencer"
-                    fill="hsl(var(--primary))"
+                    fill="hsl(24, 95%, 53%)"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>

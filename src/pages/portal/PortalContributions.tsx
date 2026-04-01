@@ -158,7 +158,7 @@ export default function PortalContributions() {
 
                 {/* QR Code - custom image or generated */}
                 <div className="flex justify-center">
-                  <div className="bg-white p-4 rounded-2xl shadow-sm">
+                  <div className="bg-white p-4 rounded-2xl shadow-lg shadow-black/10 border border-border/10">
                     {(church as any).pix_qr_image_url ? (
                       <img src={(church as any).pix_qr_image_url} alt="QR Code PIX" className="max-w-[200px] rounded-lg" />
                     ) : (

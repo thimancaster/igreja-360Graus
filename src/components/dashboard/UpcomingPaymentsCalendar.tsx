@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDueTransactionAlerts, DueTransaction } from "@/hooks/useDueTransactionAlerts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { format, addDays, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
@@ -106,24 +107,23 @@ export const UpcomingPaymentsCalendar: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                         onClick={() => handleDayClick(day)}
-                        className={`
-                          flex-1 min-w-[60px] p-2 rounded-lg text-center transition-all
-                          ${count > 0 ? "cursor-pointer hover:scale-105" : "cursor-default"}
-                          ${isToday ? "bg-primary/10 border-2 border-primary" : "bg-muted/30 hover:bg-muted/50"}
-                          ${count > 0 ? "ring-2 ring-warning/30" : ""}
-                        `}
+                        className={cn(
+                          "calendar-day-card flex-1 min-w-[60px] p-2 rounded-xl text-center transition-all duration-200",
+                          count > 0 ? "cursor-pointer hover:scale-105 ring-1 ring-amber-500/30" : "cursor-default",
+                          isToday ? "is-today" : "",
+                        )}
                       >
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-muted-foreground font-medium">
                           {format(day, "EEE", { locale: ptBR })}
                         </div>
-                        <div className={`text-lg font-bold ${isToday ? "text-primary" : ""}`}>
+                        <div className={`text-lg font-bold text-foreground ${isToday ? "text-primary" : ""}`}>
                           {format(day, "dd")}
                         </div>
                         {count > 0 ? (
                           <div className="space-y-1">
                             <Badge
                               variant="secondary"
-                              className="text-xs px-1.5 py-0"
+                              className="text-xs px-1.5 py-0 bg-amber-500/20 text-amber-600 dark:text-amber-400 border-0"
                             >
                               {count}
                             </Badge>

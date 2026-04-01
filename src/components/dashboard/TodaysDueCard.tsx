@@ -136,7 +136,7 @@ export const TodaysDueCard: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between p-2 rounded-lg bg-background/60 hover:bg-background/80 transition-colors"
+                className="flex items-center justify-between p-2 rounded-lg bg-surface-2/60 hover:bg-surface-2/90 transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate text-sm">{transaction.description}</p>

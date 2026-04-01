@@ -101,7 +101,7 @@ export const OverdueTransactionsCard: React.FC = () => {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between p-3 bg-background rounded-lg border"
+                className="flex items-center justify-between p-3 bg-surface-2/80 rounded-lg border border-border/50"
               >
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{transaction.description}</p>

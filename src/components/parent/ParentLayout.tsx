@@ -29,7 +29,7 @@ interface ParentLayoutProps {
 
 const sidebarNavItems = [
   { href: "/parent", label: "Início", icon: Home },
-  { href: "/parent/children", label: "Meus Filhos", icon: Baby },
+  { href: "/portal/filhos", label: "Meus Filhos", icon: Baby },
   { href: "/parent/announcements", label: "Comunicados", icon: Megaphone },
   { href: "/parent/events", label: "Eventos", icon: Calendar },
   { href: "/parent/authorizations", label: "Autorizações", icon: Shield },

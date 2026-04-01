@@ -62,7 +62,7 @@ export const BalanceAreaChart = ({ data, isLoading, period, onPeriodChange }: Ba
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6, delay: 0.5 }}
     >
-      <Card className="h-full overflow-hidden border-border/50 bg-gradient-to-br from-card to-card/80">
+      <Card className="h-full overflow-hidden border-border/50 glass-card">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -108,17 +108,17 @@ export const BalanceAreaChart = ({ data, isLoading, period, onPeriodChange }: Ba
                     />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 50% / 0.15)" />
                 <XAxis 
                   dataKey="monthLabel" 
                   tickLine={false}
                   axisLine={false}
-                  className="text-xs fill-muted-foreground"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                 />
                 <YAxis 
                   tickLine={false}
                   axisLine={false}
-                  className="text-xs fill-muted-foreground"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                   tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                 />
                 <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
