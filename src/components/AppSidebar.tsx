@@ -41,13 +41,13 @@ const iconAccentMap: Record<string, string> = {
   "Membros":       "icon-violet",
   "Contribuições": "icon-success",
   "Min. Infantil": "icon-secondary",
-  "Eventos":       "icon-brand",
+  "Eventos":       "icon-primary",
   "Escalas":       "icon-primary",
   "Importação":    "icon-violet",
   "Integrações":   "icon-cyan",
   "Relatórios":    "icon-violet",
-  "Configurações": "",
-  "Meu Portal":    "icon-brand",
+  "Configurações": "icon-muted",
+  "Meu Portal":    "icon-primary",
   "Administração": "icon-danger",
 };
 
@@ -124,17 +124,17 @@ export function AppSidebar() {
                         to={item.url}
                         end={item.url === "/app/dashboard" || item.url === "/portal"}
                         className={cn(
-                          "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
+                          "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
                           isCollapsed ? "justify-center" : "",
                           isActive
                             ? "nav-active"
-                            : "text-sidebar-foreground font-normal hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground/90 font-normal hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                         )}
                       >
                         {/* Icon */}
                         <span className={cn(
-                          "flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all duration-200",
-                          isActive ? "bg-primary/10" : iconClass || "text-sidebar-foreground/50"
+                          "flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition-all duration-200",
+                          isActive ? iconClass : iconClass || "text-sidebar-foreground/50"
                         )}>
                           <item.icon className="h-4 w-4" />
                         </span>

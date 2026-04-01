@@ -482,10 +482,10 @@
 
   /* Glass Elevated — specific for dashboard financial cards */
   .glass-elevated {
-    background: hsl(var(--card) / 0.45) !important;
+    background: hsl(var(--card) / 0.40) !important;
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
     border-radius: var(--radius);
     box-shadow: var(--glass-shadow);
   }
@@ -540,22 +540,19 @@
   /* ── Nav active state ── */
   /* ── Nav active state: Vidro Iluminado ── */
   .nav-active {
-    background: hsl(var(--primary) / 0.18) !important;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: hsl(var(--primary) / 0.15) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-left: 4px solid hsl(var(--primary)) !important;
     box-shadow: none !important;
     border-radius: 0 8px 8px 0 !important; /* Sharp left edge for the border */
     transition: all 0.25s ease;
+    color: hsl(var(--sidebar-foreground) / 0.95);
+    font-weight: 500;
   }
   
-  /* Text and Icon Contrast: Pure White (Dark) / Pure Black (Light) */
-  .nav-active, .nav-active * {
-    color: #ffffff !important;
-    font-weight: 600 !important;
-  }
-  .light .nav-active, .light .nav-active * {
-    color: #000000 !important;
+  .light .nav-active {
+    color: hsl(var(--sidebar-foreground));
   }
 
   .nav-active::before {
@@ -622,16 +619,17 @@
   .stat-card-danger::after    { background: radial-gradient(circle, hsl(0 84% 60%), transparent 70%); }
 
 /* ══════════════════════════════════════
-   ICON CONTAINERS
+   ICON CONTAINERS (Pill Icons)
 ══════════════════════════════════════ */
-  .icon-brand    { background: var(--gradient-brand); box-shadow: var(--glow-primary); color: white; @apply rounded-lg; }
-  .icon-primary  { background: hsl(var(--brand-1) / 0.15); color: hsl(var(--brand-1)); @apply rounded-lg; }
-  .icon-secondary{ background: hsl(var(--brand-2) / 0.15); color: hsl(var(--brand-2)); @apply rounded-lg; }
-  .icon-success  { background: hsl(142 71% 45% / 0.15); color: hsl(142 71% 45%); @apply rounded-lg; }
-  .icon-danger   { background: hsl(0 84% 60% / 0.15); color: hsl(0 84% 60%); @apply rounded-lg; }
-  .icon-cyan     { background: hsl(191 91% 44% / 0.15); color: hsl(191 91% 44%); @apply rounded-lg; }
-  .icon-violet   { background: hsl(263 70% 68% / 0.15); color: hsl(263 70% 68%); @apply rounded-lg; }
-  .icon-aurora   { background: var(--gradient-brand); @apply rounded-lg; }
+  .icon-brand    { background: var(--gradient-brand); box-shadow: var(--glow-primary); color: white; @apply rounded-xl; }
+  .icon-primary  { background: hsl(var(--brand-1) / 0.15); color: hsl(var(--brand-1)); @apply rounded-xl; }
+  .icon-secondary{ background: hsl(var(--brand-2) / 0.15); color: hsl(var(--brand-2)); @apply rounded-xl; }
+  .icon-success  { background: hsl(142 71% 45% / 0.15); color: hsl(142 71% 45%); @apply rounded-xl; }
+  .icon-danger   { background: hsl(0 84% 60% / 0.15); color: hsl(0 84% 60%); @apply rounded-xl; }
+  .icon-cyan     { background: hsl(191 91% 44% / 0.15); color: hsl(191 91% 44%); @apply rounded-xl; }
+  .icon-violet   { background: hsl(263 70% 68% / 0.20); color: hsl(263 70% 68%); @apply rounded-xl; }
+  .icon-muted    { background: hsl(var(--sidebar-foreground) / 0.10); color: hsl(var(--sidebar-foreground) / 0.85); @apply rounded-xl; }
+  .icon-aurora   { background: var(--gradient-brand); @apply rounded-xl; }
 
   /* Backwards compat aliases */
   .icon-warning  { @apply icon-secondary; }
