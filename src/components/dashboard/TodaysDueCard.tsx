@@ -102,7 +102,7 @@ export const TodaysDueCard: React.FC = () => {
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
     >
-      <Card variant="glass" className="border-destructive/30 bg-gradient-to-br from-destructive/5 to-destructive/10 overflow-hidden">
+      <Card className="glass-elevated border-destructive/40 overflow-hidden shadow-lg hover:shadow-destructive/10">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between text-lg">
             <div className="flex items-center gap-2">
@@ -136,7 +136,7 @@ export const TodaysDueCard: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between p-2 rounded-lg bg-surface-2/60 hover:bg-surface-2/90 transition-colors"
+                className="flex items-center justify-between p-2 rounded-lg bg-card/40 backdrop-blur-md border border-white/5 hover:border-white/10 transition-all"
               >
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate text-sm">{transaction.description}</p>

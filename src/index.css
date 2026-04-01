@@ -351,41 +351,41 @@
    CALENDAR CARDS — CONTRASTE EM DARK MODE
 ═══════════════════════════════════════ */
 .calendar-day-card {
-  background: hsl(var(--surface-2));
-  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card) / 0.45) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: hsl(var(--foreground));
 }
 .calendar-day-card.is-today {
-  background: hsl(var(--primary) / 0.12);
-  border-color: hsl(var(--primary) / 0.5);
+  background: hsl(var(--primary) / 0.22) !important;
+  border-color: hsl(var(--primary) / 0.5) !important;
 }
 .light .calendar-day-card {
-  background: hsl(0 0% 97%);
-  border-color: hsl(0 0% 88%);
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
 }
 .light .calendar-day-card.is-today {
-  background: hsl(24 95% 50% / 0.08);
-  border-color: hsl(24 95% 50% / 0.4);
+  background: hsl(var(--primary) / 0.12) !important;
+  border-color: hsl(var(--primary) / 0.4) !important;
 }
 
-/* ═══════════════════════════════════════
-   CHART TOOLTIP — GLASSMORPHISM
-═══════════════════════════════════════ */
+/* ─── CHART TOOLTIP — GLASSMORPHISM ─── */
 .recharts-tooltip-wrapper .recharts-default-tooltip,
 [data-chart] .recharts-tooltip-wrapper > div {
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  background: hsl(var(--glass-bg-strong)) !important;
-  border: 1px solid hsl(var(--glass-border)) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  background: hsl(var(--card) / 0.75) !important;
+  border: 1px solid hsl(var(--border)) !important;
   border-radius: 12px !important;
   color: hsl(var(--foreground)) !important;
   box-shadow: var(--glass-shadow) !important;
 }
 .light [data-chart] .recharts-tooltip-wrapper > div,
 .light .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: hsl(0 0% 100% / 0.95) !important;
-  border-color: hsl(0 0% 0% / 0.08) !important;
-  color: hsl(0 0% 5%) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #000000 !important;
 }
 
 /* ═══════════════════════════════════════
@@ -480,6 +480,21 @@
     background: hsl(var(--glass-bg-strong));
   }
 
+  /* Glass Elevated — specific for dashboard financial cards */
+  .glass-elevated {
+    background: hsl(var(--card) / 0.45) !important;
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow);
+  }
+  .light .glass-elevated {
+    background: rgba(255, 255, 255, 0.40) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  }
+
   .glass-card-static { @apply glass rounded-[var(--radius)]; }
 
   /* Header: vibrancy máxima — igual ao toolbar do macOS */
@@ -523,20 +538,28 @@
   }
 
   /* ── Nav active state ── */
+  /* ── Nav active state: Vidro Iluminado ── */
   .nav-active {
-    background: var(--gradient-brand);
-    color: white;
-    box-shadow: var(--glow-primary), var(--glass-specular);
-    border: 1px solid hsl(var(--brand-1) / 0.30);
+    background: hsl(var(--primary) / 0.18) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-left: 4px solid hsl(var(--primary)) !important;
+    box-shadow: none !important;
+    border-radius: 0 8px 8px 0 !important; /* Sharp left edge for the border */
+    transition: all 0.25s ease;
   }
+  
+  /* Text and Icon Contrast: Pure White (Dark) / Pure Black (Light) */
+  .nav-active, .nav-active * {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+  }
+  .light .nav-active, .light .nav-active * {
+    color: #000000 !important;
+  }
+
   .nav-active::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 18%; bottom: 18%;
-    width: 3px;
-    background: white;
-    border-radius: 0 2px 2px 0;
-    opacity: 0.7;
+    display: none; /* Remove old solid indicator */
   }
 
   /* ── Gradient border (aurora card) ── */

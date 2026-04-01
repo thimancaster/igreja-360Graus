@@ -77,7 +77,7 @@ export function AppSidebar() {
       <div className="sidebar-aurora" aria-hidden="true" />
 
       {/* ── Header / Logo ── */}
-      <SidebarHeader className="relative z-10 border-b border-sidebar-border p-4">
+      <SidebarHeader className="relative z-10 p-4">
         <div className={cn("flex items-center", isCollapsed ? "justify-center" : "gap-3")}>
           {/* Logo badge */}
           <div className="relative h-8 w-8 min-w-[2rem] shrink-0">
@@ -127,14 +127,14 @@ export function AppSidebar() {
                           "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
                           isCollapsed ? "justify-center" : "",
                           isActive
-                            ? "nav-active text-white font-medium"
+                            ? "nav-active"
                             : "text-sidebar-foreground font-normal hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                         )}
                       >
                         {/* Icon */}
                         <span className={cn(
                           "flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all duration-200",
-                          isActive ? "bg-white/20" : iconClass || "text-sidebar-foreground/50"
+                          isActive ? "bg-primary/10" : iconClass || "text-sidebar-foreground/50"
                         )}>
                           <item.icon className="h-4 w-4" />
                         </span>
@@ -156,7 +156,7 @@ export function AppSidebar() {
 
                         {/* Active indicator */}
                         {!isCollapsed && isActive && (
-                          <ChevronRight className="h-3.5 w-3.5 text-white/70 flex-shrink-0" />
+                          <ChevronRight className="h-3.5 w-3.5 opacity-70 flex-shrink-0" />
                         )}
                       </NavLink>
                     </SidebarMenuButton>
@@ -169,7 +169,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* ── User Profile Footer ── */}
-      <SidebarFooter className="relative z-10 border-t border-sidebar-border p-3">
+      <SidebarFooter className="relative z-10 p-3">
         <div className={cn(
           "flex items-center gap-3 rounded-lg p-2.5 transition-colors duration-200",
           "hover:bg-sidebar-accent cursor-default",

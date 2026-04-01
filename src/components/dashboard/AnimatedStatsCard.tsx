@@ -41,10 +41,10 @@ const AnimatedCounter = ({ value, formatAsCurrency = true }: { value: number; fo
 };
 
 const variantStyles = {
-  default: 'bg-card border-border',
-  success: 'bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20',
-  danger: 'bg-gradient-to-br from-rose-500/10 to-rose-600/5 border-rose-500/20',
-  warning: 'bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20',
+  default: 'glass-elevated',
+  success: 'glass-elevated border-emerald-500/30',
+  danger: 'glass-elevated border-rose-500/30',
+  warning: 'glass-elevated border-amber-500/30',
 };
 
 const iconStyles = {

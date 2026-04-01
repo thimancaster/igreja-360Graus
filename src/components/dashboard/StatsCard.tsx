@@ -29,7 +29,7 @@ const iconVariantStyles = {
 
 export function StatsCard({ title, value, icon: Icon, trend, variant = "default" }: StatsCardProps) {
   return (
-    <Card className={cn("transition-smooth hover:shadow-lg", "bg-gradient-to-br", variantStyles[variant])}>
+    <Card className={cn("transition-smooth hover:shadow-lg", "glass-elevated border-none")}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div className={cn("p-2 rounded-lg", iconVariantStyles[variant])}>

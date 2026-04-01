@@ -74,7 +74,7 @@ export const UpcomingPaymentsCalendar: React.FC = () => {
 
   return (
     <>
-      <Card>
+      <Card className="glass-elevated border-none shadow-md">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between text-lg">
             <span className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export const UpcomingPaymentsCalendar: React.FC = () => {
                         transition={{ delay: index * 0.05 }}
                         onClick={() => handleDayClick(day)}
                         className={cn(
-                          "calendar-day-card flex-1 min-w-[60px] p-2 rounded-xl text-center transition-all duration-200",
+                          "calendar-day-card flex-1 min-w-[60px] p-2 rounded-xl text-center transition-all duration-300",
                           count > 0 ? "cursor-pointer hover:scale-105 ring-1 ring-amber-500/30" : "cursor-default",
                           isToday ? "is-today" : "",
                         )}

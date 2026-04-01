@@ -80,7 +80,7 @@ export const OverdueTransactionsCard: React.FC = () => {
   }
 
   return (
-    <Card variant="glass" className="border-destructive/30 bg-destructive/5 hover-lift">
+    <Card className="glass-elevated border-destructive/40 hover-lift shadow-lg">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between text-lg">
           <span className="flex items-center gap-2 text-destructive">
@@ -101,7 +101,7 @@ export const OverdueTransactionsCard: React.FC = () => {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between p-3 bg-surface-2/80 rounded-lg border border-border/50"
+                className="flex items-center justify-between p-3 bg-card/30 backdrop-blur-sm rounded-lg border border-white/5 hover:border-white/10 transition-all"
               >
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{transaction.description}</p>
