@@ -106,21 +106,23 @@ export default function ParentAuthorizations() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex-1 space-y-4 p-4"
+      className="flex-1 space-y-6 pt-4 px-4 pb-28 min-h-screen"
     >
-      <div>
-        <h1 className="text-2xl font-bold">Autorizações 🛡️</h1>
-        <p className="text-sm text-muted-foreground">
-          Autorize terceiros a buscar seus filhos
-        </p>
+      <div className="flex items-center gap-3">
+        <img src="/kids/icon_ticket.png" alt="Autorizações" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.1)]" />
+        <div>
+          <h1 className="text-3xl font-extrabold text-[#1a1a1a] tracking-tight leading-none bg-gradient-to-r from-orange-500 to-rose-600 bg-clip-text text-transparent">Autorizações 🛡️</h1>
+          <p className="text-sm font-medium text-gray-700 mt-1">
+            Escolha quem pode buscar seus filhos
+          </p>
+        </div>
       </div>
 
       {/* Child selector */}
-      <Card>
-        <CardContent className="pt-4">
+      <div className="glass-card-kids p-4 pt-6 bg-white/60">
           <Label className="text-sm font-medium mb-2 block">Selecionar Filho</Label>
           <Select value={selectedChildId} onValueChange={setSelectedChildId}>
-            <SelectTrigger>
+            <SelectTrigger className="rounded-xl">
               <SelectValue placeholder="Escolha uma criança" />
             </SelectTrigger>
             <SelectContent>
@@ -131,8 +133,7 @@ export default function ParentAuthorizations() {
               ))}
             </SelectContent>
           </Select>
-        </CardContent>
-      </Card>
+      </div>
 
       {selectedChildId && (
         <>
@@ -156,42 +157,40 @@ export default function ParentAuthorizations() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card>
-                    <CardHeader className="pb-2">
+                  <div className="glass-card-kids border border-white/50 overflow-hidden bg-white/75 hover:scale-[1.01] transition-all flex flex-col p-5 gap-3 shadow-xl">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <CardTitle className="text-base truncate flex items-center gap-2">
-                            <User className="h-4 w-4 shrink-0" />
+                          <h3 className="font-extrabold text-[#1a1a1a] text-lg flex items-center gap-2 truncate">
+                            <User className="h-5 w-5 shrink-0 text-orange-500" />
                             {auth.authorized_person_name}
-                          </CardTitle>
+                          </h3>
                           {auth.authorized_person_phone && (
-                            <CardDescription className="flex items-center gap-1 mt-1">
-                              <Phone className="h-3 w-3" />
+                            <p className="flex items-center gap-1 mt-1 text-sm text-gray-600 font-medium">
+                              <Phone className="h-4 w-4" />
                               {auth.authorized_person_phone}
-                            </CardDescription>
+                            </p>
                           )}
                         </div>
                         {auth.is_used ? getStatusBadge("used") : getStatusBadge("active")}
                       </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex flex-wrap gap-2">
+                      
+                      <div className="flex flex-wrap gap-2 mt-2">
                         {auth.is_one_time ? (
-                          <Badge variant="outline" className="text-xs">Uso Único</Badge>
+                          <Badge variant="outline" className="text-xs bg-white text-[#1a1a1a]">Uso Único</Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs">Permanente</Badge>
+                          <Badge variant="outline" className="text-xs bg-white text-[#1a1a1a]">Permanente</Badge>
                         )}
                       </div>
 
                       {auth.valid_until && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
                           <Clock className="h-4 w-4" />
                           Até: {format(new Date(auth.valid_until), "dd/MM/yyyy", { locale: ptBR })}
                         </div>
                       )}
 
                       {auth.notes && (
-                        <p className="text-sm text-muted-foreground flex items-start gap-2">
+                        <p className="text-sm text-gray-600 font-medium flex items-start gap-2 bg-black/5 p-2 rounded-xl">
                           <FileText className="h-4 w-4 shrink-0 mt-0.5" />
                           {auth.notes}
                         </p>
@@ -201,7 +200,7 @@ export default function ParentAuthorizations() {
                         <Button
                           variant="destructive"
                           size="sm"
-                          className="w-full gap-2"
+                          className="w-full gap-2 rounded-xl mt-2 font-bold shadow-sm"
                           onClick={() => cancelAuthorization.mutate(auth.id)}
                           disabled={cancelAuthorization.isPending}
                         >
@@ -209,34 +208,39 @@ export default function ParentAuthorizations() {
                           Cancelar
                         </Button>
                       )}
-                    </CardContent>
-                  </Card>
+                  </div>
                 </motion.div>
               ))}
             </div>
           ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <Shield className="h-12 w-12 text-muted-foreground/50" />
-                <p className="mt-3 font-medium">Nenhuma autorização ativa</p>
-                <p className="text-sm text-muted-foreground text-center mt-1">
-                  Crie autorizações para terceiros buscarem seu filho
-                </p>
-              </CardContent>
-            </Card>
+            <div className="glass-card-kids px-6 py-12 flex flex-col items-center justify-center text-center bg-white/60">
+                <div className="w-16 h-16 rounded-full bg-slate-100 shadow-inner flex items-center justify-center mb-4">
+                  <Shield className="h-8 w-8 text-slate-400" />
+                </div>
+                <p className="font-extrabold text-[#1a1a1a] text-lg">Nenhuma autorização ativa</p>
+                <p className="text-sm text-gray-600 font-medium mt-1">Crie autorizações para terceiros buscarem seu filho</p>
+            </div>
           )}
         </>
       )}
 
-      {/* Create authorization dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-sm mx-4 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Nova Autorização</DialogTitle>
-            <DialogDescription>
-              Preencha os dados da pessoa autorizada
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto mx-4 p-0 border-0 glass-card-kids shadow-2xl overflow-hidden bg-white/90">
+          <div className="h-2 bg-gradient-to-r from-orange-400 to-rose-400" />
+          <div className="p-6">
+            <DialogHeader className="mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-100 to-rose-100 flex items-center justify-center shadow-inner shrink-0">
+                  <img src="/kids/icon_ticket.png" alt="Ticket" className="w-10 h-10 object-contain" />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-extrabold text-[#1a1a1a] tracking-tight">Nova Autorização</DialogTitle>
+                  <DialogDescription className="text-sm font-medium text-gray-600">
+                    Preencha os dados da pessoa autorizada
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
@@ -288,16 +292,17 @@ export default function ParentAuthorizations() {
               </Select>
             </div>
 
-            {form.watch("authorization_type") === "date_range" && (
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="valid_until">Válida Até</Label>
+                <Label htmlFor="valid_until" className="font-bold text-[#1a1a1a]">Válida Até</Label>
                 <Input
                   id="valid_until"
                   type="datetime-local"
                   {...form.register("valid_until")}
+                  className="bg-white/50 border-black/10 rounded-xl"
                 />
               </div>
-            )}
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="security_pin">PIN de Segurança *</Label>
@@ -347,15 +352,16 @@ export default function ParentAuthorizations() {
               </p>
             </div>
 
-            <DialogFooter className="flex-col gap-2 sm:flex-row pt-2">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="w-full sm:w-auto">
+            <DialogFooter className="flex gap-2 pt-4">
+              <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)} className="flex-1 rounded-xl font-bold text-gray-500">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={createAuthorization.isPending} className="w-full sm:w-auto">
-                {createAuthorization.isPending ? "Criando..." : "Criar"}
+              <Button type="submit" disabled={createAuthorization.isPending} className="flex-1 rounded-xl font-bold bg-gradient-to-r from-orange-400 to-rose-500 hover:from-orange-500 hover:to-rose-600 border-0 shadow-lg shadow-orange-500/25">
+                {createAuthorization.isPending ? "Criando..." : "Criar Autorização ✅"}
               </Button>
             </DialogFooter>
           </form>
+          </div>
         </DialogContent>
       </Dialog>
     </motion.div>

@@ -100,13 +100,22 @@ export function PortalChildDialog({ open, onOpenChange, child, onSubmit, isPendi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto mx-4">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Baby className="h-5 w-5 text-primary" />
-            {child ? "Editar Filho" : "Cadastrar Filho"}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto mx-4 p-0 border-0 glass-card-kids shadow-2xl overflow-hidden bg-white/90">
+        <div className="h-2 bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400" />
+        <div className="p-6">
+          <DialogHeader className="mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center shadow-inner shrink-0">
+                <img src="/kids/kids_avatar.png" alt="Avatar" className="w-10 h-10 object-contain" />
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-extrabold text-[#1a1a1a] tracking-tight">
+                  {child ? "Editar Perfil" : "Novo Filho"}
+                </DialogTitle>
+                <p className="text-sm font-medium text-gray-600">Complete as informações básicas</p>
+              </div>
+            </div>
+          </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -119,7 +128,7 @@ export function PortalChildDialog({ open, onOpenChange, child, onSubmit, isPendi
                   <FormItem>
                     <FormLabel>Nome Completo *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nome da criança" {...field} />
+                      <Input placeholder="Nome da criança" {...field} className="bg-white/50 border-black/10 rounded-xl font-medium" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -154,13 +163,13 @@ export function PortalChildDialog({ open, onOpenChange, child, onSubmit, isPendi
                     <FormLabel>Turma *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-white/50 border-black/10 rounded-xl font-medium">
                           <SelectValue placeholder="Selecione a turma" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="glass-card-kids bg-white/95 border-0">
                         {CLASSROOMS.map((classroom) => (
-                          <SelectItem key={classroom} value={classroom}>
+                          <SelectItem key={classroom} value={classroom} className="font-bold text-[#1a1a1a]">
                             {classroom}
                           </SelectItem>
                         ))}
@@ -211,7 +220,7 @@ export function PortalChildDialog({ open, onOpenChange, child, onSubmit, isPendi
                   <FormItem>
                     <FormLabel>Necessidades Especiais</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Descreva se houver..." className="resize-none h-20" {...field} />
+                      <Textarea placeholder="Descreva se houver..." className="resize-none h-20 bg-white/50 border-black/10 rounded-xl font-medium" {...field} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -244,8 +253,8 @@ export function PortalChildDialog({ open, onOpenChange, child, onSubmit, isPendi
                     <FormItem>
                       <FormLabel>Telefone</FormLabel>
                       <FormControl>
-                        <Input placeholder="(00) 00000-0000" {...field} />
-                      </FormControl>
+                      <Input placeholder="(00) 00000-0000" {...field} className="bg-white/50 border-black/10 rounded-xl font-medium" />
+                    </FormControl>
                     </FormItem>
                   )}
                 />
@@ -287,16 +296,17 @@ export function PortalChildDialog({ open, onOpenChange, child, onSubmit, isPendi
               )}
             />
 
-            <div className="flex gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            <div className="flex gap-3 pt-4">
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="flex-1 rounded-xl font-bold text-gray-500">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isPending} className="flex-1">
-                {isPending ? "Salvando..." : child ? "Salvar" : "Cadastrar"}
+              <Button type="submit" disabled={isPending} className="flex-1 rounded-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-0 shadow-lg shadow-purple-500/25">
+                {isPending ? "Salvando..." : child ? "Salvar" : "Finalizar ✅"}
               </Button>
             </div>
           </form>
         </Form>
+        </div>
       </DialogContent>
     </Dialog>
   );

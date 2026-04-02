@@ -31,6 +31,7 @@ import {
   Loader2,
   Sparkles,
   Star,
+  X,
 } from "lucide-react";
 import { useMinistryEvents, MinistryEvent } from "@/hooks/useMinistryEvents";
 import { useParentChildren } from "@/hooks/useParentData";
@@ -67,15 +68,29 @@ export default function ParentEvents() {
 
   const guardianId = guardianData?.id;
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
+  const [dismissedEvents, setDismissedEvents] = useState<string[]>(() => {
+    const saved = localStorage.getItem("kids_dismissed_events");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [registrationDialogOpen, setRegistrationDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<MinistryEvent | null>(null);
   const [selectedChildId, setSelectedChildId] = useState<string>("");
+
+  const handleDismissEvent = (id: string) => {
+    const newDismissed = [...dismissedEvents, id];
+    setDismissedEvents(newDismissed);
+    localStorage.setItem("kids_dismissed_events", JSON.stringify(newDismissed));
+  };
 
   const { upcomingEvents, pastEvents } = useMemo(() => {
     const today = startOfDay(new Date());
     const upcoming: MinistryEvent[] = [];
     const past: MinistryEvent[] = [];
-    events.forEach((event) => {
+    
+    // Filter out dismissed events
+    const visibleEvents = events.filter(e => !dismissedEvents.includes(e.id));
+    
+    visibleEvents.forEach((event) => {
       const eventDate = startOfDay(parseISO(event.start_datetime));
       isBefore(eventDate, today) ? past.push(event) : upcoming.push(event);
     });
@@ -119,9 +134,9 @@ export default function ParentEvents() {
         transition={{ delay: index * 0.06, type: "spring", stiffness: 300, damping: 25 }}
         whileHover={{ y: -3, scale: 1.01 }}
       >
-        <Card className="overflow-hidden border-0 rounded-[2rem] shadow-lg shadow-black/5 dark:shadow-black/20 bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl hover:shadow-xl transition-all duration-300 group">
+        <Card className="glass-card-kids border-0 overflow-hidden bg-white/70 hover:scale-[1.02] transition-transform group">
           {/* Gradient top stripe */}
-          <div className={`h-1.5 bg-gradient-to-r ${config.gradient}`} />
+          <div className={`h-2 bg-gradient-to-r ${config.gradient}`} />
           <CardContent className="p-5">
             <div className="flex items-start gap-4">
               {/* Event type icon */}
@@ -130,10 +145,21 @@ export default function ParentEvents() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-extrabold text-base leading-snug text-zinc-800 dark:text-zinc-100">{event.title}</h3>
-                  <Badge className={`shrink-0 text-xs rounded-full bg-gradient-to-r ${config.gradient} text-white border-0 shadow-sm`}>
-                    {config.label}
-                  </Badge>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-extrabold text-[#1a1a1a] text-lg leading-tight truncate">{event.title}</h3>
+                    <Badge className={`mt-1 shrink-0 text-[10px] rounded-full bg-gradient-to-r ${config.gradient} text-white border-0 shadow-sm uppercase`}>
+                      {config.label}
+                    </Badge>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={(e) => { e.stopPropagation(); handleDismissEvent(event.id); }}
+                    className="rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors shrink-0 h-8 w-8 p-0"
+                    title="Ocultar evento"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
                 {event.description && (
                   <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{event.description}</p>
@@ -186,33 +212,34 @@ export default function ParentEvents() {
   ];
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5 p-4 pb-24 sm:pb-4">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pt-4 px-4 pb-28 min-h-screen">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-emerald-500 to-sky-500 bg-clip-text text-transparent">
-          Eventos 🎉
-        </h1>
-        <p className="text-sm font-medium text-muted-foreground mt-0.5">Atividades do ministério infantil</p>
+      <div className="flex items-center gap-2">
+        <img src="/kids/kids_event.png" alt="Event" className="w-12 h-12 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] rounded-xl" />
+        <div>
+          <h1 className="text-3xl font-extrabold text-[#1a1a1a] tracking-tight leading-none bg-gradient-to-r from-emerald-500 to-sky-500 bg-clip-text text-transparent">Eventos 🎉</h1>
+          <p className="text-sm font-medium text-gray-700 mt-0.5">Atividades do ministério</p>
+        </div>
       </div>
 
       {/* Tab Pills */}
-      <div className="flex gap-2 p-1.5 rounded-2xl bg-muted/40 backdrop-blur-sm border border-border/50">
+      <div className="flex gap-2 p-1.5 rounded-2xl bg-white/40 backdrop-blur-md border border-white/60 shadow-sm">
         {tabs.map(({ value, label, count, icon: Icon }) => (
           <button
             key={value}
             onClick={() => setActiveTab(value)}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300",
+              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-extrabold transition-all duration-300",
               activeTab === value
-                ? "bg-white dark:bg-zinc-800 text-foreground shadow-md"
-                : "text-muted-foreground hover:bg-white/40 dark:hover:bg-zinc-800/40"
+                ? "bg-white text-[#1a1a1a] shadow-md border-b-2 border-emerald-400"
+                : "text-gray-600 hover:bg-white/60"
             )}
           >
             <Icon className="h-4 w-4" />
             {label}
             <span className={cn(
-              "text-xs px-1.5 py-0.5 rounded-full font-black",
-              activeTab === value ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+              "text-xs px-2 py-0.5 rounded-full font-black drop-shadow-sm",
+              activeTab === value ? "bg-emerald-100 text-emerald-700" : "bg-gray-200 text-gray-600"
             )}>
               {count}
             </span>
@@ -232,15 +259,13 @@ export default function ParentEvents() {
             className="space-y-3"
           >
             {upcomingEvents.length === 0 ? (
-              <Card className="rounded-3xl border-0 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-4">
-                    <Calendar className="h-8 w-8 text-emerald-500" />
-                  </div>
-                  <p className="font-bold text-base">Nenhum evento programado</p>
-                  <p className="text-sm text-muted-foreground text-center mt-1">Fique atento — novos eventos aparecerão aqui!</p>
-                </CardContent>
-              </Card>
+              <div className="glass-card-kids px-6 py-12 flex flex-col items-center justify-center text-center bg-white/60">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 shadow-inner flex items-center justify-center mb-4">
+                  <Calendar className="h-8 w-8 text-emerald-500" />
+                </div>
+                <p className="font-extrabold text-[#1a1a1a] text-lg">Nenhum evento programado</p>
+                <p className="text-sm text-gray-600 font-medium mt-1">Fique atento — novos eventos aparecerão aqui!</p>
+              </div>
             ) : (
               upcomingEvents.map((event, index) => <EventCard key={event.id} event={event} showRegister index={index} />)
             )}
@@ -256,14 +281,12 @@ export default function ParentEvents() {
             className="space-y-3"
           >
             {pastEvents.length === 0 ? (
-              <Card className="rounded-3xl border-0 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-900/30 flex items-center justify-center mb-4">
-                    <CalendarX className="h-8 w-8 text-slate-400" />
-                  </div>
-                  <p className="font-bold text-base">Nenhum evento anterior</p>
-                </CardContent>
-              </Card>
+              <div className="glass-card-kids px-6 py-12 flex flex-col items-center justify-center text-center bg-white/60">
+                <div className="w-16 h-16 rounded-full bg-slate-100 shadow-inner flex items-center justify-center mb-4">
+                  <CalendarX className="h-8 w-8 text-slate-400" />
+                </div>
+                <p className="font-extrabold text-[#1a1a1a] text-lg">Nenhum evento anterior</p>
+              </div>
             ) : (
               pastEvents.slice(0, 10).map((event, index) => (
                 <div key={event.id} className="opacity-60">

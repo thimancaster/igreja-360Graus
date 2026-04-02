@@ -750,3 +750,201 @@
 .animate-aurora-drift  { animation: aurora-drift 12s ease-in-out infinite alternate; }
 .animate-gradient      { background-size: 200% 200%; animation: gradient-shift 4s ease infinite; }
 .animate-spring        { animation: spring-scale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ═══════════════════════════════════════
+   KIDS MINISTRY EXCLUSIVE GLASSMORPHISM
+   Estilo Lúdico "Balões Coloridos" Orgânicos
+═══════════════════════════════════════ */
+@layer components {
+  /* Fundo principal da área kids (esconde a malha global) */
+  .bg-kids-portal {
+    background: radial-gradient(ellipse at 15% 20%, rgba(0, 255, 255, 0.12) 0%, transparent 40%),
+                radial-gradient(ellipse at 85% 15%, rgba(255, 0, 255, 0.12) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 85%, rgba(255, 255, 0, 0.08) 0%, transparent 50%),
+                hsl(var(--background)) !important;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  .light .bg-kids-portal {
+    background: radial-gradient(ellipse at 15% 20%, rgba(0, 200, 255, 0.20) 0%, transparent 40%),
+                radial-gradient(ellipse at 85% 15%, rgba(255, 0, 200, 0.15) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 85%, rgba(255, 200, 0, 0.15) 0%, transparent 50%),
+                hsl(var(--background)) !important;
+    background-attachment: fixed;
+  }
+
+  /* Card base para Kids — Ultra translúcido com brilho forte, radius de balão */
+  .glass-card-kids {
+    backdrop-filter: blur(40px) saturate(200%) brightness(1.05);
+    -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.05);
+    background: linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
+    border-radius: 1.5rem !important;
+    position: relative;
+    overflow: visible; /* PERMITIR SALTAR (POP-OUT) */
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    color: hsl(var(--foreground));
+  }
+  
+  .light .glass-card-kids {
+    background: linear-gradient(145deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.5) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06), inset 0 1px 1px rgba(255, 255, 255, 1) !important;
+  }
+
+  .glass-card-kids:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.45) !important;
+  }
+  
+  .light .glass-card-kids:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.10), inset 0 1px 2px rgba(255, 255, 255, 1) !important;
+  }
+
+  /* ── 3D VOLUMETRIC BUBBLES (Image 2 Aesthetic) ── */
+  .glass-bubble {
+    position: absolute;
+    border-radius: 50%;
+    /* Volumetric light reflection */
+    box-shadow: inset -10px -10px 40px rgba(255,255,255,0.1), 
+                inset 10px 10px 30px rgba(255,255,255,0.4),
+                0 20px 50px rgba(0,0,0,0.1);
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1) 60%, transparent 80%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .bubble-magenta { filter: hue-rotate(280deg) saturate(150%); }
+  .bubble-cyan { filter: hue-rotate(180deg) saturate(150%); }
+  .bubble-yellow { filter: saturate(200%); }
+  .bubble-orange { filter: hue-rotate(340deg) saturate(200%); }
+
+  /* Corrigindo a mistura do BG para ficar vibrante igual Imagem 2 */
+  .bg-kids-portal {
+    background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 40%, #A1C4FD 70%, #C2E9FB 100%) !important;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  
+  .dark .bg-kids-portal {
+    /* Mesmo em dark, mantem a magia (pode escurecer levemente) */
+    background: linear-gradient(135deg, #cf6a6e 0%, #c49eb7 40%, #6882ab 70%, #7da9b8 100%) !important;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  /* ── 3D GLASS PILL BUTTONS ── */
+  .glass-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 9999px; /* full rounded */
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 1rem;
+    position: relative;
+    overflow: visible;
+    /* Soft 3d shadow */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15), 
+                inset 0 2px 4px rgba(255,255,255,0.7),
+                inset 0 -4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    z-index: 10;
+  }
+  .glass-pill:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2), 
+                inset 0 2px 5px rgba(255,255,255,0.9),
+                inset 0 -4px 10px rgba(0,0,0,0.1);
+  }
+  
+  /* Gradientes vivos das pílulas */
+  .pill-purple { background: linear-gradient(135deg, #d8b4fe 0%, #c084fc 100%); }
+  .pill-blue   { background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%); }
+  .pill-orange { background: linear-gradient(135deg, #fdba74 0%, #fb923c 100%); }
+  .pill-green  { background: linear-gradient(135deg, #86efac 0%, #4ade80 100%); }
+
+  /* ── BOTTOM NAV GLASS — PILL RESPONSIVE ── */
+  .glass-bottom-nav {
+    position: fixed;
+    bottom: 1rem; /* Flutua em mobile por padrão */
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
+    max-width: 25rem; /* Compacto no mobile */
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    border-radius: 2.5rem; /* Pill completo */
+    border: 1px solid rgba(255, 255, 255, 0.84);
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+    display: flex;
+    justify-content: space-around;
+    padding: 0.85rem 1.25rem;
+    z-index: 100;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Desktop Expansion */
+  @media (min-width: 768px) {
+    .glass-bottom-nav {
+      max-width: 44rem;
+      bottom: 2rem;
+      padding: 1rem 2.5rem;
+    }
+    
+    .nav-item {
+      flex-direction: row !important;
+      gap: 0.75rem !important;
+      padding: 0.5rem 1.25rem;
+      border-radius: 1.5rem;
+      transition: background 0.3s;
+    }
+    
+    .nav-item:hover {
+      background: rgba(255,255,255,0.4);
+    }
+    
+    .nav-item.active {
+      background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .nav-item span {
+      font-size: 0.95rem !important;
+    }
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .nav-item.active {
+    color: #3b82f6; /* Blue active */
+  }
+
+  /* Specular Highlight Elements (Brilho de Balão original) */
+  .specular-highlight {
+    position: absolute;
+    top: 5%;
+    left: 10%;
+    width: 80%;
+    height: 25%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+    border-radius: 50%;
+    transform: rotate(-10deg);
+    pointer-events: none;
+    z-index: 2;
+  }
+}

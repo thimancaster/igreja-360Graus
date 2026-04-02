@@ -1,92 +1,189 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Baby, Shield, History, Calendar, Megaphone } from "lucide-react";
-import { useRole } from "@/hooks/useRole";
-import { useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { Calendar, QrCode, Home as HomeIcon, BookOpen, User, LogOut } from "lucide-react";
 
 import ParentDashboardContent from "@/pages/parent/ParentDashboard";
 import ParentAuthorizationsContent from "@/pages/parent/ParentAuthorizations";
 import ParentHistoryContent from "@/pages/parent/ParentHistory";
 import ParentEventsContent from "@/pages/parent/ParentEvents";
 import ParentAnnouncementsContent from "@/pages/parent/ParentAnnouncements";
-import { User } from "lucide-react";
-
-const TABS = [
-  { value: "overview", label: "Início", icon: Baby, color: "from-pink-400 to-rose-500" },
-  { value: "events", label: "Eventos", icon: Calendar, color: "from-amber-400 to-orange-500" },
-  { value: "authorizations", label: "Avisos", icon: Megaphone, color: "from-emerald-400 to-green-500" },
-  { value: "history", label: "Histórico", icon: History, color: "from-sky-400 to-blue-500" },
-  { value: "profile", label: "Perfil", icon: User, color: "from-violet-400 to-purple-500" },
-];
+import ParentClassesContent from "@/pages/parent/ParentClasses";
+import ParentCheckInContent from "@/pages/parent/ParentCheckIn";
 
 export default function PortalChildren() {
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabFromUrl || "overview");
-  const { isParent } = useRole();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (tabFromUrl) setActiveTab(tabFromUrl);
   }, [tabFromUrl]);
 
+  const goToTab = (tab: string) => navigate(`/portal/filhos?tab=${tab}`);
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 p-4 relative min-h-[calc(100vh-4rem)] overflow-hidden">
-      {/* Playful Background Bubbles */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10 bg-gradient-to-br from-pink-50/50 via-purple-50/50 to-sky-50/50 dark:from-pink-950/10 dark:via-purple-950/10 dark:to-sky-950/10">
-        <motion.div 
-          className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] rounded-full bg-pink-400/20 dark:bg-pink-600/10 blur-[80px]"
-          animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div 
-          className="absolute top-[20%] -right-[10%] w-[400px] h-[400px] rounded-full bg-sky-400/20 dark:bg-sky-600/10 blur-[80px]"
-          animate={{ x: [0, -40, 0], y: [0, 50, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
-        <motion.div 
-          className="absolute -bottom-[10%] left-[20%] w-[600px] h-[600px] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-[80px]"
-          animate={{ x: [0, 30, 0], y: [0, -40, 0] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        />
+    <div className="flex-1 bg-kids-portal relative min-h-[calc(100vh-4rem)] w-full overflow-hidden font-geist pb-28">
+      {/* BACKGROUND FLOATING VOLUMETRIC BUBBLES GLOBALLY ACTIVE */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="glass-bubble bubble-magenta top-[-5%] left-[-10%] w-[300px] h-[300px]" />
+        <div className="glass-bubble bubble-cyan top-[20%] right-[-15%] w-[350px] h-[350px]" />
+        <div className="glass-bubble bubble-yellow bottom-[30%] left-[-5%] w-[200px] h-[200px]" />
+        <div className="glass-bubble bubble-orange bottom-[5%] right-[10%] w-[250px] h-[250px]" />
+        <div className="glass-bubble bubble-magenta bottom-[10%] left-[30%] w-[100px] h-[100px]" />
+        <div className="glass-bubble bubble-cyan top-[10%] left-[50%] w-[80px] h-[80px]" />
       </div>
 
-      <div className="relative z-10 space-y-2 flex flex-col h-full">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 h-full flex flex-col pt-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full w-full">
           <div className="flex-1">
-            <TabsContent value="overview" className="mt-0 h-full outline-none"><ParentDashboardContent /></TabsContent>
-            <TabsContent value="authorizations" className="mt-0 outline-none"><ParentAuthorizationsContent /></TabsContent>
-            <TabsContent value="history" className="mt-0 outline-none"><ParentHistoryContent /></TabsContent>
-            <TabsContent value="events" className="mt-0 outline-none"><ParentEventsContent /></TabsContent>
-            <TabsContent value="announcements" className="mt-0 outline-none"><ParentAnnouncementsContent /></TabsContent>
-            <TabsContent value="profile" className="mt-0 outline-none">
-              <div className="p-8 text-center text-muted-foreground">Configurações de Perfil (KIDS)</div>
-            </TabsContent>
-          </div>
-
-          {/* Bottom/Mockup Style Navigation Bar */}
-          <div className="mt-6 sm:mt-8 sticky bottom-4 z-50 px-2">
-            <TabsList className="flex w-full max-w-lg mx-auto h-auto gap-1 sm:gap-2 p-2 rounded-[2rem] bg-white/70 dark:bg-black/50 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-2xl shadow-pink-500/10">
-              {TABS.map(({ value, label, icon: Icon, color }) => (
-                <TabsTrigger
-                  key={value}
-                  value={value}
-                  className="flex-1 flex-col gap-1 p-2 sm:p-3 rounded-3xl data-[state=active]:bg-white dark:data-[state=active]:bg-card data-[state=active]:shadow-lg hover:bg-white/40 dark:hover:bg-white/5 transition-all duration-300"
-                >
-                  <motion.div whileTap={{ scale: 0.9 }}>
-                    <div className={`p-1.5 rounded-full ${activeTab === value ? 'text-white shadow-inner shadow-white/30 bg-gradient-to-br ' + color : 'text-zinc-500 dark:text-zinc-400 bg-transparent'}`}>
-                      <Icon className="h-5 w-5 sm:h-6 sm:w-6 drop-shadow-sm" />
+            <AnimatePresence mode="wait">
+              {activeTab === "overview" && (
+                <TabsContent value="overview" className="mt-0 h-full outline-none" forceMount>
+                  <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentDashboardContent />
+                  </motion.div>
+                </TabsContent>
+              )}
+              {activeTab === "authorizations" && (
+                <TabsContent value="authorizations" className="mt-0 outline-none" forceMount>
+                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentAuthorizationsContent />
+                  </motion.div>
+                </TabsContent>
+              )}
+              {activeTab === "history" && (
+                <TabsContent value="history" className="mt-0 outline-none" forceMount>
+                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentHistoryContent />
+                  </motion.div>
+                </TabsContent>
+              )}
+              {activeTab === "events" && (
+                <TabsContent value="events" className="mt-0 outline-none" forceMount>
+                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentEventsContent />
+                  </motion.div>
+                </TabsContent>
+              )}
+              {activeTab === "announcements" && (
+                <TabsContent value="announcements" className="mt-0 outline-none" forceMount>
+                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentAnnouncementsContent />
+                  </motion.div>
+                </TabsContent>
+              )}
+              {activeTab === "classes" && (
+                <TabsContent value="classes" className="mt-0 outline-none" forceMount>
+                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentClassesContent />
+                  </motion.div>
+                </TabsContent>
+              )}
+              {activeTab === "checkin" && (
+                <TabsContent value="checkin" className="mt-0 outline-none" forceMount>
+                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentCheckInContent />
+                  </motion.div>
+                </TabsContent>
+              )}
+              {activeTab === "profile" && (
+                <TabsContent value="profile" className="mt-0 outline-none" forceMount>
+                  <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <div className="p-10 w-full glass-card-kids bg-white/70 text-center flex flex-col items-center justify-center min-h-[400px]">
+                      <div className="relative mb-6">
+                        <div className="absolute -inset-4 bg-gradient-to-tr from-purple-400 to-pink-400 rounded-full blur-xl opacity-30 animate-pulse" />
+                        <img src="/kids/kids_avatar.png" alt="Profile" className="w-32 h-32 relative drop-shadow-2xl" />
+                      </div>
+                      <h2 className="font-extrabold text-[#1a1a1a] text-3xl tracking-tight">Área dos Pais</h2>
+                      <p className="text-gray-600 mt-2 font-bold max-w-sm">Configurações de conta e preferências do portal estarão disponíveis em breve!</p>
+                      
+                      <div className="mt-8 flex gap-3">
+                         <div className="w-12 h-12 rounded-2xl bg-white/50 flex items-center justify-center shadow-sm border border-white/80">
+                            <img src="/kids/icon_bible.png" alt="Bible" className="w-8 h-8 object-contain" />
+                         </div>
+                         <div className="w-12 h-12 rounded-2xl bg-white/50 flex items-center justify-center shadow-sm border border-white/80">
+                            <img src="/kids/icon_ticket.png" alt="Ticket" className="w-8 h-8 object-contain" />
+                         </div>
+                         <div className="w-12 h-12 rounded-2xl bg-white/50 flex items-center justify-center shadow-sm border border-white/80">
+                            <img src="/kids/icon_calendar.png" alt="Calendar" className="w-8 h-8 object-contain" />
+                         </div>
+                      </div>
                     </div>
                   </motion.div>
-                  <span className={`text-[10px] sm:text-xs font-bold tracking-wide ${activeTab === value ? 'text-zinc-800 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'}`}>
-                    {label}
-                  </span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+                </TabsContent>
+              )}
+            </AnimatePresence>
           </div>
         </Tabs>
       </div>
-    </motion.div>
+
+      {/* FLOATING BOTTOM NAV GLOBALLY ACTIVE */}
+      <div className="glass-bottom-nav">
+        <div className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => goToTab("overview")}>
+          <motion.img 
+            src="/kids/icon_home.png" 
+            alt="Início" 
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            whileHover={{ scale: 1.2, y: -5 }}
+            animate={activeTab === 'overview' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(59,130,246,0.4))" } : { scale: 1, y: 0 }}
+          />
+          <span className={`${activeTab === 'overview' ? 'text-blue-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Início</span>
+        </div>
+
+        <div className={`nav-item ${activeTab === 'events' ? 'active' : ''}`} onClick={() => goToTab("events")}>
+          <motion.img 
+            src="/kids/icon_calendar.png" 
+            alt="Eventos" 
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            whileHover={{ scale: 1.2, y: -5 }}
+            animate={activeTab === 'events' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(16,185,129,0.4))" } : { scale: 1, y: 0 }}
+          />
+          <span className={`${activeTab === 'events' ? 'text-emerald-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Eventos</span>
+        </div>
+
+        <div className={`nav-item ${activeTab === 'classes' ? 'active' : ''}`} onClick={() => goToTab("classes")}>
+          <motion.img 
+            src="/kids/icon_bible.png" 
+            alt="Turmas" 
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            whileHover={{ scale: 1.2, y: -5 }}
+            animate={activeTab === 'classes' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(139,92,246,0.4))" } : { scale: 1, y: 0 }}
+          />
+          <span className={`${activeTab === 'classes' ? 'text-purple-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Turmas</span>
+        </div>
+
+        <div className={`nav-item ${activeTab === 'checkin' ? 'active' : ''}`} onClick={() => goToTab("checkin")}>
+          <motion.img 
+            src="/kids/icon_ticket.png" 
+            alt="Check-In" 
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            whileHover={{ scale: 1.2, y: -5 }}
+            animate={activeTab === 'checkin' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(245,158,11,0.4))" } : { scale: 1, y: 0 }}
+          />
+          <span className={`${activeTab === 'checkin' ? 'text-orange-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Check-In</span>
+        </div>
+
+        <div className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => goToTab("profile")}>
+          <motion.img 
+            src="/kids/kids_avatar.png" 
+            alt="Perfil" 
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5 rounded-full"
+            whileHover={{ scale: 1.2, y: -5 }}
+            animate={activeTab === 'profile' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(236,72,153,0.4))" } : { scale: 1, y: 0 }}
+          />
+          <span className={`${activeTab === 'profile' ? 'text-pink-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Perfil</span>
+        </div>
+
+        <div className="nav-item group" onClick={() => navigate("/dashboard")}>
+          <div className="w-10 h-10 rounded-2xl bg-white/40 flex items-center justify-center shadow-inner group-hover:bg-red-500/20 transition-all duration-300">
+            <LogOut className="h-6 w-6 text-gray-400 group-hover:text-red-500" />
+          </div>
+          <span className="text-gray-400 group-hover:text-red-500 font-bold text-[10px] transition-all">Sair</span>
+        </div>
+      </div>
+    </div>
   );
 }

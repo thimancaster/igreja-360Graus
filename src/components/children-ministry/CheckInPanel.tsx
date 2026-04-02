@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useChildren, useChildMutations, useTodayCheckIns, useGuardiansWithChildren, Child, CLASSROOMS } from "@/hooks/useChildrenMinistry";
 import { useClassroomSettings } from "@/hooks/useCapacityManagement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,13 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { QrCode, Search, Check, Baby, Clock, AlertTriangle, Users, ScanFace, UserSearch } from "lucide-react";
+import { QrCode, Search, Check, Baby, Clock, AlertTriangle, Users, ScanFace, UserSearch, Camera } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { Html5Qrcode } from "html5-qrcode";
 import { FaceCheckInMode } from "./FaceCheckInMode";
 import { SecurityLabel } from "./SecurityLabel";
 
@@ -26,7 +28,7 @@ const EVENT_OPTIONS = [
   "Evento Especial",
 ];
 
-type CheckInMode = "manual" | "face-child" | "face-guardian";
+type CheckInMode = "manual" | "face-child" | "face-guardian" | "scan-qr";
 
 export function CheckInPanel() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,6 +36,9 @@ export function CheckInPanel() {
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [generatedCheckIn, setGeneratedCheckIn] = useState<any>(null);
   const [checkInMode, setCheckInMode] = useState<CheckInMode>("manual");
+  const [scanning, setScanning] = useState(false);
+  const [scannerReady, setScannerReady] = useState(false);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   const { data: children, isLoading: loadingChildren } = useChildren();
   const { data: todayCheckIns, isLoading: loadingCheckIns } = useTodayCheckIns();
@@ -114,6 +119,65 @@ export function CheckInPanel() {
     }
   };
 
+  const startScanner = async () => {
+    try {
+      setScanning(true);
+      setScannerReady(false);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const scanner = new Html5Qrcode("qr-reader-checkin");
+      scannerRef.current = scanner;
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        async (decodedText) => {
+          if (decodedText.startsWith("CHILD_ID:")) {
+            const childId = decodedText.replace("CHILD_ID:", "");
+            const childArray = children || [];
+            const child = childArray.find(c => c.id === childId);
+            if (child) {
+              await stopScanner();
+              handleCheckIn(child);
+              toast.success("Criança identificada!");
+            } else {
+              toast.error("Criança não encontrada no sistema");
+            }
+          } else {
+            toast.error("QR Code inválido para check-in");
+          }
+        },
+        () => {}
+      );
+      setScannerReady(true);
+    } catch (err: any) {
+      console.error("Error starting scanner:", err);
+      toast.error("Não foi possível iniciar a câmera");
+      setScanning(false);
+    }
+  };
+
+  const stopScanner = async () => {
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop();
+        scannerRef.current = null;
+      } catch (err) {
+        console.error("Error stopping scanner:", err);
+      }
+    }
+    setScanning(false);
+    setScannerReady(false);
+  };
+
+  useEffect(() => {
+    return () => { stopScanner(); };
+  }, []);
+
+  useEffect(() => {
+    if (checkInMode !== "scan-qr") {
+      stopScanner();
+    }
+  }, [checkInMode]);
+
   if (loadingChildren || loadingCheckIns) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -173,6 +237,10 @@ export function CheckInPanel() {
                 <ToggleGroupItem value="face-guardian" aria-label="Face Responsável" className="gap-1.5 text-xs">
                   <UserSearch className="h-3.5 w-3.5" />
                   Face Responsável
+                </ToggleGroupItem>
+                <ToggleGroupItem value="scan-qr" aria-label="Escanear QR" className="gap-1.5 text-xs">
+                  <Camera className="h-3.5 w-3.5" />
+                  Escanear QR
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
@@ -308,6 +376,32 @@ export function CheckInPanel() {
                 onCheckIn={handleFaceCheckIn}
                 isCheckingIn={checkIn.isPending}
               />
+            )}
+
+            {/* QR Scan Mode */}
+            {checkInMode === "scan-qr" && (
+              <div className="space-y-4">
+                {scanning ? (
+                  <div className="relative max-w-sm mx-auto">
+                    <div id="qr-reader-checkin" className="w-full aspect-square rounded-xl overflow-hidden bg-black/5 border-2 border-dashed border-primary/20" />
+                    {!scannerReady && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-muted/20 backdrop-blur-sm">
+                        <LoadingSpinner />
+                      </div>
+                    )}
+                    <Button variant="outline" className="w-full mt-4" onClick={stopScanner}>Parar Scanner</Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 border-2 border-dashed rounded-xl bg-muted/5">
+                    <Camera className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-20" />
+                    <p className="text-muted-foreground mb-4 font-medium">Aponte a câmera para o QR Code do pai</p>
+                    <Button onClick={startScanner}>
+                      <Camera className="h-4 w-4 mr-2" />
+                      Iniciar Scanner
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>

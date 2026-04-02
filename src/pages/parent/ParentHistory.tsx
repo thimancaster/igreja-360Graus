@@ -31,18 +31,20 @@ export default function ParentHistory() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex-1 space-y-4 p-4"
+      className="flex-1 space-y-6 pt-4 px-4 pb-28 min-h-screen"
     >
-      <div>
-        <h1 className="text-2xl font-bold">Histórico 📋</h1>
-        <p className="text-sm text-muted-foreground">
-          Presenças dos seus filhos
-        </p>
+      <div className="flex items-center gap-3">
+        <img src="/kids/icon_paintbrush.png" alt="History" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.15)]" />
+        <div>
+          <h1 className="text-3xl font-extrabold text-[#1a1a1a] tracking-tight leading-none bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Histórico Kids 📜</h1>
+          <p className="text-sm font-medium text-gray-700 mt-1">
+            Confira as aventuras e presenças
+          </p>
+        </div>
       </div>
 
       {/* Child selector */}
-      <Card className="rounded-2xl border-0 shadow-sm bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-950/20 dark:to-blue-950/20">
-        <CardContent className="pt-4">
+      <div className="glass-card-kids p-4 pt-6 bg-white/60">
           <Label className="text-sm font-medium mb-2 block">Selecionar Filho</Label>
           <Select value={selectedChildId} onValueChange={setSelectedChildId}>
             <SelectTrigger className="rounded-xl">
@@ -56,8 +58,7 @@ export default function ParentHistory() {
               ))}
             </SelectContent>
           </Select>
-        </CardContent>
-      </Card>
+      </div>
 
       {selectedChildId && (
         <>
@@ -67,8 +68,8 @@ export default function ParentHistory() {
             </div>
           ) : checkIns && checkIns.length > 0 ? (
             <div className="space-y-3">
-              <h2 className="font-semibold flex items-center gap-2">
-                <Clock className="h-5 w-5" />
+              <h2 className="font-extrabold flex items-center gap-2 text-[#1a1a1a] text-lg mb-4">
+                <Clock className="h-5 w-5 text-blue-500" />
                 Últimas Presenças
               </h2>
               {checkIns.map((checkIn: any, index: number) => (
@@ -78,8 +79,7 @@ export default function ParentHistory() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="py-4">
+                  <div className="glass-card-kids p-5 bg-white/75 hover:scale-[1.01] transition-all border border-white/50 shadow-xl">
                       <div className="flex items-start justify-between gap-3">
                         {/* Left side - Date and event */}
                         <div className="space-y-2">
@@ -169,21 +169,18 @@ export default function ParentHistory() {
                           </span>
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
+                  </div>
                 </motion.div>
               ))}
             </div>
           ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <Clock className="h-12 w-12 text-muted-foreground/50" />
-                <p className="mt-3 font-medium">Nenhum histórico</p>
-                <p className="text-sm text-muted-foreground text-center mt-1">
-                  Os registros de presença aparecerão aqui
-                </p>
-              </CardContent>
-            </Card>
+            <div className="glass-card-kids px-6 py-12 flex flex-col items-center justify-center text-center bg-white/60">
+                <div className="w-16 h-16 rounded-full bg-slate-100 shadow-inner flex items-center justify-center mb-4">
+                   <Clock className="h-8 w-8 text-slate-400" />
+                </div>
+                <p className="font-extrabold text-[#1a1a1a] text-lg">Nenhum histórico</p>
+                <p className="text-sm text-gray-600 font-medium mt-1">Os registros de presença aparecerão aqui</p>
+            </div>
           )}
         </>
       )}
