@@ -18,6 +18,7 @@ export type Child = {
   image_consent: boolean;
   notes: string | null;
   status: string;
+  behavior_points: number;
   created_at: string;
   updated_at: string;
 };
@@ -542,28 +543,54 @@ export function useChildMutations() {
   });
 
   const checkOut = useMutation({
-    mutationFn: async ({ checkInId, pickupPersonName, pickupMethod = "QR" }: {
+    mutationFn: async ({ 
+      checkInId, 
+      pickupPersonName, 
+      pickupMethod = "QR",
+      behaviorScore = 5,
+      participationScore = 5,
+      sessionNotes = ""
+    }: {
       checkInId: string;
       pickupPersonName: string;
       pickupMethod?: string;
+      behaviorScore?: number;
+      participationScore?: number;
+      sessionNotes?: string;
     }) => {
       if (!user?.id) throw new Error("Usuário não autenticado");
 
       const checkedOutAt = new Date().toISOString();
 
-      const { data, error } = await supabase
+      // 1. Update Check-In Record with Evaluation
+      const { data, error } = await (supabase as any)
         .from("child_check_ins")
         .update({
           checked_out_at: checkedOutAt,
           checked_out_by: user.id,
           pickup_person_name: pickupPersonName,
           pickup_method: pickupMethod,
+          behavior_score: behaviorScore,
+          participation_score: participationScore,
+          session_notes: sessionNotes
         })
         .eq("id", checkInId)
-        .select("*, children:child_id(full_name)")
+        .select("*, children:child_id(id, full_name, behavior_points)")
         .single();
 
       if (error) throw error;
+
+      // 2. Award Points automatically (5 for presence + calculated based on score)
+      const childData = (data as any).children;
+      if (childData) {
+        const bonusPoints = (behaviorScore === 5 ? 10 : 0) + (participationScore === 5 ? 10 : 0) + 5;
+        const newTotal = (childData.behavior_points || 0) + bonusPoints;
+        
+        await (supabase as any)
+          .from("children")
+          .update({ behavior_points: newTotal })
+          .eq("id", childData.id);
+      }
 
       // Notify guardians
       const childName = (data as any).children?.full_name || "Seu filho(a)";
@@ -613,6 +640,46 @@ export function useChildMutations() {
     checkOut,
     findCheckInByQR,
   };
+}
+
+export function useChildRewards() {
+  const queryClient = useQueryClient();
+
+  const awardPoints = useMutation({
+    mutationFn: async ({ childId, points, reason }: { childId: string; points: number; reason?: string }) => {
+      // 1. Get current points
+      const { data: child, error: fetchError } = await (supabase as any)
+        .from("children")
+        .select("behavior_points, full_name")
+        .eq("id", childId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const newPoints = (child.behavior_points || 0) + points;
+
+      // 2. Update points
+      const { error: updateError } = await (supabase as any)
+        .from("children")
+        .update({ behavior_points: newPoints } as any)
+        .eq("id", childId);
+
+      if (updateError) throw updateError;
+
+      // 3. Optional: Log reward history (if table exists, but for now we just update)
+      return { childName: child.full_name, newPoints };
+    },
+    onSuccess: (data) => {
+      toast.success(`Pontos atribuídos para ${data.childName}! Novo total: ${data.newPoints}`);
+      queryClient.invalidateQueries({ queryKey: ["children"] });
+      queryClient.invalidateQueries({ queryKey: ["parent-children"] });
+    },
+    onError: (error) => {
+      toast.error(`Erro ao atribuir pontos: ${error.message}`);
+    },
+  });
+
+  return { awardPoints };
 }
 
 /** Hook to fetch guardians with their linked children for face check-in */

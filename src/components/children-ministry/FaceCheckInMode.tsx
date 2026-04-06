@@ -224,11 +224,27 @@ export function FaceCheckInMode({
       );
       setCandidatesReady(ready);
       setPreparingDescriptors(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Camera/model error:", err);
       setLoadingModels(false);
       setPreparingDescriptors(false);
-      toast.error("Não foi possível acessar a câmera ou carregar os modelos de IA.");
+      
+      const isNotSecure = !window.isSecureContext;
+      const isInsecureIP = window.location.protocol === "http:" && window.location.hostname !== "localhost";
+
+      if (isNotSecure || isInsecureIP) {
+        toast.error(
+          "Câmera BLOQUEADA pelo Navegador: O acesso à câmera requer HTTPS ou Localhost. " +
+          "Tente abrir via localhost:8080 ou configure um certificado SSL.",
+          { duration: 8000 }
+        );
+      } else if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+        toast.error("Permissão da câmera negada. Por favor, autorize o acesso no cadeado do navegador.");
+      } else if (err.message?.includes("face-api")) {
+        toast.error("Erro ao carregar modelos de IA. Verifique sua conexão com a internet ou o CDN.");
+      } else {
+        toast.error("Não foi possível acessar a câmera ou carregar os modelos de IA. " + (err.message || ""));
+      }
     }
   };
 

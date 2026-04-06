@@ -380,6 +380,36 @@ export function useLeaderOverrideMutations() {
       toast.error(`Erro no check-out de emergência: ${error.message}`);
     },
   });
-
   return { createOverride };
 }
+
+// Hook para ver voluntários escalados hoje por sala
+export function useClassroomStaff(classroomName: string | undefined) {
+  const today = new Date().toISOString().split("T")[0];
+
+  return useQuery({
+    queryKey: ["classroom-staff", classroomName, today],
+    queryFn: async () => {
+      if (!classroomName) return [];
+
+      const { data, error } = await supabase
+        .from("staff_schedules")
+        .select(`
+          id,
+          role,
+          staff:ministry_staff(full_name, role)
+        `)
+        .eq("classroom", classroomName)
+        .gte("shift_start", today + "T00:00:00")
+        .lte("shift_end", today + "T23:59:59")
+        .eq("confirmed", true);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!classroomName,
+  });
+}
+
+
+

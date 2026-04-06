@@ -20,8 +20,9 @@ export default function PortalSchedules() {
   const { 
     mySchedules, 
     openSchedules, 
-    volunteerData, 
-    mySchedulesLoading, 
+    volunteerData,
+    hasKidsStaff,
+    isLoading, 
     confirmSchedule, 
     isConfirming, 
     claimSchedule, 
@@ -29,7 +30,7 @@ export default function PortalSchedules() {
   } = useVolunteerSchedules(undefined, currentMonth);
 
   // Verifica se não há registros de voluntário e os dados carregaram
-  if (!mySchedulesLoading && (!volunteerData || volunteerData.length === 0)) {
+  if (!isLoading && (!volunteerData || volunteerData.length === 0) && !hasKidsStaff) {
     return (
       <div className="flex-1 space-y-4 p-4">
         <Card className="border-destructive/30 bg-destructive/5">
@@ -46,7 +47,7 @@ export default function PortalSchedules() {
     );
   }
 
-  if (mySchedulesLoading) {
+  if (isLoading) {
     return (
       <div className="space-y-4 p-4">
         <Skeleton className="h-8 w-48" />
@@ -141,11 +142,16 @@ export default function PortalSchedules() {
                                 {schedule.shift_start} às {schedule.shift_end}
                               </div>
                               {schedule.ministry_name && (
-                                <Badge variant="outline" className="text-xs mt-1 bg-surface font-semibold">
-                                  {schedule.ministry_name}
-                                </Badge>
-                              )}
-                              {schedule.notes && (
+                                  <Badge variant="outline" className={`${schedule.is_kids_ministry ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-surface'} text-xs mt-1 font-bold`}>
+                                    {schedule.is_kids_ministry ? '🎒 ' : ''}{schedule.ministry_name}
+                                  </Badge>
+                                )}
+                                {schedule.classroom && (
+                                  <Badge variant="secondary" className="text-[10px] mt-1 ml-1 bg-blue-50 text-blue-600 border-blue-100">
+                                    Sala: {schedule.classroom}
+                                  </Badge>
+                                )}
+                                {schedule.notes && (
                                 <p className="text-xs text-muted-foreground/80 mt-1 italic">"{schedule.notes}"</p>
                               )}
                             </div>

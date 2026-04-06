@@ -214,12 +214,29 @@ export default function ParentEvents() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 pt-4 px-4 pb-28 min-h-screen">
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <img src="/kids/kids_event.png" alt="Event" className="w-12 h-12 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] rounded-xl" />
-        <div>
-          <h1 className="text-3xl font-extrabold text-[#1a1a1a] tracking-tight leading-none bg-gradient-to-r from-emerald-500 to-sky-500 bg-clip-text text-transparent">Eventos 🎉</h1>
-          <p className="text-sm font-medium text-gray-700 mt-0.5">Atividades do ministério</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <img src="/kids/kids_event.png" alt="Event" className="w-12 h-12 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] rounded-xl" />
+          <div>
+            <h1 className="text-3xl font-extrabold text-[#1a1a1a] tracking-tight leading-none bg-gradient-to-r from-emerald-500 to-sky-500 bg-clip-text text-transparent">Eventos 🎉</h1>
+            <p className="text-sm font-medium text-gray-700 mt-0.5">Atividades do ministério</p>
+          </div>
         </div>
+        
+        {dismissedEvents.length > 0 && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => {
+              setDismissedEvents([]);
+              localStorage.removeItem("kids_dismissed_events");
+            }}
+            className="rounded-2xl text-emerald-600 font-black text-[10px] hover:bg-emerald-50/50 flex items-center gap-1.5 border border-emerald-100/50 shadow-sm"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            LIMPAR FILTRO
+          </Button>
+        )}
       </div>
 
       {/* Tab Pills */}

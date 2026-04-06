@@ -21,6 +21,8 @@ export interface VolunteerSchedule {
   created_at: string;
   accept_until: string | null;
   ministry_name?: string;
+  classroom?: string | null;
+  is_kids_ministry?: boolean;
 }
 
 export interface CreateScheduleData {
@@ -82,57 +84,133 @@ export function useVolunteerSchedules(ministryId?: string, month?: Date) {
         .eq("profile_id", user.id)
         .eq("status", "active");
 
-      if (!volunteerData || volunteerData.length === 0) {
-        return { mySchedules: [], openSchedules: [], volunteerData: [] };
+      if ((!volunteerData || volunteerData.length === 0)) {
+        // Continue to check if user is a Kids Staff
       }
 
-      const volunteerIds = volunteerData.map(v => v.id);
-      const ministryIds = volunteerData.map(v => v.ministry_id);
+      const volunteerIds = volunteerData?.map(v => v.id) || [];
+      const ministryIds = volunteerData?.map(v => v.ministry_id) || [];
 
       // fetch assigned schedules
-      const { data: assignedData, error: assignedError } = await supabase
-        .from("volunteer_schedules")
-        .select("*")
-        .in("volunteer_id", volunteerIds)
-        .gte("schedule_date", startDate)
-        .lte("schedule_date", endDate)
-        .order("schedule_date")
-        .order("shift_start");
+      let assignedData: any[] = [];
+      if (volunteerIds.length > 0) {
+        const { data, error: assignedError } = await supabase
+          .from("volunteer_schedules")
+          .select("*")
+          .in("volunteer_id", volunteerIds)
+          .gte("schedule_date", startDate)
+          .lte("schedule_date", endDate)
+          .order("schedule_date")
+          .order("shift_start");
+          
+        if (assignedError) throw assignedError;
+        assignedData = data || [];
+      }
+
+      // fetch kids/staff schedules - Surgical link by Profile OR Email
+      const { data: profileStaff } = await supabase
+        .from("ministry_staff")
+        .select("id")
+        .eq("profile_id", user.id)
+        .maybeSingle();
+
+      let staffId = profileStaff?.id;
+
+      // Fallback: If not linked by profile_id, try linking by email
+      if (!staffId && user.email) {
+        const { data: emailStaff } = await supabase
+          .from("ministry_staff")
+          .select("id, profile_id")
+          .ilike("email", user.email)
+          .maybeSingle();
         
-      if (assignedError) throw assignedError;
+        if (emailStaff) {
+          staffId = emailStaff.id;
+          // Auto-link: Connection repair
+          if (!emailStaff.profile_id) {
+            await supabase
+              .from("ministry_staff")
+              .update({ profile_id: user.id })
+              .eq("id", staffId);
+          }
+        }
+      }
+
+      let kidsSchedulesData: any[] = [];
+      if (staffId) {
+        const { data, error: staffError } = await supabase
+          .from("staff_schedules")
+          .select("*")
+          .eq("staff_id", staffId)
+          .gte("shift_start", startDate + "T00:00:00")
+          .lte("shift_end", endDate + "T23:59:59")
+          .order("shift_start");
+
+        if (staffError) throw staffError;
+        kidsSchedulesData = data || [];
+      }
 
       // fetch open schedules
-      const { data: openData, error: openError } = await supabase
-        .from("volunteer_schedules")
-        .select(`*, ministries!inner(name)`)
-        .is("volunteer_id", null)
-        .in("ministry_id", ministryIds)
-        .gte("schedule_date", startDate)
-        .lte("schedule_date", endDate)
-        .order("schedule_date")
-        .order("shift_start");
+      let openData: any[] = [];
+      if (ministryIds.length > 0) {
+        const { data, error: openError } = await supabase
+          .from("volunteer_schedules")
+          .select(`*, ministries!inner(name)`)
+          .is("volunteer_id", null)
+          .in("ministry_id", ministryIds)
+          .gte("schedule_date", startDate)
+          .lte("schedule_date", endDate)
+          .order("schedule_date")
+          .order("shift_start");
 
-      if (openError) throw openError;
-      
+        if (openError) throw openError;
+        openData = data || [];
+      }
+
       const now = new Date().toISOString();
       const validOpenData = (openData || []).filter((s: any) => !s.accept_until || s.accept_until > now);
 
-      const mySchedules = (assignedData || []).map((schedule: any) => {
-        const volunteer = volunteerData.find(v => v.id === schedule.volunteer_id);
+      const generalSchedules = (assignedData || []).map((schedule: any) => {
+        const volunteer = volunteerData?.find(v => v.id === schedule.volunteer_id);
         return {
           ...schedule,
           ministry_name: (volunteer?.ministries as any)?.name || "Ministério",
         };
-      }) as VolunteerSchedule[];
+      });
+
+      const kidsSchedulesMapped = (kidsSchedulesData || []).map((schedule: any) => {
+        return {
+          id: schedule.id,
+          church_id: schedule.church_id,
+          ministry_id: "kids-ministry", // Pseudo ID
+          volunteer_id: schedule.staff_id,
+          schedule_date: schedule.shift_start.split("T")[0],
+          shift_start: format(new Date(schedule.shift_start), "HH:mm"),
+          shift_end: format(new Date(schedule.shift_end), "HH:mm"),
+          schedule_type: schedule.role === 'primary' ? 'primary' : 'backup',
+          confirmed: schedule.confirmed,
+          confirmed_at: schedule.confirmed_at,
+          notes: schedule.notes,
+          created_at: schedule.created_at,
+          accept_until: null,
+          ministry_name: "Ministério Infantil",
+          classroom: schedule.classroom,
+          is_kids_ministry: true
+        };
+      });
+
+      const mySchedules = [...generalSchedules, ...kidsSchedulesMapped].sort((a, b) => 
+        new Date(a.schedule_date).getTime() - new Date(b.schedule_date).getTime()
+      ) as VolunteerSchedule[];
 
       const openSchedules = validOpenData.map((schedule: any) => {
         return {
           ...schedule,
-          ministry_name: schedule.ministries?.name || "Ministério",
+          ministry_name: schedule. मंत्रालयों?.name || "Ministério",
         };
       }) as VolunteerSchedule[];
 
-      return { mySchedules, openSchedules, volunteerData };
+      return { mySchedules, openSchedules, volunteerData: volunteerData || [], hasKidsStaff: !!staffId };
     },
     enabled: !!user?.id,
   });
@@ -224,19 +302,32 @@ export function useVolunteerSchedules(ministryId?: string, month?: Date) {
   // Confirm schedule
   const confirmMutation = useMutation({
     mutationFn: async (scheduleId: string) => {
-      const { error } = await supabase
-        .from("volunteer_schedules")
-        .update({
-          confirmed: true,
-          confirmed_at: new Date().toISOString(),
-        })
-        .eq("id", scheduleId);
+      const isKids = volunteerDataObj?.mySchedules?.find(s => s.id === scheduleId)?.is_kids_ministry;
 
-      if (error) throw error;
+      if (isKids) {
+        const { error } = await supabase
+          .from("staff_schedules")
+          .update({
+            confirmed: true,
+            confirmed_at: new Date().toISOString(),
+          })
+          .eq("id", scheduleId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("volunteer_schedules")
+          .update({
+            confirmed: true,
+            confirmed_at: new Date().toISOString(),
+          })
+          .eq("id", scheduleId);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       toast.success("Presença confirmada!");
       queryClient.invalidateQueries({ queryKey: ["volunteer-schedules"] });
+      queryClient.invalidateQueries({ queryKey: ["staff-schedules"] });
       queryClient.invalidateQueries({ queryKey: ["my-volunteer-data"] });
     },
     onError: (error: Error) => {
@@ -286,13 +377,26 @@ export function useVolunteerSchedules(ministryId?: string, month?: Date) {
   }, {} as Record<string, VolunteerSchedule[]>);
 
   const hasConflict = (volunteerId: string, date: string, start: string, end: string, excludeId?: string) => {
-    return (schedules || []).some(s => {
+    // Check general schedules loaded
+    const hasGeneralConflict = (schedules || []).some(s => {
       if (excludeId && s.id === excludeId) return false;
       if (s.volunteer_id !== volunteerId || s.schedule_date !== date) return false;
       
       const existingStart = s.shift_start;
       const existingEnd = s.shift_end;
       return (start < existingEnd && end > existingStart);
+    });
+
+    if (hasGeneralConflict) return true;
+
+    // The full cross-system check for other volunteers is done via async mutation in the Admin UI
+    // but for the current user, we can trust the merged mySchedules
+    return (volunteerDataObj?.mySchedules || []).some(s => {
+       if (excludeId && s.id === excludeId) return false;
+       if (s.schedule_date !== date) return false;
+       const existingStart = s.shift_start;
+       const existingEnd = s.shift_end;
+       return (start < existingEnd && end > existingStart);
     });
   };
 
@@ -302,7 +406,8 @@ export function useVolunteerSchedules(ministryId?: string, month?: Date) {
     mySchedules: volunteerDataObj?.mySchedules || [],
     openSchedules: volunteerDataObj?.openSchedules || [],
     volunteerData: volunteerDataObj?.volunteerData || [],
-    isLoading,
+    hasKidsStaff: !!volunteerDataObj?.hasKidsStaff,
+    isLoading: isLoading || mySchedulesLoading,
     mySchedulesLoading,
     refetch,
     createSchedule: createMutation.mutateAsync,

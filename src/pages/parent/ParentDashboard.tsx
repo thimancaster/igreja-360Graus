@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Calendar, QrCode, Search, Home as HomeIcon, BookOpen, Trophy, User, Palette, ChevronRight, Users, Check
+  Calendar, QrCode, Search, Home as HomeIcon, BookOpen, Trophy, User, Palette, ChevronRight, Users, Check, Pencil, Star
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useParentChildren, useParentPresentChildren } from "@/hooks/useParentData";
@@ -14,6 +14,8 @@ import { useAnnouncements } from "@/hooks/useAnnouncements";
 import { useEvents } from "@/hooks/useEvents";
 import { cn } from "@/lib/utils";
 import { PortalChildDialog, PortalChildFormData } from "@/components/portal/PortalChildDialog";
+import { UrgentCallAlert } from "@/components/children-ministry/UrgentCallAlert";
+import { ParentEvolution } from "@/components/portal/ParentEvolution";
 import { useNavigate } from "react-router-dom";
 import { differenceInMinutes, differenceInYears } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,7 +24,7 @@ export default function ParentDashboard() {
   const { user, profile } = useAuth();
   const { data: children, isLoading: loadingChildren } = useParentChildren();
   const { data: presentChildren, isLoading: loadingPresent } = useParentPresentChildren();
-  const { parentAnnouncements, unreadCount, markAsRead } = useAnnouncements();
+  const { parentAnnouncements, unreadCount, markAsRead, activeUrgentCall, respondToCall } = useAnnouncements();
   const { createChild, updateChild } = useChildMutations();
   const navigate = useNavigate();
 
@@ -30,6 +32,7 @@ export default function ParentDashboard() {
   const [editingChild, setEditingChild] = useState<any>(null);
   const [expandedQrId, setExpandedQrId] = useState<string | null>(null);
   const [showChildrenList, setShowChildrenList] = useState(false);
+  const [viewingEvolutionChild, setViewingEvolutionChild] = useState<any>(null);
 
   const goToTab = (tab: string) => navigate(`/portal/filhos?tab=${tab}`);
 
@@ -61,6 +64,7 @@ export default function ParentDashboard() {
       notes: data.notes || null,
       photo_url: null,
       status: "active",
+      behavior_points: 0,
     };
     if (editingChild) {
       await updateChild.mutateAsync({ id: editingChild.id, ...payload });
@@ -89,6 +93,29 @@ export default function ParentDashboard() {
       className="w-full max-w-[28rem] lg:max-w-4xl mx-auto px-4 pt-6 flex flex-col space-y-6"
     >
       
+      {/* TELA DE EVOLUÇÃO (OVERLAY) */}
+      <AnimatePresence>
+        {viewingEvolutionChild && (
+          <motion.div
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            className="fixed inset-0 z-[110] bg-kids-portal overflow-y-auto px-4"
+          >
+            <ParentEvolution 
+              child={viewingEvolutionChild} 
+              onBack={() => setViewingEvolutionChild(null)} 
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* CHAMADO URGENTE (SOBREPOSTO) */}
+      <UrgentCallAlert 
+         announcement={activeUrgentCall} 
+         onRespond={(id, status) => respondToCall({ id, status })}
+      />
+
       {/* HEADER */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -130,15 +157,15 @@ export default function ParentDashboard() {
           {/* POP-OUT CHARACTER ELEMENT */}
           <div className="relative w-full lg:w-48 h-32 lg:h-40 shrink-0">
             <motion.img 
-              src="/kids/kids_event.png" 
+              src="/kids/kids_event_v2.png" 
               alt="Event" 
-              className="absolute -top-16 -left-4 lg:-top-20 lg:-left-8 w-44 lg:w-56 max-w-none drop-shadow-[0_20px_30px_rgba(0,0,0,0.3)] z-20 group-hover:scale-110 transition-transform duration-500" 
+              className="absolute -top-20 -left-6 lg:-top-24 lg:-left-12 w-52 lg:w-64 max-w-none kids-pop-out animate-float-v3 z-20" 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
             />
             {/* Inner glow/shadow for where the character "was" */}
-            <div className="w-full h-full rounded-2xl bg-white/30 border border-white/40 shadow-inner" />
+            <div className="w-full h-full rounded-2xl bg-white/20 border border-white/30 shadow-inner" />
           </div>
 
           <div className="flex-1 relative z-10 pt-4 lg:pt-0">
@@ -169,10 +196,19 @@ export default function ParentDashboard() {
             </p>
           </div>
           
-          <div className="hidden lg:flex flex-col items-center justify-center p-5 bg-white/60 rounded-3xl border border-white/80 shadow-md shrink-0 relative z-10">
-             <img src="/kids/icon_trophy.png" alt="Trophy" className="w-14 h-14 object-contain drop-shadow-md" />
-             <p className="text-[10px] font-black text-gray-800 mt-2 tracking-tighter">RECOMPENSA</p>
-          </div>
+          <button 
+            onClick={() => children?.[0] && setViewingEvolutionChild(children[0])}
+            className="hidden lg:flex flex-col items-center justify-center p-5 bg-white/30 rounded-3xl border border-white/40 backdrop-blur-md shadow-sm shrink-0 relative z-10 hover:bg-white/50 transition-all hover:scale-105 active:scale-95 group"
+          >
+             <div className="relative">
+                <div className="absolute -inset-2 bg-yellow-400 blur-lg opacity-20 group-hover:opacity-40 animate-pulse" />
+                <img src="/kids/icon_trophy.png" alt="Trophy" className="w-16 h-16 object-contain drop-shadow-md relative z-10" />
+             </div>
+             <p className="text-[10px] font-black text-amber-600 mt-2 tracking-tighter uppercase whitespace-nowrap">
+               {children?.reduce((acc, c) => acc + (c.behavior_points || 0), 0) || 0} PONTOS
+             </p>
+             <p className="text-[8px] font-bold text-gray-500 tracking-tight uppercase">VER EVOLUÇÃO</p>
+          </button>
         </div>
       </div>
 
@@ -187,14 +223,16 @@ export default function ParentDashboard() {
           <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Meus Filhos</span>
         </button>
         
-        {/* BLUE PILL: Turmas */}
+        {/* GOLD PILL: Evolução (NEW) */}
         <button 
-          className="glass-pill pill-blue"
-          onClick={() => goToTab("classes")}
+          className="glass-pill pill-gold"
+          onClick={() => children?.[0] && setViewingEvolutionChild(children[0])}
         >
-          <img src="/kids/icon_bible.png" alt="Bible" className="w-8 h-8 object-contain drop-shadow-md" />
-          <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Turmas</span>
+          <img src="/kids/icon_trophy.png" alt="Trophy" className="w-8 h-8 object-contain drop-shadow-md" />
+          <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a] font-bold">Evolução</span>
         </button>
+        
+        {/* BLUE PILL: Turmas */}
  
         {/* ORANGE PILL: Check-In */}
         <button 
@@ -291,9 +329,20 @@ export default function ParentDashboard() {
                         <h3 className="font-bold text-[#1a1a1a] truncate">{child.full_name}</h3>
                         <p className="text-purple-600 font-bold text-xs">{child.classroom}</p>
                       </div>
-                      <Button size="sm" variant="ghost" onClick={() => handleEditChild(child)} className="shrink-0 text-gray-600">
-                        Editar
-                      </Button>
+                      <div className="flex gap-1 shrink-0">
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => setViewingEvolutionChild(child)} 
+                          className="w-10 h-10 p-0 rounded-full text-amber-600 bg-amber-50 hover:bg-amber-100"
+                          title="Ver Evolução"
+                        >
+                          <Trophy className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleEditChild(child)} className="w-10 h-10 p-0 rounded-full text-gray-500 hover:bg-black/5">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -329,7 +378,7 @@ export default function ParentDashboard() {
            {/* Volunteers Card */}
            <div 
             className="glass-card-kids p-6 bg-white/50 flex flex-col justify-center items-center text-center cursor-pointer group mt-6"
-            onClick={() => goToTab("history")}
+            onClick={() => goToTab("schedules")}
           >
             <div className="relative h-12 w-full mb-4">
               <img 

@@ -15,6 +15,7 @@ import { MedicationPanel, IncidentReportPanel } from "@/components/children-mini
 import { StaffList, StaffScheduler } from "@/components/children-ministry/staff";
 import { AnamnesisPanel } from "@/components/children-ministry/health/AnamnesisPanel";
 import { ClassroomReportPanel } from "@/components/children-ministry/ClassroomReportPanel";
+import { ActiveUrgentCalls } from "@/components/children-ministry/ActiveUrgentCalls";
 
 export default function MinisterioInfantil() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -36,6 +37,9 @@ export default function MinisterioInfantil() {
           </p>
         </div>
       </div>
+
+      {/* MONITORAMENTO DE CHAMADOS URGENTES */}
+      <ActiveUrgentCalls />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 lg:w-auto lg:inline-grid">

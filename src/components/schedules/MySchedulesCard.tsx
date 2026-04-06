@@ -27,6 +27,8 @@ interface Schedule {
   confirmed: boolean;
   ministry_name?: string;
   notes?: string | null;
+  classroom?: string | null;
+  is_kids_ministry?: boolean;
 }
 
 interface MySchedulesCardProps {
@@ -127,8 +129,9 @@ export function MySchedulesCard({
                 <div
                   key={schedule.id}
                   className={cn(
-                    "p-3 rounded-lg border",
-                    isScheduleToday && "border-primary bg-primary/5"
+                    "p-3 rounded-lg border transition-all",
+                    isScheduleToday && "border-primary bg-primary/5",
+                    schedule.is_kids_ministry && !isScheduleToday && "border-orange-200 bg-orange-50/30"
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -151,9 +154,17 @@ export function MySchedulesCard({
                           {schedule.shift_start.slice(0, 5)} - {schedule.shift_end.slice(0, 5)}
                         </span>
                         {schedule.ministry_name && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3.5 w-3.5" />
+                          <span className={cn(
+                            "flex items-center gap-1 font-medium",
+                            schedule.is_kids_ministry && "text-orange-600"
+                          )}>
+                            {schedule.is_kids_ministry ? "🎒 " : <MapPin className="h-3.5 w-3.5" />}
                             {schedule.ministry_name}
+                            {schedule.classroom && (
+                              <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full ml-1">
+                                Sala: {schedule.classroom}
+                              </span>
+                            )}
                           </span>
                         )}
                       </div>

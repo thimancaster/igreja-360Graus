@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Search, Pencil, Trash2, Baby, AlertTriangle } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Baby, AlertTriangle, Trophy } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ChildDialog } from "./ChildDialog";
+import { useChildRewards } from "@/hooks/useChildrenMinistry";
 import { format, differenceInYears, differenceInMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -36,6 +37,7 @@ export function ChildrenList() {
 
   const { data: children, isLoading } = useChildren();
   const { deleteChild } = useChildMutations();
+  const { awardPoints } = useChildRewards();
 
   const filteredChildren = children?.filter((child) =>
     child.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -123,9 +125,10 @@ export function ChildrenList() {
                     <TableHead>Criança</TableHead>
                     <TableHead>Idade</TableHead>
                     <TableHead>Turma</TableHead>
+                    <TableHead>Pontos</TableHead>
                     <TableHead>Alertas</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="w-[100px]">Ações</TableHead>
+                    <TableHead className="w-[124px]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -150,6 +153,12 @@ export function ChildrenList() {
                       <TableCell>{getAge(child.birth_date)}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{child.classroom}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5 font-black text-amber-600">
+                          <Trophy className="h-3.5 w-3.5" />
+                          {child.behavior_points || 0}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
@@ -195,6 +204,19 @@ export function ChildrenList() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => awardPoints.mutate({ childId: child.id, points: 10, reason: "Bom comportamento em sala" })}
+                                className="text-amber-500 hover:text-amber-600 hover:bg-amber-50"
+                              >
+                                <Trophy className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Premiar +10 Pontos</TooltipContent>
+                          </Tooltip>
                           <Button
                             variant="ghost"
                             size="icon"

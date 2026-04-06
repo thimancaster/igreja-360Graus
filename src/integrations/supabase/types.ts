@@ -59,6 +59,10 @@ export type Database = {
           target_classrooms: string[] | null
           title: string
           updated_at: string
+          response_status: string | null
+          responded_at: string | null
+          confirmed_by_staff_at: string | null
+          last_alert_sent_at: string | null
         }
         Insert: {
           church_id: string
@@ -75,6 +79,10 @@ export type Database = {
           target_classrooms?: string[] | null
           title: string
           updated_at?: string
+          response_status?: string | null
+          responded_at?: string | null
+          confirmed_by_staff_at?: string | null
+          last_alert_sent_at?: string | null
         }
         Update: {
           church_id?: string
@@ -91,6 +99,10 @@ export type Database = {
           target_classrooms?: string[] | null
           title?: string
           updated_at?: string
+          response_status?: string | null
+          responded_at?: string | null
+          confirmed_by_staff_at?: string | null
+          last_alert_sent_at?: string | null
         }
         Relationships: [
           {
@@ -390,6 +402,9 @@ export type Database = {
           pickup_method: string
           pickup_person_name: string | null
           qr_code: string
+          behavior_score?: number | null
+          participation_score?: number | null
+          session_notes?: string | null
         }
         Insert: {
           checked_in_at?: string
@@ -408,6 +423,9 @@ export type Database = {
           pickup_method?: string
           pickup_person_name?: string | null
           qr_code?: string
+          behavior_score?: number | null
+          participation_score?: number | null
+          session_notes?: string | null
         }
         Update: {
           checked_in_at?: string
@@ -510,6 +528,7 @@ export type Database = {
           photo_url: string | null
           special_needs: string | null
           status: string
+          behavior_points: number | null
           updated_at: string
         }
         Insert: {

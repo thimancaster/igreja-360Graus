@@ -11,6 +11,7 @@ import ParentEventsContent from "@/pages/parent/ParentEvents";
 import ParentAnnouncementsContent from "@/pages/parent/ParentAnnouncements";
 import ParentClassesContent from "@/pages/parent/ParentClasses";
 import ParentCheckInContent from "@/pages/parent/ParentCheckIn";
+import ParentSchedulesContent from "@/pages/parent/ParentSchedules";
 
 export default function PortalChildren() {
   const [searchParams] = useSearchParams();
@@ -86,6 +87,13 @@ export default function PortalChildren() {
                 <TabsContent value="checkin" className="mt-0 outline-none" forceMount>
                    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
                     <ParentCheckInContent />
+                  </motion.div>
+                </TabsContent>
+              )}
+              {activeTab === "schedules" && (
+                <TabsContent value="schedules" className="mt-0 outline-none" forceMount>
+                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentSchedulesContent />
                   </motion.div>
                 </TabsContent>
               )}
@@ -166,15 +174,26 @@ export default function PortalChildren() {
           <span className={`${activeTab === 'checkin' ? 'text-orange-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Check-In</span>
         </div>
 
+        <div className={`nav-item ${activeTab === 'schedules' ? 'active' : ''}`} onClick={() => goToTab("schedules")}>
+          <motion.img 
+            src="/kids/icon_trophy.png" 
+            alt="Escalas" 
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            whileHover={{ scale: 1.2, y: -5 }}
+            animate={activeTab === 'schedules' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(255,215,0,0.4))" } : { scale: 1, y: 0 }}
+          />
+          <span className={`${activeTab === 'schedules' ? 'text-amber-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Escalas</span>
+        </div>
+
         <div className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => goToTab("profile")}>
           <motion.img 
             src="/kids/kids_avatar.png" 
             alt="Perfil" 
-            className="w-10 h-10 object-contain drop-shadow-md mb-0.5 rounded-full"
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
             whileHover={{ scale: 1.2, y: -5 }}
-            animate={activeTab === 'profile' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(236,72,153,0.4))" } : { scale: 1, y: 0 }}
+            animate={activeTab === 'profile' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(249,115,22,0.4))" } : { scale: 1, y: 0 }}
           />
-          <span className={`${activeTab === 'profile' ? 'text-pink-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Perfil</span>
+          <span className={`${activeTab === 'profile' ? 'text-orange-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Perfil</span>
         </div>
 
         <div className="nav-item group" onClick={() => navigate("/dashboard")}>
