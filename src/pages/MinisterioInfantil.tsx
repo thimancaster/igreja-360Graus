@@ -12,7 +12,7 @@ import { AnnouncementsPanel } from "@/components/children-ministry/announcements
 import { MinistryCalendar } from "@/components/children-ministry/calendar/MinistryCalendar";
 import { ClassroomCapacityManager, WaitlistPanel } from "@/components/children-ministry/capacity";
 import { MedicationPanel, IncidentReportPanel } from "@/components/children-ministry/health";
-import { StaffList, StaffScheduler } from "@/components/children-ministry/staff";
+import { StaffList, StaffScheduler, LessonManager } from "@/components/children-ministry/staff";
 import { AnamnesisPanel } from "@/components/children-ministry/health/AnamnesisPanel";
 import { ClassroomReportPanel } from "@/components/children-ministry/ClassroomReportPanel";
 import { ActiveUrgentCalls } from "@/components/children-ministry/ActiveUrgentCalls";
@@ -102,8 +102,22 @@ export default function MinisterioInfantil() {
         </TabsContent>
 
         <TabsContent value="staff" className="space-y-6">
-          <StaffList />
-          <StaffScheduler />
+          <Tabs defaultValue="members" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3 bg-black/5 dark:bg-white/5 p-1 rounded-2xl">
+              <TabsTrigger value="members">Equipe</TabsTrigger>
+              <TabsTrigger value="schedules">Escalas</TabsTrigger>
+              <TabsTrigger value="lessons">Preparar Aula</TabsTrigger>
+            </TabsList>
+            <TabsContent value="members" className="space-y-6 mt-0">
+              <StaffList />
+            </TabsContent>
+            <TabsContent value="schedules" className="space-y-6 mt-0">
+              <StaffScheduler />
+            </TabsContent>
+            <TabsContent value="lessons" className="space-y-6 mt-0">
+              <LessonManager />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="capacity" className="space-y-4">

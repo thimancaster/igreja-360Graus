@@ -11,6 +11,7 @@ import ParentEventsContent from "@/pages/parent/ParentEvents";
 import ParentAnnouncementsContent from "@/pages/parent/ParentAnnouncements";
 import ParentClassesContent from "@/pages/parent/ParentClasses";
 import ParentCheckInContent from "@/pages/parent/ParentCheckIn";
+import ParentRewardsContent from "@/pages/parent/ParentRewards";
 import ParentSchedulesContent from "@/pages/parent/ParentSchedules";
 
 export default function PortalChildren() {
@@ -97,6 +98,13 @@ export default function PortalChildren() {
                   </motion.div>
                 </TabsContent>
               )}
+              {activeTab === "rewards" && (
+                <TabsContent value="rewards" className="mt-0 outline-none" forceMount>
+                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentRewardsContent />
+                  </motion.div>
+                </TabsContent>
+              )}
               {activeTab === "profile" && (
                 <TabsContent value="profile" className="mt-0 outline-none" forceMount>
                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
@@ -108,16 +116,10 @@ export default function PortalChildren() {
                       <h2 className="font-extrabold text-[#1a1a1a] text-3xl tracking-tight">Área dos Pais</h2>
                       <p className="text-gray-600 mt-2 font-bold max-w-sm">Configurações de conta e preferências do portal estarão disponíveis em breve!</p>
                       
-                      <div className="mt-8 flex gap-3">
-                         <div className="w-12 h-12 rounded-2xl bg-white/50 flex items-center justify-center shadow-sm border border-white/80">
-                            <img src="/kids/icon_bible.png" alt="Bible" className="w-8 h-8 object-contain" />
-                         </div>
-                         <div className="w-12 h-12 rounded-2xl bg-white/50 flex items-center justify-center shadow-sm border border-white/80">
-                            <img src="/kids/icon_ticket.png" alt="Ticket" className="w-8 h-8 object-contain" />
-                         </div>
-                         <div className="w-12 h-12 rounded-2xl bg-white/50 flex items-center justify-center shadow-sm border border-white/80">
-                            <img src="/kids/icon_calendar.png" alt="Calendar" className="w-8 h-8 object-contain" />
-                         </div>
+                      <div className="mt-8 flex gap-6">
+                        <img src="/kids/icon_bible.png" alt="Bible" className="w-12 h-12 object-contain pop-out-character" />
+                        <img src="/kids/icon_ticket.png" alt="Ticket" className="w-12 h-12 object-contain pop-out-character" />
+                        <img src="/kids/icon_calendar.png" alt="Calendar" className="w-12 h-12 object-contain pop-out-character" />
                       </div>
                     </div>
                   </motion.div>
@@ -143,7 +145,7 @@ export default function PortalChildren() {
 
         <div className={`nav-item ${activeTab === 'events' ? 'active' : ''}`} onClick={() => goToTab("events")}>
           <motion.img 
-            src="/kids/icon_calendar.png" 
+            src="/kids/icon_eventos.png" 
             alt="Eventos" 
             className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
             whileHover={{ scale: 1.2, y: -5 }}
@@ -174,15 +176,15 @@ export default function PortalChildren() {
           <span className={`${activeTab === 'checkin' ? 'text-orange-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Check-In</span>
         </div>
 
-        <div className={`nav-item ${activeTab === 'schedules' ? 'active' : ''}`} onClick={() => goToTab("schedules")}>
+        <div className={`nav-item ${activeTab === 'rewards' ? 'active' : ''}`} onClick={() => goToTab("rewards")}>
           <motion.img 
             src="/kids/icon_trophy.png" 
-            alt="Escalas" 
+            alt="Recompensa" 
             className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
             whileHover={{ scale: 1.2, y: -5 }}
-            animate={activeTab === 'schedules' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(255,215,0,0.4))" } : { scale: 1, y: 0 }}
+            animate={activeTab === 'rewards' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(234,179,8,0.5))" } : { scale: 1, y: 0 }}
           />
-          <span className={`${activeTab === 'schedules' ? 'text-amber-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Escalas</span>
+          <span className={`${activeTab === 'rewards' ? 'text-yellow-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Recompensa</span>
         </div>
 
         <div className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => goToTab("profile")}>
@@ -196,11 +198,14 @@ export default function PortalChildren() {
           <span className={`${activeTab === 'profile' ? 'text-orange-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Perfil</span>
         </div>
 
-        <div className="nav-item group" onClick={() => navigate("/dashboard")}>
-          <div className="w-10 h-10 rounded-2xl bg-white/40 flex items-center justify-center shadow-inner group-hover:bg-red-500/20 transition-all duration-300">
-            <LogOut className="h-6 w-6 text-gray-400 group-hover:text-red-500" />
-          </div>
-          <span className="text-gray-400 group-hover:text-red-500 font-bold text-[10px] transition-all">Sair</span>
+        <div className="nav-item group" onClick={() => navigate("/portal")}>
+          <motion.img 
+            src="/kids/icon_sair.png" 
+            alt="Sair" 
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5 group-hover:opacity-80"
+            whileHover={{ scale: 1.2, y: -5 }}
+          />
+          <span className="text-gray-400 group-hover:text-red-400 font-bold text-[10px] transition-all">Sair</span>
         </div>
       </div>
     </div>

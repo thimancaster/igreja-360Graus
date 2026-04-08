@@ -53,10 +53,10 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex h-full flex-col">
       <div className="border-b p-4">
         <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12">
+          <Avatar className="h-12 w-12 border-2 border-primary/20 shadow-glow">
             <AvatarImage src={profile?.avatar_url || undefined} />
-            <AvatarFallback className="bg-primary/10">
-              <User className="h-6 w-6 text-primary" />
+            <AvatarFallback className="gradient-brand text-white">
+              <User className="h-6 w-6" />
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
@@ -78,13 +78,13 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
                 to={item.href}
                 onClick={onNavigate}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition-all",
+                  "flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition-all group",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "gradient-brand text-white shadow-lg shadow-primary/20"
+                    : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
                 )}
               >
-                <item.icon className="h-5 w-5" />
+                <item.icon className={cn("h-5 w-5", isActive ? "text-white" : "text-primary/70 group-hover:text-primary")} />
                 {item.label}
               </Link>
             );

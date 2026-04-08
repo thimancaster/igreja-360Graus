@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useEvents, ChurchEvent } from "@/hooks/useEvents";
@@ -11,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Plus, MoreVertical, Edit, Trash2, Users, MapPin, Clock, Eye, Copy } from "lucide-react";
+import { Search, Plus, MoreVertical, Edit, Trash2, Users, MapPin, Clock, Eye, Copy, QrCode } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ChurchEventDialog } from "./ChurchEventDialog";
 import { toast } from "sonner";
@@ -29,6 +30,7 @@ const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | 
 };
 
 export function EventList() {
+  const navigate = useNavigate();
   const { events, isLoading, deleteEvent, createEvent, updateEvent, isCreating, isUpdating } = useEvents();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -162,6 +164,9 @@ export function EventList() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleEdit(event)}><Edit className="h-4 w-4 mr-2" /> Editar</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDuplicate(event)}><Copy className="h-4 w-4 mr-2" /> Duplicar</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigate(`/app/eventos/${event.id}/checkin`)}>
+                              <QrCode className="h-4 w-4 mr-2" /> Check-in
+                            </DropdownMenuItem>
                             {event.registration_required && (
                               <DropdownMenuItem onClick={() => {
                                 navigator.clipboard.writeText(`${window.location.origin}/inscricao/${event.id}`);

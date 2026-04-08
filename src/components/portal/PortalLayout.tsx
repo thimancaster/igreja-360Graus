@@ -25,6 +25,7 @@ import {
   Heart,
   Radio,
   CalendarClock,
+  Ticket,
 } from "lucide-react";
 
 interface PortalLayoutProps {
@@ -34,6 +35,7 @@ interface PortalLayoutProps {
 const navItems = [
   { href: "/portal", label: "Início", icon: Home },
   { href: "/portal/eventos", label: "Eventos", icon: CalendarDays },
+  { href: "/portal/meus-ingressos", label: "Meus Ingressos", icon: Ticket },
   { href: "/portal/escalas", label: "Escalas", icon: Calendar },
   { href: "/portal/comunicados", label: "Comunicados", icon: Megaphone },
   { href: "/portal/contribuicoes", label: "Contribuições", icon: Heart },
@@ -68,9 +70,9 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* Sidebar header with gradient */}
       <div className="bg-gradient-to-br from-primary/10 to-secondary/10 border-b p-6">
         <div className="flex items-center gap-3">
-          <Avatar className="h-14 w-14 border-2 border-primary/20 shadow-sm">
+          <Avatar className="h-14 w-14 border-2 border-primary/20 shadow-glow">
             <AvatarImage src={profile?.avatar_url || undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
+            <AvatarFallback className="gradient-brand text-white font-bold text-lg">
               {profile?.full_name?.[0] || "M"}
             </AvatarFallback>
           </Avatar>
@@ -94,13 +96,13 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
                 to={item.href}
                 onClick={onNavigate}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
+                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all group",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-foreground/80 hover:bg-muted hover:text-foreground"
+                    ? "gradient-brand text-white shadow-lg shadow-primary/20"
+                    : "text-foreground/80 hover:bg-primary/5 hover:text-primary"
                 )}
               >
-                <item.icon className="h-5 w-5" />
+                <item.icon className={cn("h-5 w-5", isActive ? "text-white" : "text-primary/70 group-hover:text-primary")} />
                 {item.label}
               </Link>
             );

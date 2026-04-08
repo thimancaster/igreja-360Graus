@@ -15,32 +15,35 @@ export interface VolunteerAvailability {
 }
 
 export interface CreateAvailabilityData {
-  volunteer_id: string;
+  volunteer_id?: string;
+  volunteer_ids?: string[];
   start_date: string;
   end_date: string;
   reason?: string;
 }
 
-export function useVolunteerAvailability(volunteerId?: string) {
+export function useVolunteerAvailability(volunteerIds?: string | string[]) {
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
 
+  const ids = Array.isArray(volunteerIds) ? volunteerIds : (volunteerIds ? [volunteerIds] : []);
+
   const { data: availability, isLoading } = useQuery({
-    queryKey: ["volunteer-availability", volunteerId],
+    queryKey: ["volunteer-availability", ids],
     queryFn: async () => {
-      if (!volunteerId) return [];
+      if (ids.length === 0) return [];
 
       const { data, error } = await supabase
         .from("volunteer_availability")
         .select("*")
-        .eq("volunteer_id", volunteerId)
+        .in("volunteer_id", ids)
         .gte("end_date", new Date().toISOString().split("T")[0])
         .order("start_date");
 
       if (error) throw error;
       return data as VolunteerAvailability[];
     },
-    enabled: !!volunteerId,
+    enabled: ids.length > 0,
   });
 
   // Fetch all availability for a ministry (for leaders)
@@ -68,17 +71,21 @@ export function useVolunteerAvailability(volunteerId?: string) {
     mutationFn: async (data: CreateAvailabilityData) => {
       if (!profile?.church_id) throw new Error("Igreja não encontrada");
 
-      const { data: result, error } = await supabase
-        .from("volunteer_availability")
-        .insert({
+      const idsToInsert = data.volunteer_ids?.length ? data.volunteer_ids : (data.volunteer_id ? [data.volunteer_id] : []);
+      if (idsToInsert.length === 0) throw new Error("Nenhum ID de voluntário fornecido");
+
+      const payloads = idsToInsert.map(id => ({
           church_id: profile.church_id,
-          volunteer_id: data.volunteer_id,
+          volunteer_id: id,
           start_date: data.start_date,
           end_date: data.end_date,
           reason: data.reason || null,
-        })
-        .select()
-        .single();
+      }));
+
+      const { data: result, error } = await supabase
+        .from("volunteer_availability")
+        .insert(payloads)
+        .select();
 
       if (error) throw error;
       return result;

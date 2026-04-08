@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval, isSameDay, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Calendar, Clock, User, Check, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar, Clock, User, Check, X, BookOpen } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useStaffSchedules, useUpdateStaffSchedule, StaffSchedule } from "@/hooks/useMinistryStaff";
 import { ScheduleDialog } from "./ScheduleDialog";
+import { LessonPreparationModal } from "./LessonPreparationModal";
 
 export function StaffScheduler() {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
+  const [selectedScheduleForLesson, setSelectedScheduleForLesson] = useState<any>(null);
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 0 });
@@ -149,6 +152,17 @@ export function StaffScheduler() {
                                     <X className="h-3 w-3 text-yellow-600" />
                                   )}
                                 </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-5 w-5 text-primary ml-1"
+                                  onClick={() => {
+                                    setSelectedScheduleForLesson(schedule);
+                                    setLessonDialogOpen(true);
+                                  }}
+                                >
+                                  <BookOpen className="h-3 w-3" />
+                                </Button>
                               </div>
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Clock className="h-3 w-3" />
@@ -194,6 +208,12 @@ export function StaffScheduler() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         selectedDate={selectedDate}
+      />
+
+      <LessonPreparationModal
+        open={lessonDialogOpen}
+        onOpenChange={setLessonDialogOpen}
+        schedule={selectedScheduleForLesson}
       />
     </>
   );

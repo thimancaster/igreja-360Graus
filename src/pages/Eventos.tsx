@@ -1,14 +1,19 @@
 import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Calendar, List, ClipboardList } from "lucide-react";
+import { BarChart3, Calendar, List, QrCode } from "lucide-react";
 import { pageVariants, pageTransition } from "@/lib/pageAnimations";
 import { EventDashboard } from "@/components/events/EventDashboard";
 import { EventCalendar } from "@/components/events/EventCalendar";
 import { EventList } from "@/components/events/EventList";
+import { CheckinPanel } from "@/components/events/CheckinPanel";
+import { Button } from "@/components/ui/button";
 
 export default function Eventos() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const navigate = useNavigate();
+  const { eventId } = useParams<{ eventId?: string }>();
 
   return (
     <motion.div
@@ -19,13 +24,15 @@ export default function Eventos() {
       transition={pageTransition}
       className="flex-1 space-y-6 p-6"
     >
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Eventos</h1>
-        <p className="text-muted-foreground">Gerencie todos os eventos da igreja</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Eventos</h1>
+          <p className="text-muted-foreground">Gerencie todos os eventos da igreja</p>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
           <TabsTrigger value="dashboard" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -38,12 +45,70 @@ export default function Eventos() {
             <List className="h-4 w-4" />
             <span className="hidden sm:inline">Lista</span>
           </TabsTrigger>
+          <TabsTrigger value="checkin" className="gap-2">
+            <QrCode className="h-4 w-4" />
+            <span className="hidden sm:inline">Check-in</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard"><EventDashboard /></TabsContent>
         <TabsContent value="calendar"><EventCalendar /></TabsContent>
         <TabsContent value="list"><EventList /></TabsContent>
+        <TabsContent value="checkin">
+          <CheckinPanelSelect navigate={navigate} />
+        </TabsContent>
       </Tabs>
     </motion.div>
   );
+}
+
+function CheckinPanelSelect({ navigate }: { navigate: (path: string) => void }) {
+  const { data: events, isLoading } = useEventsList();
+
+  if (isLoading) {
+    return <div className="p-8 text-center">Carregando...</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-muted/50 rounded-lg p-6">
+        <h3 className="font-semibold mb-4">Selecione um evento para fazer check-in</h3>
+        <div className="space-y-2">
+          {events?.filter(e => e.status === 'published').map(event => (
+            <Button
+              key={event.id}
+              variant="outline"
+              className="w-full justify-between text-left h-auto py-3"
+              onClick={() => navigate(`/app/eventos/${event.id}/checkin`)}
+            >
+              <div>
+                <p className="font-medium">{event.title}</p>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(event.start_datetime).toLocaleDateString('pt-BR')}
+                </p>
+              </div>
+              <QrCode className="h-5 w-5 text-muted-foreground" />
+            </Button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+function useEventsList() {
+  return useQuery({
+    queryKey: ["events-list"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("ministry_events")
+        .select("id, title, start_datetime, status")
+        .order("start_datetime", { ascending: false })
+        .limit(20);
+      return data;
+    },
+  });
 }
