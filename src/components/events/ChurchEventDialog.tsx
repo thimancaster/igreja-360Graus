@@ -134,7 +134,10 @@ export function ChurchEventDialog({ open, onOpenChange, event, onSubmit, isLoadi
       start_datetime: startDatetime, end_datetime: endDatetime, all_day: values.all_day,
       location: values.location, max_capacity: values.max_capacity,
       registration_required: values.registration_required,
+<<<<<<< HEAD
       registration_deadline: values.registration_deadline ? new Date(values.registration_deadline).toISOString() : null,
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
       ministry_id: (values.ministry_id === "none" || !values.ministry_id) ? null : values.ministry_id,
       ticket_price: values.is_paid_event ? (values.ticket_price || 0) : 0,
       is_paid_event: values.is_paid_event,

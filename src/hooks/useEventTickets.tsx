@@ -214,6 +214,7 @@ export function useEventTickets() {
     },
   });
 
+<<<<<<< HEAD
   const manualCheckinMutation = useMutation({
     mutationFn: async (registrationId: string) => {
       const { data, error } = await supabase
@@ -262,6 +263,8 @@ export function useEventTickets() {
     },
   });
 
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
   const updatePaymentStatus = useMutation({
     mutationFn: async ({ 
       registrationId, 
@@ -360,8 +363,11 @@ export function useEventTickets() {
     createRegistration: createRegistration.mutateAsync,
     checkIn: checkIn.mutateAsync,
     checkOut: checkOut.mutateAsync,
+<<<<<<< HEAD
     manualCheckin: manualCheckinMutation,
     manualCheckout: manualCheckoutMutation,
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
     updatePaymentStatus: updatePaymentStatus.mutateAsync,
     cancelRegistration: cancelRegistration.mutateAsync,
     generateQRTicketData,

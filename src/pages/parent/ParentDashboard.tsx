@@ -141,11 +141,19 @@ export default function ParentDashboard() {
           className="glass-card-kids p-6 group cursor-pointer transition-all duration-500 flex flex-col lg:flex-row lg:items-center gap-6 mt-20 lg:mt-24"
           onClick={() => goToTab("events")}
         >
+<<<<<<< HEAD
+=======
+          {/* POP-OUT CHARACTER - floats above the card, does NOT overlap text */}
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
           <div className="relative w-full lg:w-40 shrink-0 h-4 lg:h-0">
             <motion.img 
               src="/kids/kids_event_v2.png" 
               alt="Event" 
+<<<<<<< HEAD
               className="absolute -top-28 lg:-top-32 -left-4 lg:-left-6 w-48 lg:w-56 max-w-none pop-out-character z-20" 
+=======
+              className="absolute -top-28 lg:-top-32 -left-4 lg:-left-6 w-48 lg:w-56 max-w-none pop-out-character" 
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
@@ -180,6 +188,7 @@ export default function ParentDashboard() {
             </p>
           </div>
           
+<<<<<<< HEAD
           <button 
             onClick={(e) => { e.stopPropagation(); children?.[0] && setViewingEvolutionChild(children[0]); }}
             className="hidden lg:flex flex-col items-center justify-center p-5 bg-white/30 rounded-3xl border border-white/40 backdrop-blur-md shadow-sm shrink-0 relative z-10 hover:bg-white/50 transition-all hover:scale-105 active:scale-95 group"
@@ -193,6 +202,8 @@ export default function ParentDashboard() {
              </p>
              <p className="text-[8px] font-bold text-gray-500 tracking-tight uppercase">VER EVOLUÇÃO</p>
           </button>
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
         </div>
       </div>
 
@@ -221,6 +232,10 @@ export default function ParentDashboard() {
           <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Check-In</span>
         </button>
  
+<<<<<<< HEAD
+=======
+        {/* GREEN PILL: Recompensa */}
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
         <button 
           className="glass-pill pill-green"
           onClick={() => goToTab("rewards")}
@@ -335,6 +350,10 @@ export default function ParentDashboard() {
       <div className="space-y-3 pt-8 pb-10">
         <h3 className="font-extrabold text-lg text-[#1a1a1a]">Área dos Pais</h3>
         <div className="grid grid-cols-2 gap-4 lg:gap-8">
+<<<<<<< HEAD
+=======
+          {/* Event Calendar Card */}
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
           <div 
             className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("events")}
@@ -348,7 +367,12 @@ export default function ParentDashboard() {
             </div>
             <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Calendário</h4>
           </div>
+<<<<<<< HEAD
   
+=======
+ 
+           {/* History Card */}
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
            <div 
             className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("history")}
@@ -361,6 +385,7 @@ export default function ParentDashboard() {
               />
             </div>
             <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Histórico</h4>
+<<<<<<< HEAD
           </div>
 
           <div 
@@ -375,6 +400,8 @@ export default function ParentDashboard() {
               />
             </div>
             <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Escalas</h4>
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
           </div>
         </div>
       </div>

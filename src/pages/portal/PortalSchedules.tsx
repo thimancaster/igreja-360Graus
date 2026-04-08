@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Check, Clock, BellRing, ClipboardList, AlertTriangle, MessageCircle, Loader2, Baby, Users } from "lucide-react";
 import { useMyUnifiedSchedules, UnifiedSchedule } from "@/hooks/useMyUnifiedSchedules";
+<<<<<<< HEAD
+=======
+import { VolunteerAvailabilityManager } from "@/components/schedules/VolunteerAvailabilityManager";
+import { ScheduleSwapManager } from "@/components/schedules/ScheduleSwapManager";
+import { StaffLessonView } from "@/components/schedules/StaffLessonView";
+import { ScheduleChatDrawer } from "@/components/schedules/ScheduleChatDrawer";
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";

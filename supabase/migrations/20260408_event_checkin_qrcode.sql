@@ -348,6 +348,7 @@ USING (profile_id = auth.uid() OR church_id = get_user_church_id());
 
 -- Permissão para função de checkin (executar sem restrictions)
 GRANT EXECUTE ON FUNCTION public.process_event_checkin TO authenticated;
+<<<<<<< HEAD
 
 -- 10. Função para check-in manual por registration_id
 CREATE OR REPLACE FUNCTION public.process_manual_checkin(
@@ -470,6 +471,8 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.process_manual_checkout TO authenticated;
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 GRANT EXECUTE ON FUNCTION public.process_event_checkout TO authenticated;
 GRANT EXECUTE ON FUNCTION public.generate_ticket_number TO authenticated;
 GRANT EXECUTE ON FUNCTION public.generate_qr_code_data TO authenticated;

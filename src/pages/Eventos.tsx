@@ -2,14 +2,21 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+<<<<<<< HEAD
 import { BarChart3, Calendar, List, QrCode, DollarSign, Users, Bell } from "lucide-react";
+=======
+import { BarChart3, Calendar, List, QrCode, DollarSign } from "lucide-react";
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 import { pageVariants, pageTransition } from "@/lib/pageAnimations";
 import { EventDashboard } from "@/components/events/EventDashboard";
 import { EventCalendar } from "@/components/events/EventCalendar";
 import { EventList } from "@/components/events/EventList";
 import { CheckinPanel } from "@/components/events/CheckinPanel";
+<<<<<<< HEAD
 import { WaitlistPanel } from "@/components/events/WaitlistPanel";
 import { ReminderPanel } from "@/components/events/ReminderPanel";
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 import { Button } from "@/components/ui/button";
 
 export default function Eventos() {
@@ -34,7 +41,11 @@ export default function Eventos() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+<<<<<<< HEAD
         <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
+=======
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
           <TabsTrigger value="dashboard" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -51,6 +62,7 @@ export default function Eventos() {
             <QrCode className="h-4 w-4" />
             <span className="hidden sm:inline">Check-in</span>
           </TabsTrigger>
+<<<<<<< HEAD
           <TabsTrigger value="waitlist" className="gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Espera</span>
@@ -59,6 +71,8 @@ export default function Eventos() {
             <Bell className="h-4 w-4" />
             <span className="hidden sm:inline">Lembretes</span>
           </TabsTrigger>
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
           <TabsTrigger value="payments" className="gap-2">
             <DollarSign className="h-4 w-4" />
             <span className="hidden sm:inline">Pagamentos</span>
@@ -71,12 +85,15 @@ export default function Eventos() {
         <TabsContent value="checkin">
           <CheckinPanelSelect navigate={navigate} />
         </TabsContent>
+<<<<<<< HEAD
         <TabsContent value="waitlist">
           <WaitlistPanelSelect />
         </TabsContent>
         <TabsContent value="reminders">
           <RemindersPanelSelect />
         </TabsContent>
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
         <TabsContent value="payments">
           <PaymentPanelSelect navigate={navigate} />
         </TabsContent>
@@ -119,6 +136,7 @@ function CheckinPanelSelect({ navigate }: { navigate: (path: string) => void }) 
   );
 }
 
+<<<<<<< HEAD
 function WaitlistPanelSelect({ navigate }: { navigate: (path: string) => void }) {
   const { data: events, isLoading } = useEventsList();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -228,6 +246,10 @@ function RemindersPanelSelect() {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { WaitlistPanel } from "@/components/events/WaitlistPanel";
+=======
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 
 function useEventsList() {
   return useQuery({

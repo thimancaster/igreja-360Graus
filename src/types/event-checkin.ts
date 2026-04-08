@@ -31,11 +31,14 @@ export interface EventRegistrationExtended {
   attendee_name: string | null;
   attendee_email: string | null;
   attendee_phone: string | null;
+<<<<<<< HEAD
   origin?: string;
   source_reference?: string;
   finance_registered?: boolean;
   finance_registered_by?: string;
   finance_registered_at?: string;
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
   event?: {
     id: string;
     title: string;
@@ -144,6 +147,7 @@ export interface CreatePaymentInput {
   pix_qr_code?: string;
   pix_expiration?: string;
 }
+<<<<<<< HEAD
 
 export interface EventRevenueAuthorization {
   id: string;
@@ -170,3 +174,5 @@ export interface EventWithFinanceSettings {
   start_datetime: string;
   auto_register_finance: boolean;
 }
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c

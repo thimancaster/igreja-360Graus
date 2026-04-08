@@ -67,7 +67,10 @@ import { useChurchTheme } from '@/hooks/useChurchTheme';
 // Admin - Checkin de Eventos
 const EventCheckin = lazy(() => import('@/pages/admin/EventCheckin'));
 const EventPayments = lazy(() => import('@/pages/admin/EventPayments'));
+<<<<<<< HEAD
 const AutorizacoesEventos = lazy(() => import('@/pages/admin/AutorizacoesEventos'));
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 
 // Portal do Responsável (parent)
 const ParentDashboard = lazy(() => import('@/pages/parent/ParentDashboard'));
@@ -120,7 +123,10 @@ const App: React.FC = () => {
                   <Route path="/app/ministerio-infantil" element={<ProtectedRoute><AppRoute><AppLayout><MinisterioInfantil /></AppLayout></AppRoute></ProtectedRoute>} />
                   <Route path="/app/escalas" element={<ProtectedRoute><AppRoute><Escalas /></AppRoute></ProtectedRoute>} />
                   <Route path="/app/eventos" element={<ProtectedRoute><AppRoute><AppLayout><Eventos /></AppLayout></AppRoute></ProtectedRoute>} />
+<<<<<<< HEAD
                   <Route path="/app/eventos/autorizacoes" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><AutorizacoesEventos /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
                   <Route path="/app/eventos/:eventId/checkin" element={<ProtectedRoute><AppRoute><AdminRoute><EventCheckin /></AdminRoute></AppRoute></ProtectedRoute>} />
                   <Route path="/app/eventos/:eventId/pagamentos" element={<ProtectedRoute><AppRoute><AdminRoute><EventPayments /></AdminRoute></AppRoute></ProtectedRoute>} />
                   <Route path="/app/voluntario/aceitar-termo" element={<ProtectedRoute><AppRoute><AceitarTermoVoluntario /></AppRoute></ProtectedRoute>} />

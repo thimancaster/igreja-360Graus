@@ -12,7 +12,10 @@ import ParentAnnouncementsContent from "@/pages/parent/ParentAnnouncements";
 import ParentClassesContent from "@/pages/parent/ParentClasses";
 import ParentCheckInContent from "@/pages/parent/ParentCheckIn";
 import ParentRewardsContent from "@/pages/parent/ParentRewards";
+<<<<<<< HEAD
 import ParentSchedulesContent from "@/pages/parent/ParentSchedules";
+=======
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 
 export default function PortalChildren() {
   const [searchParams] = useSearchParams();
@@ -125,6 +128,14 @@ export default function PortalChildren() {
                   </motion.div>
                 </TabsContent>
               )}
+              {activeTab === "rewards" && (
+                <TabsContent value="rewards" className="mt-0 outline-none" forceMount>
+                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentRewardsContent />
+                  </motion.div>
+                </TabsContent>
+              )}
+
             </AnimatePresence>
           </div>
         </Tabs>
@@ -177,6 +188,7 @@ export default function PortalChildren() {
         </div>
 
         <div className={`nav-item ${activeTab === 'rewards' ? 'active' : ''}`} onClick={() => goToTab("rewards")}>
+<<<<<<< HEAD
           <motion.img 
             src="/kids/icon_trophy.png" 
             alt="Recompensa" 
@@ -196,6 +208,16 @@ export default function PortalChildren() {
             animate={activeTab === 'profile' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(249,115,22,0.4))" } : { scale: 1, y: 0 }}
           />
           <span className={`${activeTab === 'profile' ? 'text-orange-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Perfil</span>
+=======
+          <motion.img 
+            src="/kids/icon_trophy.png" 
+            alt="Recompensa" 
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            whileHover={{ scale: 1.2, y: -5 }}
+            animate={activeTab === 'rewards' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(234,179,8,0.5))" } : { scale: 1, y: 0 }}
+          />
+          <span className={`${activeTab === 'rewards' ? 'text-yellow-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Recompensa</span>
+>>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
         </div>
 
         <div className="nav-item group" onClick={() => navigate("/portal")}>

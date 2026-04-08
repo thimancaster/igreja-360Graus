@@ -689,7 +689,7 @@
   .icon-danger   { background: hsl(0 84% 60% / 0.15); color: hsl(0 84% 60%); @apply rounded-xl border border-red-500/10; }
   .icon-cyan     { background: hsl(191 91% 44% / 0.15); color: hsl(191 91% 44%); @apply rounded-xl border border-cyan-500/10; }
   .icon-violet   { background: hsl(263 70% 68% / 0.20); color: hsl(263 70% 68%); @apply rounded-xl border border-violet-500/10; }
-  .icon-muted    { background: hsl(var(--sidebar-foreground) / 0.10); color: hsl(var(--sidebar-foreground) / 0.85); @apply rounded-xl border border-current/5; }
+  .icon-muted    { background: hsl(var(--sidebar-foreground) / 0.10); color: hsl(var(--sidebar-foreground) / 0.85); border-color: hsl(var(--sidebar-foreground) / 0.05); @apply rounded-xl border; }
   .icon-aurora   { background: var(--gradient-brand); @apply rounded-xl border border-white/10 shadow-sm; color: white !important; }
   .icon-indigo   { background: hsl(239 84% 67% / 0.15); color: hsl(239 84% 67%); @apply rounded-xl border border-indigo-500/10; }
   .icon-pink     { background: hsl(330 81% 60% / 0.15); color: hsl(330 81% 60%); @apply rounded-xl border border-pink-500/10; }
