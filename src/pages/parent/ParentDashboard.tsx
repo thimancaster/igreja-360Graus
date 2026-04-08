@@ -124,26 +124,24 @@ export default function ParentDashboard() {
       <div className="space-y-3 pt-4">
         <h3 className="font-extrabold text-lg text-[#1a1a1a]">Nossos Eventos</h3>
         <div 
-          className="glass-card-kids p-6 group cursor-pointer transition-all duration-500 bg-white/40 flex flex-col lg:flex-row lg:items-center gap-6 mt-8"
+          className="glass-card-kids p-6 group cursor-pointer transition-all duration-500 flex flex-col lg:flex-row lg:items-center gap-6 mt-20 lg:mt-24"
           onClick={() => goToTab("events")}
         >
-          {/* POP-OUT CHARACTER ELEMENT */}
-          <div className="relative w-full lg:w-48 h-32 lg:h-40 shrink-0">
+          {/* POP-OUT CHARACTER - floats above the card, does NOT overlap text */}
+          <div className="relative w-full lg:w-40 shrink-0 h-4 lg:h-0">
             <motion.img 
               src="/kids/kids_event.png" 
               alt="Event" 
-              className="absolute -top-16 -left-4 lg:-top-20 lg:-left-8 w-44 lg:w-56 max-w-none drop-shadow-[0_20px_30px_rgba(0,0,0,0.3)] z-20 group-hover:scale-110 transition-transform duration-500" 
+              className="absolute -top-28 lg:-top-32 -left-4 lg:-left-6 w-48 lg:w-56 max-w-none pop-out-character" 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
             />
-            {/* Inner glow/shadow for where the character "was" */}
-            <div className="w-full h-full rounded-2xl bg-white/30 border border-white/40 shadow-inner" />
           </div>
 
-          <div className="flex-1 relative z-10 pt-4 lg:pt-0">
+          <div className="flex-1 relative z-20 pt-6 lg:pt-0">
             <div className="flex items-center justify-between gap-4 mb-2">
-              <h4 className="font-extrabold text-[#1a1a1a] text-2xl leading-tight">
+              <h4 className="font-extrabold text-[#1a1a1a] text-xl leading-tight">
                 {currentAnnouncement ? currentAnnouncement.title : "Tudo limpo por aqui! 🎉"}
               </h4>
               {currentAnnouncement && (
@@ -169,10 +167,6 @@ export default function ParentDashboard() {
             </p>
           </div>
           
-          <div className="hidden lg:flex flex-col items-center justify-center p-5 bg-white/60 rounded-3xl border border-white/80 shadow-md shrink-0 relative z-10">
-             <img src="/kids/icon_trophy.png" alt="Trophy" className="w-14 h-14 object-contain drop-shadow-md" />
-             <p className="text-[10px] font-black text-gray-800 mt-2 tracking-tighter">RECOMPENSA</p>
-          </div>
         </div>
       </div>
 
@@ -183,7 +177,7 @@ export default function ParentDashboard() {
           className="glass-pill pill-purple"
           onClick={() => setShowChildrenList(!showChildrenList)}
         >
-          <img src="/kids/kids_avatar.png" alt="Filhos" className="w-8 h-8 object-contain drop-shadow-md rounded-full" />
+          <img src="/kids/icon_meus_filhos.png" alt="Filhos" className="w-9 h-9 object-contain drop-shadow-md" />
           <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Meus Filhos</span>
         </button>
         
@@ -205,13 +199,13 @@ export default function ParentDashboard() {
           <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Check-In</span>
         </button>
  
-        {/* GREEN PILL: Atividades */}
+        {/* GREEN PILL: Recompensa */}
         <button 
           className="glass-pill pill-green"
-          onClick={() => goToTab("history")}
+          onClick={() => goToTab("rewards")}
         >
-          <img src="/kids/icon_paintbrush.png" alt="Paintbrush" className="w-8 h-8 object-contain drop-shadow-md" />
-          <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Atividades</span>
+          <img src="/kids/icon_trophy.png" alt="Trophy" className="w-8 h-8 object-contain drop-shadow-md" />
+          <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Recompensa</span>
         </button>
       </div>
 
@@ -310,35 +304,35 @@ export default function ParentDashboard() {
       {/* PARENT HUB CARDS */}
       <div className="space-y-3 pt-8 pb-10">
         <h3 className="font-extrabold text-lg text-[#1a1a1a]">Área dos Pais</h3>
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-4 lg:gap-8">
           {/* Event Calendar Card */}
           <div 
-            className="glass-card-kids p-6 bg-white/50 flex flex-col justify-center items-center text-center cursor-pointer group mt-6"
+            className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("events")}
           >
-            <div className="relative h-12 w-full mb-4">
+            <div className="relative h-8 w-full mb-2">
               <img 
                 src="/kids/icon_calendar.png" 
                 alt="Calendar" 
-                className="absolute -top-12 left-1/2 -translate-x-1/2 w-20 h-20 object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.2)] group-hover:scale-110 transition-transform duration-300 z-20" 
+                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character" 
               />
             </div>
-            <h4 className="font-extrabold text-[#1a1a1a] text-lg leading-tight">Calendário</h4>
+            <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Calendário</h4>
           </div>
  
-           {/* Volunteers Card */}
+           {/* History Card */}
            <div 
-            className="glass-card-kids p-6 bg-white/50 flex flex-col justify-center items-center text-center cursor-pointer group mt-6"
+            className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("history")}
           >
-            <div className="relative h-12 w-full mb-4">
+            <div className="relative h-8 w-full mb-2">
               <img 
-                src="/kids/icon_trophy.png" 
-                alt="Trophy" 
-                className="absolute -top-12 left-1/2 -translate-x-1/2 w-20 h-20 object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.2)] group-hover:scale-110 transition-transform duration-300 z-20" 
+                src="/kids/icon_paintbrush.png" 
+                alt="Paintbrush" 
+                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character" 
               />
             </div>
-            <h4 className="font-extrabold text-[#1a1a1a] text-lg leading-tight">Voluntários</h4>
+            <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Histórico</h4>
           </div>
         </div>
       </div>

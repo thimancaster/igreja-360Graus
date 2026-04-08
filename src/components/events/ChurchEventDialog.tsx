@@ -121,7 +121,7 @@ export function ChurchEventDialog({ open, onOpenChange, event, onSubmit, isLoadi
       start_datetime: startDatetime, end_datetime: endDatetime, all_day: values.all_day,
       location: values.location, max_capacity: values.max_capacity,
       registration_required: values.registration_required,
-      ministry_id: values.ministry_id || null,
+      ministry_id: (values.ministry_id === "none" || !values.ministry_id) ? null : values.ministry_id,
       ticket_price: values.is_paid_event ? (values.ticket_price || 0) : 0,
       is_paid_event: values.is_paid_event,
       status: values.status, visibility: values.visibility,
@@ -159,10 +159,10 @@ export function ChurchEventDialog({ open, onOpenChange, event, onSubmit, isLoadi
               )} />
               <FormField control={form.control} name="ministry_id" render={({ field }) => (
                 <FormItem><FormLabel>Ministério (opcional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ""}>
+                  <Select onValueChange={(val) => field.onChange(val === "none" ? null : val)} value={field.value || "none"}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Geral (toda a igreja)" /></SelectTrigger></FormControl>
                     <SelectContent>
-                      <SelectItem value="">Geral (toda a igreja)</SelectItem>
+                      <SelectItem value="none">Geral (toda a igreja)</SelectItem>
                       {ministries.map(m => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
                     </SelectContent>
                   </Select>

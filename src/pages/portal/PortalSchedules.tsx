@@ -1,323 +1,409 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Check, Clock, BellRing, ClipboardList } from "lucide-react";
-import { useVolunteerSchedules, VolunteerSchedule } from "@/hooks/useVolunteerSchedules";
+import { Calendar, Check, Clock, BellRing, ClipboardList, AlertTriangle, MessageCircle, Loader2, Baby, Users } from "lucide-react";
+import { useMyUnifiedSchedules, UnifiedSchedule } from "@/hooks/useMyUnifiedSchedules";
 import { VolunteerAvailabilityManager } from "@/components/schedules/VolunteerAvailabilityManager";
 import { ScheduleSwapManager } from "@/components/schedules/ScheduleSwapManager";
+import { StaffLessonView } from "@/components/schedules/StaffLessonView";
+import { ScheduleChatDrawer } from "@/components/schedules/ScheduleChatDrawer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function PortalSchedules() {
   const [currentMonth] = useState(new Date());
-  const [selectedSchedule, setSelectedSchedule] = useState<VolunteerSchedule | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<UnifiedSchedule | null>(null);
   const [activeTab, setActiveTab] = useState("minhas");
 
-  const { 
-    mySchedules, 
-    openSchedules, 
-    volunteerData, 
-    mySchedulesLoading, 
-    confirmSchedule, 
-    isConfirming, 
-    claimSchedule, 
-    isClaiming 
-  } = useVolunteerSchedules(undefined, currentMonth);
+  const {
+    schedules,
+    schedulesByDate,
+    stats,
+    isLoading,
+    confirmSchedule,
+    cancelConfirmation,
+    isConfirming,
+  } = useMyUnifiedSchedules(currentMonth);
 
-  // Verifica se não há registros de voluntário e os dados carregaram
-  if (!mySchedulesLoading && (!volunteerData || volunteerData.length === 0)) {
-    return (
-      <div className="flex-1 space-y-4 p-4">
-        <Card className="border-destructive/30 bg-destructive/5">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <ClipboardList className="h-12 w-12 text-destructive mb-4" />
-            <h2 className="font-bold text-lg">Acesso Restrito</h2>
-            <p className="text-sm text-center text-muted-foreground mt-2 max-w-sm">
-              Esta página é exclusiva para voluntários ativos de algum ministério.
-              Converse com a liderança para registrar você em um departamento.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const isTodayOrFuture = (dateStr: string) => {
+    const d = parseISO(dateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() >= today.getTime();
+  };
 
-  if (mySchedulesLoading) {
+  const upcoming = schedules.filter(s => isTodayOrFuture(s.date));
+  const past = schedules.filter(s => !isTodayOrFuture(s.date)).slice(0, 5);
+
+  const handleConfirm = async (schedule: UnifiedSchedule) => {
+    await confirmSchedule(schedule);
+  };
+
+  const handleCancelConfirm = async (schedule: UnifiedSchedule) => {
+    await cancelConfirmation(schedule);
+  };
+
+  if (isLoading) {
     return (
       <div className="space-y-4 p-4">
-        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-8 w-48 rounded-full" />
         <Tabs defaultValue="minhas">
-          <TabsList className="mb-4">
-            <TabsTrigger value="minhas">Minhas</TabsTrigger>
-            <TabsTrigger value="abertas">Vagas</TabsTrigger>
+          <TabsList className="mb-4 rounded-full h-12 p-1">
+            <TabsTrigger value="minhas" className="rounded-full">Minhas</TabsTrigger>
+            <TabsTrigger value="abertas" className="rounded-full">Vagas</TabsTrigger>
           </TabsList>
         </Tabs>
         {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24 w-full" />
+          <Skeleton key={i} className="h-32 w-full rounded-3xl" />
         ))}
       </div>
     );
   }
 
-  // Arrays de manipulação para a aba 'Minhas Escalas'
-  const upcoming = (mySchedules || []).filter(
-    (s) => new Date(s.schedule_date) >= new Date(new Date().toDateString())
-  ).sort((a, b) => new Date(a.schedule_date).getTime() - new Date(b.schedule_date).getTime());
-  
-  const past = (mySchedules || []).filter(
-    (s) => new Date(s.schedule_date) < new Date(new Date().toDateString())
-  ).sort((a, b) => new Date(b.schedule_date).getTime() - new Date(a.schedule_date).getTime());
-
-  // Agrupando "Vagas Abertas" por data futura apenas
-  const futureOpenSchedules = (openSchedules || []).filter(
-    (s) => new Date(s.schedule_date) >= new Date(new Date().toDateString())
-  ).sort((a, b) => new Date(a.schedule_date).getTime() - new Date(b.schedule_date).getTime());
-
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 space-y-4 p-4">
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      className="flex-1 space-y-6 p-4 max-w-2xl mx-auto w-full"
+    >
       <div>
-        <h1 className="text-2xl font-bold">Gerenciador de Escalas</h1>
-        <p className="text-sm text-muted-foreground">Administre suas convocações e candidaturas</p>
+        <h1 className="text-2xl font-extrabold tracking-tight">Escalas</h1>
+        <p className="text-sm text-muted-foreground">Suas convocações e vagas abertas</p>
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        <Badge variant="outline" className="rounded-full bg-primary/5">
+          <Users className="w-3 h-3 mr-1" />
+          {stats.total} escalas
+        </Badge>
+        <Badge variant="outline" className="rounded-full bg-green-500/5">
+          <Check className="w-3 h-3 mr-1" />
+          {stats.confirmed} confirmadas
+        </Badge>
+        {stats.infantil > 0 && (
+          <Badge variant="outline" className="rounded-full bg-purple-500/5">
+            <Baby className="w-3 h-3 mr-1" />
+            {stats.infantil} Kids
+          </Badge>
+        )}
       </div>
 
       <Tabs defaultValue="minhas" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 lg:w-96">
-          <TabsTrigger value="minhas">Minhas Escalas</TabsTrigger>
-          <TabsTrigger value="abertas" className="relative">
-            Vagas Abertas
-            {futureOpenSchedules.length > 0 && (
-              <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center font-bold text-[10px] animate-pulse">
-                {futureOpenSchedules.length}
-              </Badge>
-            )}
+        <TabsList className="grid w-full grid-cols-2 rounded-full h-12 p-1 bg-white/5 backdrop-blur-md border border-white/10 shadow-inner px-1">
+          <TabsTrigger value="minhas" className="rounded-full data-[state=active]:shadow-md text-sm">
+            Minhas Escalas ({upcoming.length})
+          </TabsTrigger>
+          <TabsTrigger value="historico" className="rounded-full data-[state=active]:shadow-md text-sm">
+            Histórico ({past.length})
           </TabsTrigger>
         </TabsList>
 
-        {/* ─── ABA 1: MINHAS ESCALAS ─── */}
-        <TabsContent value="minhas" className="space-y-4 mt-6">
-          {upcoming.length === 0 && past.length === 0 ? (
-            <Card className="glass-card">
+        <TabsContent value="minhas" className="space-y-6 mt-6 focus-visible:outline-none focus-visible:ring-0">
+          {upcoming.length === 0 ? (
+            <Card className="glass-card rounded-3xl border-white/10 bg-black/5 dark:bg-white/5 backdrop-blur-xl">
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                <p className="font-medium">Nenhuma escala programada</p>
-                <p className="text-sm text-muted-foreground text-center mt-1 max-w-sm">
-                  Suas convocações aparecerão aqui. Fique de olho na aba de Vagas Abertas se quiser se voluntariar!
+                <Calendar className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                <p className="font-bold tracking-tight text-lg">Nenhuma escala programada</p>
+                <p className="text-sm text-muted-foreground text-center mt-1 max-w-xs leading-relaxed">
+                  Suas convocações aparecerão aqui.
                 </p>
               </CardContent>
             </Card>
           ) : (
             <>
-              {upcoming.length > 0 && (
-                <div className="space-y-3">
-                  <h2 className="font-semibold flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-primary" />
-                    Próximas ({upcoming.length})
-                  </h2>
-                  {upcoming.map((schedule: any, index: number) => (
-                    <motion.div
-                      key={schedule.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <Card
-                        className={selectedSchedule?.id === schedule.id ? "ring-2 ring-primary bg-primary/5" : "hover-lift"}
-                        onClick={() => setSelectedSchedule(schedule)}
-                      >
-                        <CardContent className="py-4">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="space-y-1">
-                              <p className="font-semibold text-foreground">
-                                {format(new Date(schedule.schedule_date), "EEEE, dd 'de' MMMM", {
-                                  locale: ptBR,
-                                })}
-                              </p>
-                              <div className="flex items-center gap-2 text-sm text-foreground/70">
-                                <Clock className="h-4 w-4 text-primary" />
-                                {schedule.shift_start} às {schedule.shift_end}
-                              </div>
-                              {schedule.ministry_name && (
-                                <Badge variant="outline" className="text-xs mt-1 bg-surface font-semibold">
-                                  {schedule.ministry_name}
-                                </Badge>
-                              )}
-                              {schedule.notes && (
-                                <p className="text-xs text-muted-foreground/80 mt-1 italic">"{schedule.notes}"</p>
-                              )}
-                            </div>
-                            <div className="flex flex-col items-end gap-2">
-                              {schedule.confirmed ? (
-                                <Badge variant="secondary" className="gap-1 bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20">
-                                  <Check className="h-3 w-3" />
-                                  Confirmado
-                                </Badge>
-                              ) : (
-                                <Button
-                                  size="sm"
-                                  className="shadow-md shadow-primary/20"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    confirmSchedule(schedule.id);
-                                  }}
-                                  disabled={isConfirming}
-                                >
-                                  {isConfirming ? "..." : "Confirmar"}
-                                </Button>
-                              )}
-                              <Badge variant={schedule.schedule_type === "backup" ? "secondary" : "outline"} className="text-[10px] uppercase font-bold tracking-wider">
-                                {schedule.schedule_type === "backup" ? "Reserva" : "Titular"}
-                              </Badge>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-
-              {past.length > 0 && (
-                <div className="space-y-3 mt-8">
-                  <h2 className="font-semibold text-muted-foreground">Histórico</h2>
-                  {past.slice(0, 5).map((schedule: any) => (
-                    <Card key={schedule.id} className="opacity-60 bg-surface/50 border-none">
-                      <CardContent className="py-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium text-sm">
-                              {format(new Date(schedule.schedule_date), "dd/MM/yyyy", { locale: ptBR })}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {schedule.shift_start} - {schedule.shift_end}
-                              {schedule.ministry_name && ` • ${schedule.ministry_name}`}
-                            </p>
-                          </div>
-                          {schedule.confirmed && (
-                            <Badge variant="outline" className="text-xs gap-1 opacity-70">
-                              <Check className="h-3 w-3" /> Presente
-                            </Badge>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
+              {Object.entries(schedulesByDate).map(([date, daySchedules]) => {
+                if (!isTodayOrFuture(date)) return null;
+                
+                const daySchedulesSorted = daySchedules.sort((a, b) => a.start.localeCompare(b.start));
+                
+                return (
+                  <div key={date} className="space-y-3">
+                    <h3 className="font-extrabold text-sm flex items-center gap-2 px-1 sticky top-0 bg-background/80 backdrop-blur-md py-2 z-10">
+                      <span className="text-primary">
+                        {format(parseISO(date), "EEEE", { locale: ptBR })}
+                      </span>
+                      <span className="text-muted-foreground font-normal">
+                        {format(parseISO(date), "dd 'de' MMMM", { locale: ptBR })}
+                      </span>
+                    </h3>
+                    
+                    <AnimatePresence mode="popLayout">
+                      {daySchedulesSorted.map((schedule, index) => (
+                        <ScheduleCard
+                          key={schedule.id}
+                          schedule={schedule}
+                          index={index}
+                          isSelected={selectedSchedule?.id === schedule.id}
+                          onSelect={() => setSelectedSchedule(selectedSchedule?.id === schedule.id ? null : schedule)}
+                          onConfirm={() => handleConfirm(schedule)}
+                          onCancelConfirm={() => handleCancelConfirm(schedule)}
+                          isConfirming={isConfirming}
+                        />
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
             </>
           )}
-
-          {/* Trocas & Gerenciamento (Aparece ao selecionar escala fututura confirmada) */}
-          {selectedSchedule && new Date(selectedSchedule.schedule_date) >= new Date() && volunteerData?.[0] && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
-              <ScheduleSwapManager
-                volunteerId={
-                  volunteerData.find((v) => v.ministry_id === selectedSchedule.ministry_id)?.id || volunteerData[0].id
-                }
-                schedule={selectedSchedule}
-              />
-            </motion.div>
-          )}
-
-          {/* Gestão de Indisponibilidades */}
-          {volunteerData && volunteerData.length > 0 && (
-            <div className="mt-8">
-               <VolunteerAvailabilityManager
-                volunteerId={volunteerData[0].id}
-                volunteerName="Minha Disponibilidade"
-                compact
-              />
-            </div>
-          )}
         </TabsContent>
 
-        {/* ─── ABA 2: VAGAS ABERTAS (MURAL) ─── */}
-        <TabsContent value="abertas" className="space-y-4 mt-6">
-           <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-4 mb-4">
-             <BellRing className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-             <div>
-               <h3 className="text-sm font-semibold text-primary">Mural do Voluntário</h3>
-               <p className="text-xs text-foreground/70 mt-1">
-                 O líder do seu ministério liberou as vagas abaixo para escala. Seja voluntário assumindo um turno antes que o tempo expire!
-               </p>
-             </div>
-           </div>
-
-           {futureOpenSchedules.length === 0 ? (
-             <Card>
-               <CardContent className="flex flex-col items-center justify-center py-12">
-                 <ClipboardList className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                 <p className="font-medium text-foreground/80">Sem vagas abertas</p>
-                 <p className="text-sm text-center text-muted-foreground mt-1">
-                   Mande mensagem para a sua liderança caso deseje ser escalado.
-                 </p>
-               </CardContent>
-             </Card>
-           ) : (
-              <div className="space-y-3">
-                {futureOpenSchedules.map((schedule: any, index: number) => {
-                  
-                  // Calcula vencimento
-                  let isEndingSoon = false;
-                  if (schedule.accept_until) {
-                    const hoursLeft = (new Date(schedule.accept_until).getTime() - new Date().getTime()) / 36e5;
-                    isEndingSoon = hoursLeft > 0 && hoursLeft < 24; 
-                  }
-
-                  return (
-                    <motion.div
-                      key={schedule.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <Card className="aurora-card">
-                        <CardContent className="py-4">
-                          <div className="flex flex-col lg:flex-row justify-between gap-4">
-                            <div className="space-y-2">
-                              {schedule.accept_until && (
-                                <Badge variant={isEndingSoon ? "destructive" : "secondary"} className="text-[10px] mb-1">
-                                  {isEndingSoon ? "Expira Hoje!" : `Até ${format(new Date(schedule.accept_until), "dd/MM HH:mm")}`}
-                                </Badge>
-                              )}
-                              <p className="font-bold text-lg text-foreground">
-                                {format(new Date(schedule.schedule_date), "EEEE, dd 'de' MMMM", { locale: ptBR })}
-                              </p>
-                              <div className="flex gap-4 items-center">
-                                <div className="flex items-center gap-1.5 text-sm text-foreground/80 font-medium">
-                                  <Clock className="w-4 h-4 text-primary" />
-                                  {schedule.shift_start} - {schedule.shift_end}
-                                </div>
-                                <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">{schedule.ministry_name}</Badge>
-                              </div>
-                              {schedule.notes && (
-                                <p className="text-xs text-muted-foreground pt-1">Info: {schedule.notes}</p>
-                              )}
-                            </div>
-                            
-                            <div className="flex flex-col justify-end lg:justify-center w-full lg:w-auto mt-2 lg:mt-0">
-                               <Button 
-                                className="w-full lg:w-auto font-bold shadow-lg shadow-primary/20"
-                                onClick={() => claimSchedule(schedule.id)}
-                                disabled={isClaiming}
-                               >
-                                 {isClaiming ? "..." : "Me Voluntariar!"}
-                               </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  )
-                })}
+        <TabsContent value="historico" className="space-y-4 mt-6 focus-visible:outline-none">
+          {past.length === 0 ? (
+            <Card className="glass-card rounded-3xl border-white/10 bg-black/5 dark:bg-white/5 backdrop-blur-xl">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Clock className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                <p className="font-bold tracking-tight text-lg">Sem escalas anteriores</p>
+              </CardContent>
+            </Card>
+          ) : (
+            Object.entries(
+              past.reduce((acc, schedule) => {
+                if (!acc[schedule.date]) acc[schedule.date] = [];
+                acc[schedule.date].push(schedule);
+                return acc;
+              }, {} as Record<string, UnifiedSchedule[]>)
+            ).map(([date, daySchedules]) => (
+              <div key={date} className="space-y-2">
+                <p className="text-xs text-muted-foreground font-medium px-1">
+                  {format(parseISO(date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                </p>
+                {daySchedules.map((schedule) => (
+                  <Card key={schedule.id} className="opacity-70 bg-white/20 dark:bg-black/20 backdrop-blur-sm border-white/5 rounded-2xl">
+                    <CardContent className="py-3 px-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${schedule.origin === 'infantil' ? 'bg-purple-100' : 'bg-primary/10'}`}>
+                          {schedule.origin === 'infantil' ? (
+                            <Baby className="w-4 h-4 text-purple-600" />
+                          ) : (
+                            <Users className="w-4 h-4 text-primary" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm">
+                            {schedule.start} - {schedule.end}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{schedule.ministry}</p>
+                        </div>
+                      </div>
+                      {schedule.confirmed && (
+                        <Badge variant="outline" className="text-[10px] gap-1 rounded-full border-green-500/30 text-green-600">
+                          <Check className="h-3 w-3" /> Presente
+                        </Badge>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-           )}
+            ))
+          )}
         </TabsContent>
       </Tabs>
-      
+
+      <AnimatePresence>
+        {selectedSchedule && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-20 left-4 right-4 max-w-2xl mx-auto z-50"
+          >
+            <Card className="rounded-3xl border-white/20 bg-background/95 backdrop-blur-xl shadow-2xl">
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-bold">{selectedSchedule.ministry}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {format(parseISO(selectedSchedule.date), "dd 'de' MMMM, yyyy", { locale: ptBR })}
+                    </p>
+                  </div>
+                  <Badge variant={selectedSchedule.origin === 'infantil' ? 'secondary' : 'outline'} className="rounded-full">
+                    {selectedSchedule.origin === 'infantil' ? (
+                      <><Baby className="w-3 h-3 mr-1" /> Kids</>
+                    ) : (
+                      <><Users className="w-3 h-3 mr-1" /> Geral</>
+                    )}
+                  </Badge>
+                </div>
+                
+                <div className="flex gap-2">
+                  <div className="flex-1 text-center p-3 rounded-2xl bg-primary/5 border border-primary/10">
+                    <p className="text-xs text-muted-foreground">Início</p>
+                    <p className="font-bold text-lg">{selectedSchedule.start}</p>
+                  </div>
+                  <div className="flex-1 text-center p-3 rounded-2xl bg-primary/5 border border-primary/10">
+                    <p className="text-xs text-muted-foreground">Fim</p>
+                    <p className="font-bold text-lg">{selectedSchedule.end}</p>
+                  </div>
+                </div>
+
+                {selectedSchedule.classroom && (
+                  <div className="flex items-center gap-2 p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900">
+                    <Baby className="w-4 h-4 text-purple-600" />
+                    <span className="text-sm font-medium">Sala: {selectedSchedule.classroom}</span>
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 rounded-full"
+                    onClick={() => setSelectedSchedule(null)}
+                  >
+                    Fechar
+                  </Button>
+                  {selectedSchedule.confirmed ? (
+                    <Button
+                      variant="destructive"
+                      className="flex-1 rounded-full"
+                      onClick={() => {
+                        handleCancelConfirm(selectedSchedule);
+                        setSelectedSchedule(null);
+                      }}
+                      disabled={isConfirming}
+                    >
+                      {isConfirming ? <Loader2 className="w-4 h-4 animate-spin" /> : "Cancelar Confirmação"}
+                    </Button>
+                  ) : (
+                    <Button
+                      className="flex-1 rounded-full shadow-lg shadow-primary/25"
+                      onClick={() => {
+                        handleConfirm(selectedSchedule);
+                        setSelectedSchedule(null);
+                      }}
+                      disabled={isConfirming}
+                    >
+                      {isConfirming ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                        <><Check className="w-4 h-4 mr-2" /> Confirmar</>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+function ScheduleCard({
+  schedule,
+  index,
+  isSelected,
+  onSelect,
+  onConfirm,
+  onCancelConfirm,
+  isConfirming,
+}: {
+  schedule: UnifiedSchedule;
+  index: number;
+  isSelected: boolean;
+  onSelect: () => void;
+  onConfirm: () => void;
+  onCancelConfirm: () => void;
+  isConfirming: boolean;
+}) {
+  const isInfantil = schedule.origin === 'infantil';
+  
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ delay: index * 0.05, type: "spring", stiffness: 300, damping: 25 }}
+    >
+      <Card
+        className={`relative overflow-hidden rounded-3xl border transition-all duration-300 cursor-pointer backdrop-blur-xl shadow-sm hover:shadow-lg
+          ${isSelected ? "bg-primary/10 border-primary/30 ring-2 ring-primary/20" : "bg-white/40 dark:bg-black/40 border-white/20 dark:border-white/10 hover:-translate-y-0.5"}
+          ${isInfantil ? "border-l-4 border-l-purple-400" : ""}
+        `}
+        onClick={onSelect}
+      >
+        <CardContent className="p-4 sm:p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2 min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <div className={`p-1.5 rounded-lg ${isInfantil ? "bg-purple-100" : "bg-primary/10"}`}>
+                  {isInfantil ? (
+                    <Baby className="w-4 h-4 text-purple-600" />
+                  ) : (
+                    <Users className="w-4 h-4 text-primary" />
+                  )}
+                </div>
+                <p className="font-extrabold tracking-tight text-lg">
+                  {schedule.start} às {schedule.end}
+                </p>
+                <Badge 
+                  variant={schedule.type === "backup" ? "secondary" : "outline"} 
+                  className="text-[10px] uppercase font-bold tracking-wider rounded-full border-white/20 bg-background/50 backdrop-blur-md px-2 py-0 h-5"
+                >
+                  {schedule.type === "backup" ? "Reserva" : schedule.type === "staff" ? "Staff" : "Titular"}
+                </Badge>
+              </div>
+              
+              <Badge variant="secondary" className="text-xs font-bold bg-gradient-to-r from-primary/10 to-transparent border-0">
+                {schedule.ministry}
+              </Badge>
+
+              {schedule.classroom && (
+                <p className="text-xs text-purple-600 font-medium">
+                  <Baby className="w-3 h-3 inline mr-1" />
+                  {schedule.classroom}
+                </p>
+              )}
+
+              {schedule.notes && (
+                <p className="text-xs text-muted-foreground italic">Info: {schedule.notes}</p>
+              )}
+            </div>
+            
+            <div className="flex flex-col items-end justify-center shrink-0 min-h-[80px]">
+              <AnimatePresence mode="wait">
+                {schedule.confirmed ? (
+                  <motion.div
+                    key="confirmed"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  >
+                    <Badge variant="secondary" className="gap-1.5 bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30 rounded-full px-3 py-1 shadow-sm backdrop-blur-md">
+                      <div className="h-4 w-4 rounded-full bg-green-500 flex items-center justify-center">
+                        <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                      </div>
+                      <span className="font-bold tracking-tight">OK</span>
+                    </Badge>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="unconfirmed"
+                    initial={{ opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                  >
+                    <Button
+                      size="sm"
+                      className="rounded-full shadow-lg shadow-primary/25 font-bold px-5 h-9"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onConfirm();
+                      }}
+                      disabled={isConfirming}
+                    >
+                      {isConfirming ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirmar"}
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

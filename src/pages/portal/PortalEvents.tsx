@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useEvents } from "@/hooks/useEvents";
@@ -7,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle, Ticket } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
@@ -17,6 +18,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 };
 
 export default function PortalEvents() {
+  const navigate = useNavigate();
   const { upcomingEvents, isLoading } = useEvents();
   const { myRegistrations, registerForEvent, cancelRegistration, isRegistering } = useEventRegistrations();
   const [cancelId, setCancelId] = useState<string | null>(null);
@@ -27,9 +29,15 @@ export default function PortalEvents() {
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Eventos</h1>
-        <p className="text-muted-foreground">Confira os eventos e inscreva-se</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Eventos</h1>
+          <p className="text-muted-foreground">Confira os eventos e inscreva-se</p>
+        </div>
+        <Button variant="outline" onClick={() => navigate("/portal/meus-ingressos")}>
+          <Ticket className="w-4 h-4 mr-2" />
+          Meus Ingressos
+        </Button>
       </div>
 
       <Tabs defaultValue="upcoming" className="space-y-4">
@@ -59,15 +67,18 @@ export default function PortalEvents() {
                         </div>
                         <div className="flex gap-1 mt-2">
                           <Badge variant="outline" className="text-xs">{EVENT_TYPE_LABELS[event.event_type] || event.event_type}</Badge>
-                          {event.is_paid_event && <Badge className="text-xs">R$ {event.ticket_price?.toFixed(2)}</Badge>}
+                          {event.is_paid_event && <Badge className="text-xs bg-primary">R$ {event.ticket_price?.toFixed(2)}</Badge>}
                         </div>
                       </div>
                       <div className="shrink-0">
                         {isRegistered ? (
-                          <Badge variant="secondary" className="flex items-center gap-1"><CheckCircle className="h-3 w-3" /> Inscrito</Badge>
+                          <Button variant="outline" size="sm" onClick={() => navigate("/portal/meus-ingressos")}>
+                            <Ticket className="h-3 w-3 mr-1" />
+                            Ver Ingresso
+                          </Button>
                         ) : event.registration_required ? (
-                          <Button size="sm" onClick={() => registerForEvent({ eventId: event.id })} disabled={isRegistering}>
-                            Inscrever-se
+                          <Button size="sm" onClick={() => navigate(`/portal/inscricao/${event.id}`)} disabled={isRegistering}>
+                            {event.is_paid_event ? "Comprar Ingresso" : "Inscrever-se"}
                           </Button>
                         ) : null}
                       </div>

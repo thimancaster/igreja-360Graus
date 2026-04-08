@@ -21,6 +21,8 @@ export interface VolunteerSchedule {
   created_at: string;
   accept_until: string | null;
   ministry_name?: string;
+  whatsapp_reminder_sent?: boolean;
+  is_staff?: boolean;
 }
 
 export interface CreateScheduleData {
@@ -76,37 +78,88 @@ export function useVolunteerSchedules(ministryId?: string, month?: Date) {
     queryFn: async () => {
       if (!user?.id) return { mySchedules: [], openSchedules: [] };
 
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("church_id")
+        .eq("id", user.id)
+        .single();
+
+      const churchId = profile?.church_id;
+
       const { data: volunteerData } = await supabase
         .from("department_volunteers")
         .select("id, ministry_id, ministries(name)")
         .eq("profile_id", user.id)
         .eq("status", "active");
 
-      if (!volunteerData || volunteerData.length === 0) {
-        return { mySchedules: [], openSchedules: [], volunteerData: [] };
+      const volunteerIds = volunteerData?.length ? volunteerData.map(v => v.id) : [];
+      const ministryIds = volunteerData?.length ? volunteerData.map(v => v.ministry_id) : [];
+
+      // fetch assigned schedules (only if user has volunteer records)
+      let assignedData: any[] = [];
+      if (volunteerIds.length > 0) {
+        const { data, error } = await supabase
+          .from("volunteer_schedules")
+          .select("*")
+          .in("volunteer_id", volunteerIds)
+          .gte("schedule_date", startDate)
+          .lte("schedule_date", endDate)
+          .order("schedule_date")
+          .order("shift_start");
+        if (error) throw error;
+        assignedData = data || [];
       }
 
-      const volunteerIds = volunteerData.map(v => v.id);
-      const ministryIds = volunteerData.map(v => v.ministry_id);
+      // fetch STAFF schedules for Ministério Infantil
+      const { data: staffDataObj } = await supabase
+        .from("ministry_staff")
+        .select("id")
+        .eq("profile_id", user.id)
+        .eq("is_active", true);
 
-      // fetch assigned schedules
-      const { data: assignedData, error: assignedError } = await supabase
-        .from("volunteer_schedules")
-        .select("*")
-        .in("volunteer_id", volunteerIds)
-        .gte("schedule_date", startDate)
-        .lte("schedule_date", endDate)
-        .order("schedule_date")
-        .order("shift_start");
-        
-      if (assignedError) throw assignedError;
+      let staffSchedules: any[] = [];
+      const staffIds = staffDataObj?.length ? staffDataObj.map((s) => s.id) : [];
 
-      // fetch open schedules
+      if (staffIds.length > 0) {
+        // Convert YYYY-MM-DD to ISO date for timezone comparison logic in staff_schedules
+        const staffStartIso = new Date(startDate).toISOString();
+        const staffEndIso = new Date(`${endDate}T23:59:59Z`).toISOString();
+        const { data: staffDataResults } = await supabase
+          .from("staff_schedules")
+          .select("*")
+          .in("staff_id", staffIds)
+          .gte("shift_start", staffStartIso)
+          .lte("shift_start", staffEndIso)
+          .order("shift_start");
+          
+        if (staffDataResults) {
+          staffSchedules = staffDataResults.map((s) => {
+            const dt = new Date(s.shift_start);
+            const dtEnd = new Date(s.shift_end);
+            return {
+               id: s.id,
+               church_id: s.church_id,
+               ministry_id: "ministerio-infantil-staff", // Dummy map
+               volunteer_id: s.staff_id,
+               schedule_date: `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`,
+               shift_start: `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}`,
+               shift_end: `${String(dtEnd.getHours()).padStart(2, '0')}:${String(dtEnd.getMinutes()).padStart(2, '0')}`,
+               confirmed: s.confirmed,
+               confirmed_at: s.confirmed_at,
+               notes: (s.classroom ? `[${s.classroom}] ` : "") + (s.notes || ""),
+               is_staff: true,
+               ministry_name: "Ministério Infantil",
+             };
+          });
+        }
+      }
+
+      // fetch OVERALL open schedules for the church
       const { data: openData, error: openError } = await supabase
         .from("volunteer_schedules")
         .select(`*, ministries!inner(name)`)
+        .eq("church_id", churchId)
         .is("volunteer_id", null)
-        .in("ministry_id", ministryIds)
         .gte("schedule_date", startDate)
         .lte("schedule_date", endDate)
         .order("schedule_date")
@@ -117,13 +170,19 @@ export function useVolunteerSchedules(ministryId?: string, month?: Date) {
       const now = new Date().toISOString();
       const validOpenData = (openData || []).filter((s: any) => !s.accept_until || s.accept_until > now);
 
-      const mySchedules = (assignedData || []).map((schedule: any) => {
-        const volunteer = volunteerData.find(v => v.id === schedule.volunteer_id);
+      const regularSchedules = (assignedData || []).map((schedule: any) => {
+        const volunteer = volunteerData?.find(v => v.id === schedule.volunteer_id);
         return {
           ...schedule,
           ministry_name: (volunteer?.ministries as any)?.name || "Ministério",
+          is_staff: false
         };
-      }) as VolunteerSchedule[];
+      });
+
+      const mySchedules = [...regularSchedules, ...staffSchedules] as VolunteerSchedule[];
+
+      // Sort final unified array
+      mySchedules.sort((a,b) => new Date(a.schedule_date).getTime() - new Date(b.schedule_date).getTime());
 
       const openSchedules = validOpenData.map((schedule: any) => {
         return {
@@ -224,8 +283,13 @@ export function useVolunteerSchedules(ministryId?: string, month?: Date) {
   // Confirm schedule
   const confirmMutation = useMutation({
     mutationFn: async (scheduleId: string) => {
+      // Determine if schedule is staff or general volunteer
+      const schedule = volunteerDataObj?.mySchedules?.find(s => s.id === scheduleId);
+      const isStaff = schedule && (schedule as any).is_staff;
+      const table = isStaff ? "staff_schedules" : "volunteer_schedules";
+
       const { error } = await supabase
-        .from("volunteer_schedules")
+        .from(table)
         .update({
           confirmed: true,
           confirmed_at: new Date().toISOString(),
@@ -250,13 +314,33 @@ export function useVolunteerSchedules(ministryId?: string, month?: Date) {
       const scheduleToClaim = volunteerDataObj?.openSchedules?.find((s) => s.id === scheduleId);
       if (!scheduleToClaim) throw new Error("Vaga não encontrada.");
 
+      let volunteerIdToAssign = null;
       const activeVol = volunteerDataObj?.volunteerData?.find((v) => v.ministry_id === scheduleToClaim.ministry_id);
-      if (!activeVol) throw new Error("Você não é voluntário ativo neste ministério.");
+      
+      if (activeVol) {
+        volunteerIdToAssign = activeVol.id;
+      } else {
+        // Autoregister the user seamlessly into this ministry to close the loop
+        const { data: profile } = await supabase.from("profiles").select("church_id, full_name").eq("id", user?.id).single();
+        
+        const { data: newVol, error: volErr } = await supabase.from("department_volunteers").insert({
+          church_id: profile?.church_id,
+          ministry_id: scheduleToClaim.ministry_id,
+          profile_id: user?.id,
+          full_name: profile?.full_name || "Voluntário",
+          phone: null,
+          status: "active",
+          is_active: true
+        }).select().single();
+        
+        if (volErr) throw volErr;
+        volunteerIdToAssign = newVol.id;
+      }
 
       const { error } = await supabase
         .from("volunteer_schedules")
         .update({
-          volunteer_id: activeVol.id,
+          volunteer_id: volunteerIdToAssign,
           confirmed: true,
           confirmed_at: new Date().toISOString(),
           accept_until: null, 

@@ -92,13 +92,17 @@ export default function ParentEvents() {
     
     visibleEvents.forEach((event) => {
       const eventDate = startOfDay(parseISO(event.start_datetime));
-      isBefore(eventDate, today) ? past.push(event) : upcoming.push(event);
+      if (isBefore(eventDate, today)) {
+        past.push(event);
+      } else {
+        upcoming.push(event);
+      }
     });
     return {
       upcomingEvents: upcoming.sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()),
       pastEvents:     past.sort((a, b) => new Date(b.start_datetime).getTime() - new Date(a.start_datetime).getTime()),
     };
-  }, [events]);
+  }, [events, dismissedEvents]);
 
   const handleRegister = (event: MinistryEvent) => {
     setSelectedEvent(event);
