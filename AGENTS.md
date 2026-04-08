@@ -79,6 +79,12 @@ bun lint         # ESLint
 - `VITE_SUPABASE_ANON_KEY`
 - See `.env` file for complete list
 
+## Payment System
+- Edge Functions: `create-event-payment`, `mercadopago-webhook`
+- Payment methods: PIX, Credit Card, Debit Card via MercadoPago
+- Configure in `payment_settings` table
+- See `SUPABASE_SETUP.md` for full SQL migration
+
 ## Important Quirks
 - TypeScript types in `types.ts` may be out of sync with database schema
 - Edge functions use Deno runtime, not Node.js
