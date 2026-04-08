@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { 
   Calendar, 
   Clock, 
@@ -19,17 +20,34 @@ import {
   AlertCircle,
   ArrowLeft,
   Copy,
-  Check
+  Check,
+  CreditCard,
+  Smartphone,
+  Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 
+type PaymentMethod = 'pix' | 'credit_card' | 'debit_card';
+type Step = 'form' | 'payment' | 'processing' | 'success';
+
+interface PaymentOption {
+  id: PaymentMethod;
+  label: string;
+  icon: React.ReactNode;
+  description: string;
+}
+
 export default function EventRegistration() {
   const { eventId } = useParams<{ eventId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { createRegistration, myTickets } = useEventTickets();
+  const { createRegistration, updatePaymentStatus } = useEventTickets();
   
-  const [step, setStep] = useState<"form" | "payment" | "success">("form");
+  const paymentStatus = searchParams.get('payment');
+  
+  const [step, setStep] = useState<Step>("form");
+  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>('pix');
   const [formData, setFormData] = useState({
     name: profile?.full_name || "",
     email: "",
@@ -39,30 +57,41 @@ export default function EventRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registrationId, setRegistrationId] = useState<string | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   
   const [event, setEvent] = useState<any>(null);
   const [church, setChurch] = useState<any>(null);
+  const [paymentSettings, setPaymentSettings] = useState<any>(null);
 
   useState(() => {
-    const fetchEvent = async () => {
+    const fetchData = async () => {
       if (!eventId) return;
-      const { data } = await supabase
+      
+      const { data: eventData } = await supabase
         .from("ministry_events")
         .select("*")
         .eq("id", eventId)
         .single();
-      setEvent(data);
+      setEvent(eventData);
       
-      if (data?.church_id) {
+      if (eventData?.church_id) {
         const { data: churchData } = await supabase
           .from("churches")
           .select("*")
-          .eq("id", data.church_id)
+          .eq("id", eventData.church_id)
           .single();
         setChurch(churchData);
+
+        const { data: settings } = await (supabase
+          .from("payment_settings" as any)
+          .select("*")
+          .eq("church_id", eventData.church_id)
+          .eq("is_active", true)
+          .maybeSingle() as any);
+        setPaymentSettings(settings);
       }
     };
-    fetchEvent();
+    fetchData();
   });
 
   if (!eventId) {
@@ -108,8 +137,12 @@ export default function EventRegistration() {
       setRegistrationId(result.id);
       
       if (event.is_paid_event && event.ticket_price > 0) {
-        setStep("payment");
-        toast.success("Inscrição realizada! Complete o pagamento para confirmar.");
+        if (selectedPayment === 'pix' && !paymentSettings?.mercadopago_access_token) {
+          setStep("payment");
+        } else {
+          setStep("processing");
+          await createMercadoPagoPayment(result.id, event, formData);
+        }
       } else {
         setStep("success");
         toast.success("Inscrição confirmada!");
@@ -121,6 +154,36 @@ export default function EventRegistration() {
     }
   };
 
+  const createMercadoPagoPayment = async (regId: string, evt: any, data: typeof formData) => {
+    try {
+      const { data: result, error } = await supabase.functions.invoke('create-event-payment', {
+        body: {
+          registration_id: regId,
+          event_id: evt.id,
+          church_id: church.id,
+          amount: evt.ticket_price,
+          payment_method: selectedPayment,
+          attendee_name: data.name,
+          attendee_email: data.email,
+        },
+      });
+
+      if (error) throw error;
+
+      if (result.init_point) {
+        setPaymentUrl(result.init_point);
+        window.location.href = result.init_point;
+      } else if (result.manual_payment) {
+        setStep("payment");
+        toast.info("Pagamento manual disponível");
+      }
+    } catch (err: any) {
+      console.error('Payment error:', err);
+      setStep("payment");
+      toast.error("Erro ao processar pagamento. Use o pagamento manual.");
+    }
+  };
+
   const handleCopyPix = () => {
     if (church?.pix_key) {
       navigator.clipboard.writeText(church.pix_key);
@@ -129,21 +192,39 @@ export default function EventRegistration() {
     }
   };
 
-  const handleMarkAsPaid = async () => {
+  const handleManualConfirm = async () => {
     if (!registrationId) return;
-    
-    const { updatePaymentStatus } = useEventTickets();
     try {
-      await updatePaymentStatus({
-        registrationId,
-        status: "paid",
-      });
+      await updatePaymentStatus({ registrationId, status: "pending", paymentId: "manual-" + Date.now() });
       setStep("success");
-      toast.success("Pagamento confirmado!");
+      toast.success("Pagamento registrado! Aguarde confirmação.");
     } catch (error) {
-      toast.error("Erro ao confirmar pagamento");
+      toast.error("Erro ao registrar");
     }
   };
+
+  const paymentOptions: PaymentOption[] = [
+    {
+      id: 'pix',
+      label: 'PIX',
+      icon: <Smartphone className="w-5 h-5" />,
+      description: 'Transferência instantânea',
+    },
+    {
+      id: 'credit_card',
+      label: 'Cartão de Crédito',
+      icon: <CreditCard className="w-5 h-5" />,
+      description: 'Parcele em até 12x',
+    },
+    {
+      id: 'debit_card',
+      label: 'Cartão de Débito',
+      icon: <CreditCard className="w-5 h-5" />,
+      description: 'Débito imediato',
+    },
+  ];
+
+  const hasMercadoPago = paymentSettings?.mercadopago_access_token;
 
   return (
     <div className="p-4 lg:p-6 max-w-2xl mx-auto space-y-6">
@@ -156,7 +237,7 @@ export default function EventRegistration() {
         <>
           <div>
             <h1 className="text-2xl font-bold">Inscrição</h1>
-            <p className="text-muted-foreground">Preencha seus dados para se inscrever</p>
+            <p className="text-muted-foreground">Preencha seus dados para se'inscrire</p>
           </div>
 
           <Card>
@@ -183,9 +264,35 @@ export default function EventRegistration() {
                       R$ {event.ticket_price.toFixed(2).replace(".", ",")}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Pagamento via PIX após a inscrição
-                  </p>
+                </div>
+              )}
+
+              {event.is_paid_event && event.ticket_price > 0 && (
+                <div className="mb-6">
+                  <Label className="text-base">Forma de pagamento</Label>
+                  <RadioGroup 
+                    value={selectedPayment} 
+                    onValueChange={(v) => setSelectedPayment(v as PaymentMethod)}
+                    className="mt-2 space-y-2"
+                  >
+                    {paymentOptions.map((option) => (
+                      <div key={option.id} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option.id} id={option.id} />
+                        <Label htmlFor={option.id} className="flex items-center gap-2 cursor-pointer">
+                          {option.icon}
+                          <div>
+                            <p className="font-medium">{option.label}</p>
+                            <p className="text-xs text-muted-foreground">{option.description}</p>
+                          </div>
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                  {!hasMercadoPago && (
+                    <p className="text-xs text-yellow-600 mt-2">
+                      * PIX manual. O pagamento será confirmado pela igreja.
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -236,8 +343,13 @@ export default function EventRegistration() {
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Processando..." : 
-                   event.is_paid_event ? "Continuar para Pagamento" : "Confirmar Inscrição"}
+                  {isSubmitting ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
+                  ) : event.is_paid_event ? (
+                    `Pagar R$ ${event.ticket_price?.toFixed(2).replace(".", ",")}`
+                  ) : (
+                    "Confirmar Inscrição"
+                  )}
                 </Button>
               </form>
             </CardContent>
@@ -245,98 +357,102 @@ export default function EventRegistration() {
         </>
       )}
 
+      {step === "processing" && (
+        <Card>
+          <CardContent className="p-8 text-center space-y-4">
+            <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary" />
+            <h2 className="text-xl font-bold">Processando pagamento...</h2>
+            <p className="text-muted-foreground">Você será redirecionado para o pagamento.</p>
+          </CardContent>
+        </Card>
+      )}
+
       {step === "payment" && event && (
         <>
           <div>
             <h1 className="text-2xl font-bold">Pagamento</h1>
-            <p className="text-muted-foreground">Escaneie o QR Code ou copie a chave PIX</p>
+            <p className="text-muted-foreground">
+              {hasMercadoPago 
+                ? "Escaneie o QR Code ou copie a chave PIX"
+                : "Faça o transferência e envie o comprovante"}
+            </p>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>Pagamento via PIX</CardTitle>
+              <CardTitle>Pagamento via {selectedPayment === 'pix' ? 'PIX' : 'Cartão'}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-yellow-800">Importante</p>
-                    <p className="text-sm text-yellow-700">
-                      O QR Code e a chave PIX são gerados automaticamente. Após realizar o pagamento, 
-                      um responsável confirmará sua inscrição em até 24 horas.
+              {hasMercadoPago ? (
+                <>
+                  <div className="text-center">
+                    <p className="text-muted-foreground mb-4">Valor a pagar</p>
+                    <p className="text-4xl font-bold text-primary">
+                      R$ {event.ticket_price?.toFixed(2).replace(".", ",")}
                     </p>
                   </div>
-                </div>
-              </div>
 
-              <div className="text-center">
-                <p className="text-muted-foreground mb-4">Valor a pagar</p>
-                <p className="text-4xl font-bold text-primary">
-                  R$ {event.ticket_price?.toFixed(2).replace(".", ",")}
-                </p>
-                <Badge className="mt-2">
-                 PIX Copy & Paste
-                </Badge>
-              </div>
+                  {paymentUrl && (
+                    <Button className="w-full" onClick={() => window.location.href = paymentUrl}>
+                      <QrCode className="w-4 h-4 mr-2" />
+                      Ir para Pagamento
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-yellow-800">Importante</p>
+                        <p className="text-sm text-yellow-700">
+                          Após realizar o pagamento, um responsável confirmará sua inscrição em até 24 horas.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                <p className="text-sm text-muted-foreground text-center">
-                  Chave PIX (CNPJ/E-mail/Telefone)
-                </p>
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={church?.pix_key || ""}
-                    readOnly
-                    className="font-mono text-center"
-                  />
-                  <Button variant="outline" size="icon" onClick={handleCopyPix}>
-                    {pixCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  </Button>
-                </div>
-              </div>
+                  <div className="text-center">
+                    <p className="text-muted-foreground mb-4">Valor a pagar</p>
+                    <p className="text-4xl font-bold text-primary">
+                      R$ {event.ticket_price?.toFixed(2).replace(".", ",")}
+                    </p>
+                  </div>
 
-              {church?.pix_qr_image_url && (
-                <div className="flex justify-center">
-                  <img 
-                    src={church.pix_qr_image_url} 
-                    alt="PIX QR Code" 
-                    className="max-w-[200px] rounded-lg border"
-                  />
-                </div>
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                    <p className="text-sm text-muted-foreground text-center">
+                      Chave PIX (CNPJ/E-mail/Telefone)
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={church?.pix_key || ""}
+                        readOnly
+                        className="font-mono text-center"
+                      />
+                      <Button variant="outline" size="icon" onClick={handleCopyPix}>
+                        {pixCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {church?.pix_qr_image_url && (
+                    <div className="flex justify-center">
+                      <img 
+                        src={church.pix_qr_image_url} 
+                        alt="PIX QR Code" 
+                        className="max-w-[200px] rounded-lg border"
+                      />
+                    </div>
+                  )}
+                </>
               )}
-
-              <div className="pt-4 border-t space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Dados para transferência:
-                </p>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  {church?.bank_name && (
-                    <>
-                      <span className="text-muted-foreground">Banco:</span>
-                      <span>{church.bank_name}</span>
-                    </>
-                  )}
-                  {church?.bank_agency && (
-                    <>
-                      <span className="text-muted-foreground">Agência:</span>
-                      <span>{church.bank_agency}</span>
-                    </>
-                  )}
-                  {church?.bank_account && (
-                    <>
-                      <span className="text-muted-foreground">Conta:</span>
-                      <span>{church.bank_account}</span>
-                    </>
-                  )}
-                </div>
-              </div>
 
               <div className="space-y-3 pt-4">
                 <Button 
                   variant="outline" 
                   className="w-full"
-                  onClick={() => setStep("success")}
+                  onClick={handleManualConfirm}
                 >
                   Já fiz o pagamento
                 </Button>
