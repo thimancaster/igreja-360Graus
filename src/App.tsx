@@ -66,6 +66,7 @@ import { useChurchTheme } from '@/hooks/useChurchTheme';
 
 // Admin - Checkin de Eventos
 const EventCheckin = lazy(() => import('@/pages/admin/EventCheckin'));
+const EventPayments = lazy(() => import('@/pages/admin/EventPayments'));
 
 // Portal do Responsável (parent)
 const ParentDashboard = lazy(() => import('@/pages/parent/ParentDashboard'));
@@ -119,6 +120,7 @@ const App: React.FC = () => {
                   <Route path="/app/escalas" element={<ProtectedRoute><AppRoute><Escalas /></AppRoute></ProtectedRoute>} />
                   <Route path="/app/eventos" element={<ProtectedRoute><AppRoute><AppLayout><Eventos /></AppLayout></AppRoute></ProtectedRoute>} />
                   <Route path="/app/eventos/:eventId/checkin" element={<ProtectedRoute><AppRoute><AdminRoute><EventCheckin /></AdminRoute></AppRoute></ProtectedRoute>} />
+                  <Route path="/app/eventos/:eventId/pagamentos" element={<ProtectedRoute><AppRoute><AdminRoute><EventPayments /></AdminRoute></AppRoute></ProtectedRoute>} />
                   <Route path="/app/voluntario/aceitar-termo" element={<ProtectedRoute><AppRoute><AceitarTermoVoluntario /></AppRoute></ProtectedRoute>} />
                   <Route path="/inscricao/:eventId" element={<EventRegistrationPage />} />
                   <Route path="/app/*" element={<ProtectedRoute><AppRoute><AppLayout><NotFound /></AppLayout></AppRoute></ProtectedRoute>} />

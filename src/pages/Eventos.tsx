@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Calendar, List, QrCode } from "lucide-react";
+import { BarChart3, Calendar, List, QrCode, DollarSign } from "lucide-react";
 import { pageVariants, pageTransition } from "@/lib/pageAnimations";
 import { EventDashboard } from "@/components/events/EventDashboard";
 import { EventCalendar } from "@/components/events/EventCalendar";
@@ -32,7 +32,7 @@ export default function Eventos() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
           <TabsTrigger value="dashboard" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -49,6 +49,10 @@ export default function Eventos() {
             <QrCode className="h-4 w-4" />
             <span className="hidden sm:inline">Check-in</span>
           </TabsTrigger>
+          <TabsTrigger value="payments" className="gap-2">
+            <DollarSign className="h-4 w-4" />
+            <span className="hidden sm:inline">Pagamentos</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard"><EventDashboard /></TabsContent>
@@ -56,6 +60,9 @@ export default function Eventos() {
         <TabsContent value="list"><EventList /></TabsContent>
         <TabsContent value="checkin">
           <CheckinPanelSelect navigate={navigate} />
+        </TabsContent>
+        <TabsContent value="payments">
+          <PaymentPanelSelect navigate={navigate} />
         </TabsContent>
       </Tabs>
     </motion.div>
@@ -105,10 +112,51 @@ function useEventsList() {
     queryFn: async () => {
       const { data } = await supabase
         .from("ministry_events")
-        .select("id, title, start_datetime, status")
+        .select("id, title, start_datetime, status, is_paid_event, ticket_price")
         .order("start_datetime", { ascending: false })
         .limit(20);
       return data;
     },
   });
+}
+
+function PaymentPanelSelect({ navigate }: { navigate: (path: string) => void }) {
+  const { data: events, isLoading } = useEventsList();
+
+  if (isLoading) {
+    return <div className="p-8 text-center">Carregando...</div>;
+  }
+
+  const paidEvents = events?.filter(e => e.is_paid_event && e.ticket_price > 0);
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-muted/50 rounded-lg p-6">
+        <h3 className="font-semibold mb-4">Selecione um evento para gerenciar pagamentos</h3>
+        {paidEvents?.length === 0 ? (
+          <p className="text-muted-foreground">Nenhum evento pago encontrado</p>
+        ) : (
+          <div className="space-y-2">
+            {paidEvents?.map(event => (
+              <Button
+                key={event.id}
+                variant="outline"
+                className="w-full justify-between text-left h-auto py-3"
+                onClick={() => navigate(`/app/eventos/${event.id}/pagamentos`)}
+              >
+                <div>
+                  <p className="font-medium">{event.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    R$ {event.ticket_price?.toFixed(2).replace(".", ",")} • {" "}
+                    {new Date(event.start_datetime).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <DollarSign className="h-5 w-5 text-muted-foreground" />
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
