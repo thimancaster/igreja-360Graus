@@ -310,46 +310,6 @@ BEGIN
 END;
 $$;
 
--- ==========================================
--- RLS POLICIES
--- ==========================================
-
-ALTER TABLE public.payment_webhooks ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.payment_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.event_checkin_logs ENABLE ROW LEVEL SECURITY;
-
--- Payment Webhooks
-CREATE POLICY "Admins can manage payment_webhooks" ON public.payment_webhooks FOR ALL
-USING (church_id = get_user_church_id());
-
--- Payment Settings
-CREATE POLICY "Admins can manage payment_settings" ON public.payment_settings FOR ALL
-USING (church_id = get_user_church_id());
-
--- Event Checkin Logs
-CREATE POLICY "Users can view checkin logs of their church" ON public.event_checkin_logs FOR SELECT
-USING (church_id = get_user_church_id());
-
-CREATE POLICY "Users can insert checkin logs" ON public.event_checkin_logs FOR INSERT
-WITH CHECK (church_id = get_user_church_id());
-
--- Atualizar políticas existentes para event_registrations
-DROP POLICY IF EXISTS "select_event_registrations" ON public.event_registrations;
-CREATE POLICY "select_event_registrations" ON public.event_registrations FOR SELECT TO authenticated
-USING (church_id = get_user_church_id() OR profile_id = auth.uid());
-
-DROP POLICY IF EXISTS "insert_event_registrations" ON public.event_registrations;
-CREATE POLICY "insert_event_registrations" ON public.event_registrations FOR INSERT TO authenticated
-WITH CHECK (church_id = get_user_church_id() OR profile_id = auth.uid());
-
-DROP POLICY IF EXISTS "update_event_registrations" ON public.event_registrations;
-CREATE POLICY "update_event_registrations" ON public.event_registrations FOR UPDATE TO authenticated
-USING (profile_id = auth.uid() OR church_id = get_user_church_id());
-
--- Permissão para função de checkin (executar sem restrictions)
-GRANT EXECUTE ON FUNCTION public.process_event_checkin TO authenticated;
-<<<<<<< HEAD
-
 -- 10. Função para check-in manual por registration_id
 CREATE OR REPLACE FUNCTION public.process_manual_checkin(
     p_registration_id uuid,
@@ -471,8 +431,45 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.process_manual_checkout TO authenticated;
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
+
+-- ==========================================
+-- RLS POLICIES
+-- ==========================================
+
+ALTER TABLE public.payment_webhooks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.event_checkin_logs ENABLE ROW LEVEL SECURITY;
+
+-- Payment Webhooks
+CREATE POLICY "Admins can manage payment_webhooks" ON public.payment_webhooks FOR ALL
+USING (church_id = get_user_church_id());
+
+-- Payment Settings
+CREATE POLICY "Admins can manage payment_settings" ON public.payment_settings FOR ALL
+USING (church_id = get_user_church_id());
+
+-- Event Checkin Logs
+CREATE POLICY "Users can view checkin logs of their church" ON public.event_checkin_logs FOR SELECT
+USING (church_id = get_user_church_id());
+
+CREATE POLICY "Users can insert checkin logs" ON public.event_checkin_logs FOR INSERT
+WITH CHECK (church_id = get_user_church_id());
+
+-- Atualizar políticas existentes para event_registrations
+DROP POLICY IF EXISTS "select_event_registrations" ON public.event_registrations;
+CREATE POLICY "select_event_registrations" ON public.event_registrations FOR SELECT TO authenticated
+USING (church_id = get_user_church_id() OR profile_id = auth.uid());
+
+DROP POLICY IF EXISTS "insert_event_registrations" ON public.event_registrations;
+CREATE POLICY "insert_event_registrations" ON public.event_registrations FOR INSERT TO authenticated
+WITH CHECK (church_id = get_user_church_id() OR profile_id = auth.uid());
+
+DROP POLICY IF EXISTS "update_event_registrations" ON public.event_registrations;
+CREATE POLICY "update_event_registrations" ON public.event_registrations FOR UPDATE TO authenticated
+USING (profile_id = auth.uid() OR church_id = get_user_church_id());
+
+-- Permissão para função de checkin (executar sem restrictions)
+GRANT EXECUTE ON FUNCTION public.process_event_checkin TO authenticated;
 GRANT EXECUTE ON FUNCTION public.process_event_checkout TO authenticated;
 GRANT EXECUTE ON FUNCTION public.generate_ticket_number TO authenticated;
 GRANT EXECUTE ON FUNCTION public.generate_qr_code_data TO authenticated;

@@ -67,10 +67,7 @@ import { useChurchTheme } from '@/hooks/useChurchTheme';
 // Admin - Checkin de Eventos
 const EventCheckin = lazy(() => import('@/pages/admin/EventCheckin'));
 const EventPayments = lazy(() => import('@/pages/admin/EventPayments'));
-<<<<<<< HEAD
 const AutorizacoesEventos = lazy(() => import('@/pages/admin/AutorizacoesEventos'));
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 
 // Portal do Responsável (parent)
 const ParentDashboard = lazy(() => import('@/pages/parent/ParentDashboard'));
@@ -123,10 +120,7 @@ const App: React.FC = () => {
                   <Route path="/app/ministerio-infantil" element={<ProtectedRoute><AppRoute><AppLayout><MinisterioInfantil /></AppLayout></AppRoute></ProtectedRoute>} />
                   <Route path="/app/escalas" element={<ProtectedRoute><AppRoute><Escalas /></AppRoute></ProtectedRoute>} />
                   <Route path="/app/eventos" element={<ProtectedRoute><AppRoute><AppLayout><Eventos /></AppLayout></AppRoute></ProtectedRoute>} />
-<<<<<<< HEAD
                   <Route path="/app/eventos/autorizacoes" element={<ProtectedRoute><AppRoute><AdminRoute><AppLayout><AutorizacoesEventos /></AppLayout></AdminRoute></AppRoute></ProtectedRoute>} />
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
                   <Route path="/app/eventos/:eventId/checkin" element={<ProtectedRoute><AppRoute><AdminRoute><EventCheckin /></AdminRoute></AppRoute></ProtectedRoute>} />
                   <Route path="/app/eventos/:eventId/pagamentos" element={<ProtectedRoute><AppRoute><AdminRoute><EventPayments /></AdminRoute></AppRoute></ProtectedRoute>} />
                   <Route path="/app/voluntario/aceitar-termo" element={<ProtectedRoute><AppRoute><AceitarTermoVoluntario /></AppRoute></ProtectedRoute>} />
@@ -148,19 +142,12 @@ const App: React.FC = () => {
                   <Route path="/portal/eventos" element={<ProtectedRoute><PortalLayout><PortalEvents /></PortalLayout></ProtectedRoute>} />
                   <Route path="/portal/contribuicoes" element={<ProtectedRoute><PortalLayout><PortalContributions /></PortalLayout></ProtectedRoute>} />
                   <Route path="/portal/culto-ao-vivo" element={<ProtectedRoute><PortalLayout><PortalLiveService /></PortalLayout></ProtectedRoute>} />
-                  <Route path="/portal/agendar" element={<ProtectedRoute><PortalLayout><PortalBooking /></PortalLayout></ProtectedRoute>} />
+                  <Route path="/portal/reserva" element={<ProtectedRoute><PortalLayout><PortalBooking /></PortalLayout></ProtectedRoute>} />
                   <Route path="/portal/meus-ingressos" element={<ProtectedRoute><PortalLayout><MyTickets /></PortalLayout></ProtectedRoute>} />
-                  <Route path="/portal/inscricao/:eventId" element={<ProtectedRoute><PortalLayout><EventRegistration /></PortalLayout></ProtectedRoute>} />
+                  <Route path="/portal/evento/:eventId" element={<ProtectedRoute><PortalLayout><EventRegistration /></PortalLayout></ProtectedRoute>} />
 
-                  {/* Portal do Responsável (parent) */}
-                  <Route path="/parent" element={<ProtectedRoute><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
-                  <Route path="/parent/events" element={<ProtectedRoute><ParentLayout><ParentEvents /></ParentLayout></ProtectedRoute>} />
-                  <Route path="/parent/announcements" element={<ProtectedRoute><ParentLayout><ParentAnnouncements /></ParentLayout></ProtectedRoute>} />
-                  <Route path="/parent/authorizations" element={<ProtectedRoute><ParentLayout><ParentAuthorizations /></ParentLayout></ProtectedRoute>} />
-                  <Route path="/parent/history" element={<ProtectedRoute><ParentLayout><ParentHistory /></ParentLayout></ProtectedRoute>} />
-
-                  {/* Fallback global */}
-                  <Route path="*" element={<NotFound />} />
+                  {/* Redirecionamento 404 para o portal */}
+                  <Route path="/portal/*" element={<ProtectedRoute><PortalLayout><NotFound /></PortalLayout></ProtectedRoute>} />
                 </Routes>
               </Suspense>
             </ChurchThemeProvider>

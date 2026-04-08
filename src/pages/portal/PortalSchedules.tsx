@@ -6,13 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Check, Clock, BellRing, ClipboardList, AlertTriangle, MessageCircle, Loader2, Baby, Users } from "lucide-react";
 import { useMyUnifiedSchedules, UnifiedSchedule } from "@/hooks/useMyUnifiedSchedules";
-<<<<<<< HEAD
-=======
-import { VolunteerAvailabilityManager } from "@/components/schedules/VolunteerAvailabilityManager";
-import { ScheduleSwapManager } from "@/components/schedules/ScheduleSwapManager";
-import { StaffLessonView } from "@/components/schedules/StaffLessonView";
-import { ScheduleChatDrawer } from "@/components/schedules/ScheduleChatDrawer";
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -32,6 +25,9 @@ export default function PortalSchedules() {
     isConfirming,
   } = useMyUnifiedSchedules(currentMonth);
 
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [confirmedSchedule, setConfirmedSchedule] = useState<UnifiedSchedule | null>(null);
+
   const isTodayOrFuture = (dateStr: string) => {
     const d = parseISO(dateStr);
     const today = new Date();
@@ -44,6 +40,8 @@ export default function PortalSchedules() {
 
   const handleConfirm = async (schedule: UnifiedSchedule) => {
     await confirmSchedule(schedule);
+    setConfirmedSchedule(schedule);
+    setShowSuccess(true);
   };
 
   const handleCancelConfirm = async (schedule: UnifiedSchedule) => {
@@ -290,6 +288,54 @@ export default function PortalSchedules() {
             </Card>
           </motion.div>
         )}
+      <AnimatePresence>
+        {showSuccess && confirmedSchedule && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-xl"
+            onClick={() => setShowSuccess(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 20 }}
+              className="bg-white dark:bg-zinc-900 p-8 rounded-[3rem] shadow-2xl border border-white/20 w-full max-w-sm flex flex-col items-center text-center relative overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-green-400 via-emerald-500 to-green-400" />
+              
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 10, delay: 0.2 }}
+                className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-green-500/30"
+              >
+                <Check className="w-10 h-10 text-white" strokeWidth={3} />
+              </motion.div>
+
+              <h2 className="text-2xl font-black tracking-tight mb-2">Presença Confirmada!</h2>
+              <p className="text-muted-foreground font-medium mb-6">
+                Obrigado por servir! Sua escala para <span className="text-foreground font-bold">{confirmedSchedule.ministry}</span> foi confirmada.
+              </p>
+
+              <div className="bg-muted/50 p-4 rounded-3xl w-full border border-black/5 space-y-1 mb-6">
+                <p className="font-extrabold text-sm">{format(parseISO(confirmedSchedule.date), "dd 'de' MMMM", { locale: ptBR })}</p>
+                <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
+                  {confirmedSchedule.start} às {confirmedSchedule.end}
+                </p>
+              </div>
+
+              <Button 
+                className="w-full h-12 rounded-2xl font-bold bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20"
+                onClick={() => setShowSuccess(false)}
+              >
+                Excelente!
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </motion.div>
   );
@@ -324,7 +370,7 @@ function ScheduleCard({
     >
       <Card
         className={`relative overflow-hidden rounded-3xl border transition-all duration-300 cursor-pointer backdrop-blur-xl shadow-sm hover:shadow-lg
-          ${isSelected ? "bg-primary/10 border-primary/30 ring-2 ring-primary/20" : "bg-white/40 dark:bg-black/40 border-white/20 dark:border-white/10 hover:-translate-y-0.5"}
+          ${isSelected ? "bg-primary/10 border-primary/30 ring-2 ring-primary/20" : "bg-white/40 dark:bg-black/40 border-white/20 dark:border-white/10 hover:-translate-y-0.5" }
           ${isInfantil ? "border-l-4 border-l-purple-400" : ""}
         `}
         onClick={onSelect}

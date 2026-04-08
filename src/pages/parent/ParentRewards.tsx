@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useParentChildren, useParentChildCheckIns } from "@/hooks/useParentData";
-<<<<<<< HEAD
 import { useChildEvaluations } from "@/hooks/useChildrenMinistry";
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -39,17 +36,12 @@ export default function ParentRewards() {
   const [selectedChildId, setSelectedChildId] = useState<string>("");
   const { data: children, isLoading: loadingChildren } = useParentChildren();
   const { data: checkIns, isLoading: loadingCheckIns } = useParentChildCheckIns(selectedChildId || undefined);
-<<<<<<< HEAD
   const { data: evaluations } = useChildEvaluations(selectedChildId || undefined);
 
   const checkinCount = checkIns?.length ?? 0;
   const evaluationPoints = evaluations?.reduce((acc, curr) => acc + (curr.points_earned || 0), 0) ?? 0;
   const totalPoints = (checkinCount * 10) + evaluationPoints; // 10 points per checkin + evaluation points
 
-=======
-
-  const checkinCount = checkIns?.length ?? 0;
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
   const level = getLevel(checkinCount);
   const nextLevel = getNextLevel(checkinCount);
   const progressToNext = nextLevel
@@ -132,9 +124,8 @@ export default function ParentRewards() {
                     />
                     <div>
                       <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Nível Atual</p>
-                      <h2 className="text-4xl font-black text-[#1a1a1a] leading-tight mb-1">{level.name.split(' ')[0]} <span className="bg-gradient-to-r text-transparent bg-clip-text {level.color}">{level.name.split(' ')[1] || ''}</span></h2>
+                      <h2 className="text-4xl font-black text-[#1a1a1a] leading-tight mb-1">{level.name.split(' ')[0]} <span className={`bg-gradient-to-r text-transparent bg-clip-text ${level.color}`}>{level.name.split(' ')[1] || ''}</span></h2>
                       <p className="text-sm font-bold text-gray-700">{level.desc}</p>
-<<<<<<< HEAD
                       <div className="mt-2 flex flex-wrap gap-2">
                         <p className="text-xs font-black text-emerald-600 bg-emerald-100/50 inline-block px-3 py-1 rounded-full border border-emerald-200">
                           {checkinCount} presença{checkinCount !== 1 ? "s" : ""}
@@ -143,11 +134,6 @@ export default function ParentRewards() {
                           {totalPoints} pontos totais ✨
                         </p>
                       </div>
-=======
-                      <p className="text-xs font-black text-emerald-600 mt-2 bg-emerald-100/50 inline-block px-3 py-1 rounded-full border border-emerald-200">
-                        {checkinCount} presença{checkinCount !== 1 ? "s" : ""} no total
-                      </p>
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
                     </div>
                   </div>
                 </div>

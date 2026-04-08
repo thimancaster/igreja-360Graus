@@ -69,7 +69,6 @@ Deno.serve(async (req) => {
           console.error('Error updating registration:', updateError);
         } else {
           console.log(`Payment approved for registration: ${externalRef}`);
-<<<<<<< HEAD
           
           // Get registration details for finance integration
           const { data: registration } = await adminClient
@@ -111,8 +110,6 @@ Deno.serve(async (req) => {
               }
             }
           }
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
         }
       }
 

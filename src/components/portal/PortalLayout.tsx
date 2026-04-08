@@ -139,8 +139,8 @@ function BottomNavigation() {
   const totalUnread = (parentUnread || 0) + (volunteerUnread || 0);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-xl safe-area-pb lg:hidden">
-      <div className="flex items-center justify-around">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] lg:hidden">
+      <div className="flex items-center justify-around h-16">
         {bottomNavItems.map((item) => {
           const isActive =
             location.pathname === item.href ||
@@ -151,15 +151,15 @@ function BottomNavigation() {
               key={item.href}
               to={item.href}
               className={cn(
-                "flex flex-1 flex-col items-center gap-0.5 py-2.5 px-2 transition-all relative",
+                "flex flex-1 flex-col items-center gap-0.5 py-1 transition-all relative",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
             >
               <div className={cn(
-                "relative p-1.5 rounded-xl transition-all",
+                "relative p-2 rounded-xl transition-all",
                 isActive && "bg-primary/10"
               )}>
-                <item.icon className={cn("h-5 w-5 transition-transform", isActive && "scale-110")} />
+                <item.icon className={cn("h-6 w-6 transition-transform", isActive && "scale-110")} />
                 {item.hasBadge && totalUnread > 0 && (
                   <Badge
                     variant="destructive"
@@ -191,23 +191,30 @@ export function PortalLayout({ children }: PortalLayoutProps) {
       </aside>
 
       {/* Mobile */}
-      <div className="flex flex-1 flex-col">
-        {/* Mobile header - minimal, transparent */}
-        <header className="sticky top-0 z-40 flex h-14 items-center gap-3 bg-background/60 backdrop-blur-xl px-4 pt-2 safe-area-pt lg:hidden">
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-11 w-11 min-h-[44px] min-w-[44px]">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0">
-              <NavContent onNavigate={() => setMobileOpen(false)} />
-            </SheetContent>
-          </Sheet>
-          <h1 className="text-base font-bold text-foreground">Portal do Membro</h1>
+      <div className="flex flex-1 flex-col min-w-0 overflow-visible">
+        {/* Mobile header - extra vertical space for safe areas and bigger hit targets */}
+        <header className="sticky top-0 z-40 flex min-h-[4.5rem] flex-col justify-center bg-background/60 backdrop-blur-xl px-4 pt-[env(safe-area-inset-top)] safe-area-pt lg:hidden border-b">
+          <div className="flex items-center gap-4">
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-12 w-12 min-h-[48px] min-w-[48px] rounded-xl hover:bg-primary/10"
+                >
+                  <Menu className="h-7 w-7" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 p-0">
+                <NavContent onNavigate={() => setMobileOpen(false)} />
+              </SheetContent>
+            </Sheet>
+            <h1 className="text-lg font-bold text-foreground">Portal do Membro</h1>
+          </div>
         </header>
 
-        <main className="flex-1 overflow-auto pb-20 lg:pb-0">{children}</main>
+        <main className="flex-1 overflow-auto pb-24 lg:pb-0">{children}</main>
+
 
         <BottomNavigation />
       </div>

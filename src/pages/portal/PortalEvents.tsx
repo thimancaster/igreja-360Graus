@@ -8,11 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-<<<<<<< HEAD
 import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle, Ticket, CalendarPlus } from "lucide-react";
-=======
-import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle, Ticket } from "lucide-react";
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 

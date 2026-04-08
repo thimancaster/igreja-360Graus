@@ -186,36 +186,88 @@ export function QRScanner({ eventId, mode, onResult }: QRScannerProps) {
             )}
 
             {lastResult && (
-              <div className={`absolute inset-0 flex items-center justify-center ${getResultColor(lastResult)}`}>
-                <div className="text-center p-4">
-                  {getResultIcon(lastResult)}
-                  <p className={`font-bold mt-2 ${lastResult.success ? "text-green-600" : "text-red-600"}`}>
+              <motion.div 
+                initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
+                className={`absolute inset-0 z-50 flex items-center justify-center p-6 ${
+                  lastResult.success ? "bg-green-500/20" : 
+                  lastResult.code === "ALREADY_CHECKED_IN" || lastResult.code === "ALREADY_CHECKED_OUT" ? "bg-yellow-500/20" : 
+                  "bg-red-500/20"
+                }`}
+              >
+                <div className="bg-white/95 dark:bg-black/95 p-8 rounded-[2.5rem] shadow-2xl border border-white/20 w-full max-w-xs flex flex-col items-center text-center relative mt-12">
+                  <motion.img 
+                    src={lastResult.success ? "/kids/kids_character_vol_1.png" : "/kids/kids_character_oops.png"}
+                    alt="Character"
+                    className="absolute -top-32 w-48 drop-shadow-2xl z-20 pointer-events-none pop-out-character"
+                    initial={{ y: 50, scale: 0.8, opacity: 0 }}
+                    animate={{ y: 0, scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+                    onError={(e) => (e.currentTarget.style.display = "none")}
+                  />
+                  
+                  <motion.div
+                    initial={{ scale: 0, rotate: -45 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.3 }}
+                    className="mb-4 mt-4"
+                  >
+                    {getResultIcon(lastResult)}
+                  </motion.div>
+                  
+                  <h3 className={`text-2xl font-black mb-1 ${
+                    lastResult.success ? "text-green-600" : 
+                    lastResult.code?.includes("ALREADY") ? "text-yellow-600" : 
+                    "text-red-600"
+                  }`}>
+                    {lastResult.success ? (mode === "checkin" ? "Bem-vindo! 🎉" : "Até logo! 👋") : "Ops!"}
+                  </h3>
+                  
+                  <p className="text-gray-600 dark:text-gray-400 font-bold mb-4 leading-tight">
                     {lastResult.success ? lastResult.message : lastResult.error}
                   </p>
+
                   {lastResult.registration && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {lastResult.registration.attendee_name}
-                    </p>
+                    <div className="w-full p-4 rounded-3xl bg-muted/50 border border-black/5 flex items-center gap-3 text-left mb-2">
+                       <div className="relative">
+                          <div className="absolute -inset-1 bg-primary/20 rounded-full blur-sm" />
+                          <Avatar className="h-10 w-10 border-2 border-white relative z-10 shadow-sm">
+                            <AvatarImage src={lastResult.registration.photo_url || undefined} />
+                            <AvatarFallback className="bg-primary/10 text-primary font-bold">{(lastResult.registration.attendee_name || "P")[0]}</AvatarFallback>
+                          </Avatar>
+                       </div>
+                       <div className="min-w-0">
+                        <p className="font-extrabold text-sm truncate text-foreground">{lastResult.registration.attendee_name}</p>
+                        <p className="text-[10px] text-muted-foreground font-bold tracking-wider">{lastResult.registration.ticket_number}</p>
+                      </div>
+                    </div>
                   )}
+
+                  <Button 
+                    className="mt-6 w-full rounded-2xl h-12 font-black text-lg bg-zinc-900 hover:bg-black text-white shadow-xl"
+                    onClick={() => setLastResult(null)}
+                  >
+                    CONTINUAR
+                  </Button>
                 </div>
-              </div>
+              </motion.div>
             )}
           </div>
 
           <div className="flex gap-2">
             {!isScanning ? (
-              <Button className="flex-1" onClick={startScanning} disabled={isLoading}>
-                <Camera className="w-4 h-4 mr-2" />
-                Ler QR Code
+              <Button className="flex-1 h-12 rounded-2xl text-lg font-extrabold shadow-lg shadow-primary/20" onClick={startScanning} disabled={isLoading}>
+                <Camera className="w-5 h-5 mr-2" />
+                Iniciar Scanner
               </Button>
             ) : (
-              <Button variant="destructive" className="flex-1" onClick={stopScanning}>
-                <CameraOff className="w-4 h-4 mr-2" />
-                Parar
+              <Button variant="destructive" className="flex-1 h-12 rounded-2xl text-lg font-extrabold" onClick={stopScanning}>
+                <CameraOff className="w-5 h-5 mr-2" />
+                Parar Câmera
               </Button>
             )}
-            <Button variant="outline" onClick={handleManualInput}>
-              <RefreshCw className="w-4 h-4" />
+            <Button variant="outline" className="h-12 w-12 rounded-2xl" onClick={handleManualInput}>
+              <RefreshCw className="w-5 h-5" />
             </Button>
           </div>
         </CardContent>

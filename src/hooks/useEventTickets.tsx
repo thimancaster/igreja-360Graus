@@ -38,33 +38,11 @@ interface RegistrationRow {
   attendee_phone: string | null;
 }
 
-export function useEventTickets() {
-  const { user, profile } = useAuth();
-  const queryClient = useQueryClient();
+export function useTicketsByEvent(eventId: string) {
+  const { profile } = useAuth();
   const churchId = profile?.church_id;
 
-  const myTickets = useQuery({
-    queryKey: ["my-tickets", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from("event_registrations")
-        .select(`
-          *,
-          event:ministry_events(
-            id, title, start_datetime, end_datetime, location, 
-            cover_image_url, is_paid_event, ticket_price
-          )
-        `)
-        .eq("profile_id", user.id)
-        .order("registered_at", { ascending: false });
-      if (error) throw error;
-      return data as EventRegistrationExtended[];
-    },
-    enabled: !!user?.id,
-  });
-
-  const ticketsByEvent = (eventId: string) => useQuery({
+  return useQuery({
     queryKey: ["tickets-by-event", eventId],
     queryFn: async () => {
       if (!churchId) return [];
@@ -79,10 +57,15 @@ export function useEventTickets() {
       if (error) throw error;
       return (data || []) as unknown as EventRegistrationExtended[];
     },
-    enabled: !!churchId,
+    enabled: !!churchId && !!eventId,
   });
+}
 
-  const checkinStats = (eventId: string) => useQuery({
+export function useEventCheckinStats(eventId: string) {
+  const { profile } = useAuth();
+  const churchId = profile?.church_id;
+
+  return useQuery({
     queryKey: ["checkin-stats", eventId],
     queryFn: async (): Promise<EventCheckinStats> => {
       if (!churchId) {
@@ -112,7 +95,33 @@ export function useEventTickets() {
       
       return stats;
     },
-    enabled: !!churchId,
+    enabled: !!churchId && !!eventId,
+  });
+}
+
+export function useEventTickets() {
+  const { user, profile } = useAuth();
+  const queryClient = useQueryClient();
+
+  const myTickets = useQuery({
+    queryKey: ["my-tickets", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from("event_registrations")
+        .select(`
+          *,
+          event:ministry_events(
+            id, title, start_datetime, end_datetime, location, 
+            cover_image_url, is_paid_event, ticket_price
+          )
+        `)
+        .eq("profile_id", user.id)
+        .order("registered_at", { ascending: false });
+      if (error) throw error;
+      return data as EventRegistrationExtended[];
+    },
+    enabled: !!user?.id,
   });
 
   const createRegistration = useMutation({
@@ -214,7 +223,6 @@ export function useEventTickets() {
     },
   });
 
-<<<<<<< HEAD
   const manualCheckinMutation = useMutation({
     mutationFn: async (registrationId: string) => {
       const { data, error } = await supabase
@@ -263,8 +271,6 @@ export function useEventTickets() {
     },
   });
 
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
   const updatePaymentStatus = useMutation({
     mutationFn: async ({ 
       registrationId, 
@@ -358,16 +364,11 @@ export function useEventTickets() {
 
   return {
     myTickets,
-    ticketsByEvent,
-    checkinStats,
     createRegistration: createRegistration.mutateAsync,
     checkIn: checkIn.mutateAsync,
     checkOut: checkOut.mutateAsync,
-<<<<<<< HEAD
     manualCheckin: manualCheckinMutation,
     manualCheckout: manualCheckoutMutation,
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
     updatePaymentStatus: updatePaymentStatus.mutateAsync,
     cancelRegistration: cancelRegistration.mutateAsync,
     generateQRTicketData,

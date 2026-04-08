@@ -1054,4 +1054,16 @@
     pointer-events: none;
     z-index: 2;
   }
+
+  /* ── SAFE AREA UTILITIES (iOS / PWA Support) ── */
+  .safe-area-pt { padding-top: env(safe-area-inset-top); }
+  .safe-area-pb { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-area-pl { padding-left: env(safe-area-inset-left); }
+  .safe-area-pr { padding-right: env(safe-area-inset-right); }
+
+  .safe-area-mt { margin-top: env(safe-area-inset-top); }
+  .safe-area-mb { margin-bottom: env(safe-area-inset-bottom); }
+
+  .safe-area-h { height: env(safe-area-inset-top); }
 }
+

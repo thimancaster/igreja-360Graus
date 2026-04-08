@@ -3,11 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-<<<<<<< HEAD
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   Users, 
   UserCheck, 
@@ -15,22 +12,14 @@ import {
   DollarSign,
   Clock,
   Download,
-<<<<<<< HEAD
   Search,
   QrCode,
   Hand
-=======
-  Search
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 } from "lucide-react";
 import { QRScanner } from "./QRScanner";
-import { useEventTickets } from "@/hooks/useEventTickets";
-import type { EventRegistrationExtended, EventCheckinStats } from "@/types/event-checkin";
-<<<<<<< HEAD
+import { useEventTickets, useTicketsByEvent, useEventCheckinStats } from "@/hooks/useEventTickets";
+import type { EventRegistrationExtended } from "@/types/event-checkin";
 import { toast } from "sonner";
-=======
-import { Input } from "@/components/ui/input";
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 
 interface CheckinPanelProps {
   eventId: string;
@@ -38,18 +27,13 @@ interface CheckinPanelProps {
 
 export function CheckinPanel({ eventId }: CheckinPanelProps) {
   const [searchTerm, setSearchTerm] = useState("");
-<<<<<<< HEAD
   const [manualSearchOpen, setManualSearchOpen] = useState(false);
   const [manualSearch, setManualSearch] = useState("");
-  const [manualMode, setManualMode] = useState<"checkin" | "checkout">("checkin");
   const [selectedTicket, setSelectedTicket] = useState<EventRegistrationExtended | null>(null);
-  const { ticketsByEvent, checkinStats, manualCheckin, manualCheckout } = useEventTickets();
-=======
-  const { ticketsByEvent, checkinStats } = useEventTickets();
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
   
-  const { data: tickets = [], isLoading: isLoadingTickets } = ticketsByEvent(eventId);
-  const { data: stats, isLoading: isLoadingStats } = checkinStats(eventId);
+  const { manualCheckin, manualCheckout } = useEventTickets();
+  const { data: tickets = [], isLoading: isLoadingTickets } = useTicketsByEvent(eventId);
+  const { data: stats, isLoading: isLoadingStats } = useEventCheckinStats(eventId);
   
   const filteredTickets = tickets.filter(ticket => {
     const search = searchTerm.toLowerCase();
@@ -59,18 +43,6 @@ export function CheckinPanel({ eventId }: CheckinPanelProps) {
       ticket.attendee_email?.toLowerCase().includes(search)
     );
   });
-<<<<<<< HEAD
-  
-  const filteredTickets = tickets.filter(ticket => {
-    const search = searchTerm.toLowerCase();
-    return (
-      ticket.attendee_name?.toLowerCase().includes(search) ||
-      ticket.ticket_number?.toLowerCase().includes(search) ||
-      ticket.attendee_email?.toLowerCase().includes(search)
-    );
-  });
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
 
   const handleExportCSV = () => {
     const headers = ["Nome", "Email", "Telefone", "Ingresso", "Status", "Check-in", "Check-out", "Pagamento"];
@@ -94,7 +66,6 @@ export function CheckinPanel({ eventId }: CheckinPanelProps) {
     a.click();
   };
 
-<<<<<<< HEAD
   const handleManualSearch = () => {
     const search = manualSearch.toLowerCase();
     const found = tickets.find(t => 
@@ -108,7 +79,7 @@ export function CheckinPanel({ eventId }: CheckinPanelProps) {
   const handleManualCheckin = async () => {
     if (!selectedTicket) return;
     try {
-      await checkIn.mutateAsync(selectedTicket.id);
+      await manualCheckin.mutateAsync(selectedTicket.id);
       toast.success("Check-in realizado com sucesso!");
       setManualSearchOpen(false);
       setManualSearch("");
@@ -121,7 +92,7 @@ export function CheckinPanel({ eventId }: CheckinPanelProps) {
   const handleManualCheckout = async () => {
     if (!selectedTicket) return;
     try {
-      await checkOut.mutateAsync(selectedTicket.id);
+      await manualCheckout.mutateAsync(selectedTicket.id);
       toast.success("Check-out realizado com sucesso!");
       setManualSearchOpen(false);
       setManualSearch("");
@@ -131,10 +102,7 @@ export function CheckinPanel({ eventId }: CheckinPanelProps) {
     }
   };
 
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
   const getStatusBadge = (ticket: EventRegistrationExtended) => {
-    const status = ticket.ticket_status || ticket.status;
     const isPaid = ticket.payment_status === "paid" || ticket.payment_status === "free";
     
     if (ticket.check_in_at && ticket.check_out_at) {
@@ -194,15 +162,12 @@ export function CheckinPanel({ eventId }: CheckinPanelProps) {
         </TabsList>
 
         <TabsContent value="scanner" className="space-y-4">
-<<<<<<< HEAD
           <div className="flex justify-end">
             <Button variant="outline" onClick={() => setManualSearchOpen(true)}>
               <Search className="w-4 h-4 mr-2" />
               Buscar Participante
             </Button>
           </div>
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
           <div className="grid md:grid-cols-2 gap-4">
             <QRScanner eventId={eventId} mode="checkin" />
             <QRScanner eventId={eventId} mode="checkout" />
@@ -308,7 +273,6 @@ export function CheckinPanel({ eventId }: CheckinPanelProps) {
           </Card>
         </TabsContent>
       </Tabs>
-<<<<<<< HEAD
 
       <Dialog open={manualSearchOpen} onOpenChange={setManualSearchOpen}>
         <DialogContent>
@@ -361,8 +325,6 @@ export function CheckinPanel({ eventId }: CheckinPanelProps) {
           </div>
         </DialogContent>
       </Dialog>
-=======
->>>>>>> ea0e00c26700a4a8024edb0266eac8019f4f032c
     </div>
   );
 }
