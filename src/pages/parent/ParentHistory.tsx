@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, LogIn, LogOut, User, Calendar, MapPin, AlertTriangle } from "lucide-react";
+import { Clock, LogIn, LogOut, User, Calendar, MapPin, AlertTriangle, Star, Trophy } from "lucide-react";
 import { useParentChildren, useParentChildCheckIns } from "@/hooks/useParentData";
+import { useChildEvaluations } from "@/hooks/useChildrenMinistry";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -16,6 +17,7 @@ export default function ParentHistory() {
 
   const { data: children, isLoading: loadingChildren } = useParentChildren();
   const { data: checkIns, isLoading: loadingCheckIns } = useParentChildCheckIns(selectedChildId || undefined);
+  const { data: evaluations } = useChildEvaluations(selectedChildId || undefined);
 
   if (loadingChildren) {
     return (
@@ -167,6 +169,52 @@ export default function ParentHistory() {
                           <span className="text-xs font-medium">
                             Retirada de emergência autorizada por líder
                           </span>
+                        </div>
+                      )}
+
+                      {/* Evaluation for this session */}
+                      {evaluations?.find(e => e.check_in_id === checkIn.id) && (
+                        <div className="mt-4 p-3 bg-primary/5 rounded-xl border border-primary/10">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-primary uppercase tracking-wider">Avaliação do Professor</span>
+                            <div className="flex items-center gap-1 bg-primary/20 px-2 py-0.5 rounded-full">
+                              <Trophy className="h-3 w-3 text-primary" />
+                              <span className="text-xs font-bold text-primary">+{evaluations.find(e => e.check_in_id === checkIn.id)?.points_earned} pts</span>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-2 mb-2">
+                            <div className="text-center">
+                              <p className="text-[10px] text-muted-foreground">Comportamento</p>
+                              <div className="flex justify-center">
+                                {[1, 2, 3, 4, 5].map(s => (
+                                  <Star key={s} className={`h-2.5 w-2.5 ${s <= (evaluations.find(e => e.check_in_id === checkIn.id)?.behavior_score || 0) ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+                                ))}
+                              </div>
+                            </div>
+                            <div className="text-center border-x border-primary/10">
+                              <p className="text-[10px] text-muted-foreground">Participação</p>
+                              <div className="flex justify-center">
+                                {[1, 2, 3, 4, 5].map(s => (
+                                  <Star key={s} className={`h-2.5 w-2.5 ${s <= (evaluations.find(e => e.check_in_id === checkIn.id)?.participation_score || 0) ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+                                ))}
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-[10px] text-muted-foreground">Interação</p>
+                              <div className="flex justify-center">
+                                {[1, 2, 3, 4, 5].map(s => (
+                                  <Star key={s} className={`h-2.5 w-2.5 ${s <= (evaluations.find(e => e.check_in_id === checkIn.id)?.interaction_score || 0) ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {evaluations.find(e => e.check_in_id === checkIn.id)?.notes && (
+                            <div className="bg-white/50 p-2 rounded-lg text-xs italic text-gray-700">
+                              "{evaluations.find(e => e.check_in_id === checkIn.id)?.notes}"
+                            </div>
+                          )}
                         </div>
                       )}
                   </div>

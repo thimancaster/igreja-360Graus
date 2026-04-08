@@ -69,6 +69,47 @@ Deno.serve(async (req) => {
           console.error('Error updating registration:', updateError);
         } else {
           console.log(`Payment approved for registration: ${externalRef}`);
+          
+          // Get registration details for finance integration
+          const { data: registration } = await adminClient
+            .from('event_registrations')
+            .select('*, event:ministry_events(*)')
+            .eq('id', externalRef)
+            .single();
+          
+          if (registration?.event) {
+            const event = registration.event;
+            
+            // Check if event has auto_register_finance enabled
+            if (event.auto_register_finance) {
+              // Auto-register revenue
+              try {
+                await adminClient.rpc('register_event_revenue', {
+                  p_registration_id: externalRef,
+                });
+                console.log(`Revenue auto-registered for registration: ${externalRef}`);
+              } catch (rpcError) {
+                console.error('Error auto-registering revenue:', rpcError);
+              }
+            } else {
+              // Create pending authorization (manual approval required)
+              try {
+                await adminClient
+                  .from('event_revenue_authorizations')
+                  .insert({
+                    church_id: registration.church_id,
+                    registration_id: externalRef,
+                    event_id: registration.event_id,
+                    amount: registration.payment_amount,
+                    member_id: registration.member_id,
+                    status: 'pending',
+                  });
+                console.log(`Pending authorization created for registration: ${externalRef}`);
+              } catch (authError) {
+                console.error('Error creating pending authorization:', authError);
+              }
+            }
+          }
         }
       }
 

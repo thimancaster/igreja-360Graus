@@ -83,6 +83,20 @@ export type ChildWithGuardians = Child & {
   guardians: (Guardian & { is_primary: boolean; can_pickup: boolean })[];
 };
 
+export type ChildEvaluation = {
+  id: string;
+  church_id: string;
+  child_id: string;
+  teacher_id: string | null;
+  check_in_id: string | null;
+  behavior_score: number;
+  participation_score: number;
+  interaction_score: number;
+  notes: string | null;
+  points_earned: number;
+  created_at: string;
+};
+
 export const CLASSROOMS = [
   "Berçário",
   "Maternal",
@@ -732,5 +746,57 @@ export function useGuardiansWithChildren() {
       }));
     },
     enabled: !!profile?.church_id,
+  });
+}
+
+export function useChildEvaluations(childId: string | undefined) {
+  const { profile } = useAuth();
+
+  return useQuery({
+    queryKey: ["child-evaluations", childId],
+    queryFn: async () => {
+      if (!childId) return [];
+
+      const { data, error } = await supabase
+        .from("child_evaluations")
+        .select("*")
+        .eq("child_id", childId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as ChildEvaluation[];
+    },
+    enabled: !!childId && !!profile?.church_id,
+  });
+}
+
+export function useAddEvaluation() {
+  const { profile, user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (evaluation: Omit<ChildEvaluation, "id" | "church_id" | "created_at" | "points_earned" | "teacher_id">) => {
+      if (!profile?.church_id) throw new Error("Igreja não encontrada");
+
+      const { data, error } = await supabase
+        .from("child_evaluations")
+        .insert({
+          ...evaluation,
+          church_id: profile.church_id,
+          teacher_id: user?.id || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      toast.success("Avaliação enviada com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["child-evaluations", variables.child_id] });
+    },
+    onError: (error) => {
+      toast.error(`Erro ao enviar avaliação: ${error.message}`);
+    },
   });
 }

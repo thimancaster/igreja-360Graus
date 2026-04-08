@@ -348,6 +348,128 @@ USING (profile_id = auth.uid() OR church_id = get_user_church_id());
 
 -- Permissão para função de checkin (executar sem restrictions)
 GRANT EXECUTE ON FUNCTION public.process_event_checkin TO authenticated;
+
+-- 10. Função para check-in manual por registration_id
+CREATE OR REPLACE FUNCTION public.process_manual_checkin(
+    p_registration_id uuid,
+    p_device_info text DEFAULT NULL
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_registration record;
+    v_church_id uuid;
+BEGIN
+    SELECT * INTO v_registration
+    FROM public.event_registrations er
+    WHERE er.id = p_registration_id;
+    
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'error', 'Inscrição não encontrada',
+            'code', 'NOT_FOUND'
+        );
+    END IF;
+    
+    v_church_id := v_registration.church_id;
+    
+    IF v_registration.check_in_at IS NOT NULL THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'error', 'Check-in já realizado',
+            'code', 'ALREADY_CHECKED_IN',
+            'registration_id', p_registration_id
+        );
+    END IF;
+    
+    UPDATE public.event_registrations
+    SET check_in_at = now(),
+        status = 'checked_in',
+        checked_in_by = auth.uid(),
+        checked_in_device = p_device_info
+    WHERE id = p_registration_id;
+    
+    INSERT INTO public.event_checkin_logs (church_id, registration_id, event_id, action, performed_by, device_info)
+    VALUES (v_church_id, p_registration_id, v_registration.event_id, 'check_in', auth.uid(), p_device_info);
+    
+    RETURN jsonb_build_object(
+        'success', true,
+        'message', 'Check-in realizado com sucesso!',
+        'code', 'CHECKED_IN',
+        'registration_id', p_registration_id,
+        'checked_in_at', now()
+    );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.process_manual_checkin TO authenticated;
+
+-- 11. Função para check-out manual por registration_id
+CREATE OR REPLACE FUNCTION public.process_manual_checkout(
+    p_registration_id uuid,
+    p_device_info text DEFAULT NULL
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_registration record;
+    v_church_id uuid;
+BEGIN
+    SELECT * INTO v_registration
+    FROM public.event_registrations er
+    WHERE er.id = p_registration_id;
+    
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'error', 'Inscrição não encontrada',
+            'code', 'NOT_FOUND'
+        );
+    END IF;
+    
+    IF v_registration.check_in_at IS NULL THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'error', 'Check-in não realizado',
+            'code', 'NOT_CHECKED_IN'
+        );
+    END IF;
+    
+    IF v_registration.check_out_at IS NOT NULL THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'error', 'Check-out já realizado',
+            'code', 'ALREADY_CHECKED_OUT'
+        );
+    END IF;
+    
+    v_church_id := v_registration.church_id;
+    
+    UPDATE public.event_registrations
+    SET check_out_at = now(),
+        status = 'checked_out',
+        checked_out_by = auth.uid()
+    WHERE id = p_registration_id;
+    
+    INSERT INTO public.event_checkin_logs (church_id, registration_id, event_id, action, performed_by, device_info)
+    VALUES (v_church_id, p_registration_id, v_registration.event_id, 'check_out', auth.uid(), p_device_info);
+    
+    RETURN jsonb_build_object(
+        'success', true,
+        'message', 'Check-out realizado com sucesso!',
+        'code', 'CHECKED_OUT',
+        'registration_id', p_registration_id,
+        'checked_out_at', now()
+    );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.process_manual_checkout TO authenticated;
 GRANT EXECUTE ON FUNCTION public.process_event_checkout TO authenticated;
 GRANT EXECUTE ON FUNCTION public.generate_ticket_number TO authenticated;
 GRANT EXECUTE ON FUNCTION public.generate_qr_code_data TO authenticated;

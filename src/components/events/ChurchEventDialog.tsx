@@ -28,9 +28,15 @@ const formSchema = z.object({
   location: z.string().optional(),
   max_capacity: z.number().min(0).optional().nullable(),
   registration_required: z.boolean().optional(),
+  registration_deadline: z.string().optional(),
   ministry_id: z.string().optional().nullable(),
   ticket_price: z.number().min(0).optional(),
   is_paid_event: z.boolean().optional(),
+  auto_register_finance: z.boolean().optional(),
+  enable_waitlist: z.boolean().optional(),
+  is_recurring: z.boolean().optional(),
+  recurrence_type: z.string().optional(),
+  recurrence_interval: z.number().optional(),
   status: z.string().optional(),
   visibility: z.string().optional(),
   tags: z.string().optional(),
@@ -76,8 +82,10 @@ export function ChurchEventDialog({ open, onOpenChange, event, onSubmit, isLoadi
     defaultValues: {
       title: "", description: "", event_type: "service", start_date: format(new Date(), "yyyy-MM-dd"),
       start_time: "", end_date: "", end_time: "", all_day: false, location: "",
-      max_capacity: null, registration_required: false, ministry_id: null,
-      ticket_price: 0, is_paid_event: false, status: "published", visibility: "members", tags: "",
+      max_capacity: null, registration_required: false, registration_deadline: "", ministry_id: null,
+      ticket_price: 0, is_paid_event: false, auto_register_finance: false, enable_waitlist: false,
+      is_recurring: false, recurrence_type: "weekly", recurrence_interval: 1,
+      status: "published", visibility: "members", tags: "",
     },
   });
 
@@ -93,9 +101,14 @@ export function ChurchEventDialog({ open, onOpenChange, event, onSubmit, isLoadi
         end_time: endDate && !event.all_day ? format(endDate, "HH:mm") : "",
         all_day: event.all_day, location: event.location || "",
         max_capacity: event.max_capacity, registration_required: event.registration_required,
+        registration_deadline: event.registration_deadline ? format(new Date(event.registration_deadline), "yyyy-MM-dd'T'HH:mm") : "",
         ministry_id: event.ministry_id, ticket_price: event.ticket_price || 0,
-        is_paid_event: event.is_paid_event, status: event.status,
-        visibility: event.visibility, tags: event.tags?.join(", ") || "",
+        is_paid_event: event.is_paid_event, auto_register_finance: event.auto_register_finance || false,
+        enable_waitlist: event.enable_waitlist || false,
+        is_recurring: event.recurring || false,
+        recurrence_type: event.recurrence_rule ? JSON.parse(event.recurrence_rule).type : "weekly",
+        recurrence_interval: event.recurrence_rule ? JSON.parse(event.recurrence_rule).interval : 1,
+        status: event.status, visibility: event.visibility, tags: event.tags?.join(", ") || "",
       });
     } else {
       form.reset({
@@ -121,9 +134,17 @@ export function ChurchEventDialog({ open, onOpenChange, event, onSubmit, isLoadi
       start_datetime: startDatetime, end_datetime: endDatetime, all_day: values.all_day,
       location: values.location, max_capacity: values.max_capacity,
       registration_required: values.registration_required,
+      registration_deadline: values.registration_deadline ? new Date(values.registration_deadline).toISOString() : null,
       ministry_id: (values.ministry_id === "none" || !values.ministry_id) ? null : values.ministry_id,
       ticket_price: values.is_paid_event ? (values.ticket_price || 0) : 0,
       is_paid_event: values.is_paid_event,
+      auto_register_finance: values.auto_register_finance || false,
+      enable_waitlist: values.enable_waitlist || false,
+      recurring: values.is_recurring || false,
+      recurrence_rule: values.is_recurring ? JSON.stringify({
+        type: values.recurrence_type,
+        interval: values.recurrence_interval || 1,
+      }) : null,
       status: values.status, visibility: values.visibility,
       tags: values.tags ? values.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
     });
@@ -224,6 +245,56 @@ export function ChurchEventDialog({ open, onOpenChange, event, onSubmit, isLoadi
               )} />}
             </div>
 
+            <FormField control={form.control} name="is_recurring" render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 bg-purple-50 p-3 rounded-md border border-purple-200">
+                <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                <div>
+                  <FormLabel className="text-purple-800">Evento recorrente</FormLabel>
+                  <FormDescription className="text-purple-700">
+                    Crie eventos que se repetem automaticamente
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )} />
+
+            {form.watch("is_recurring") && (
+              <div className="grid grid-cols-2 gap-4 bg-purple-50/50 p-4 rounded-md border border-purple-100">
+                <FormField control={form.control} name="recurrence_type" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Repetir</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="daily">Diariamente</SelectItem>
+                        <SelectItem value="weekly">Semanalmente</SelectItem>
+                        <SelectItem value="monthly">Mensalmente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="recurrence_interval" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Intervalo</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min="1" 
+                        max="30"
+                        {...field} 
+                        value={field.value ?? 1}
+                        onChange={e => field.onChange(parseInt(e.target.value) || 1)}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {form.watch("recurrence_type") === "daily" && "dia(s)"}
+                      {form.watch("recurrence_type") === "weekly" && "semana(s)"}
+                      {form.watch("recurrence_type") === "monthly" && "mês(es)"}
+                    </FormDescription>
+                  </FormItem>
+                )} />
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <FormField control={form.control} name="max_capacity" render={({ field }) => (
                 <FormItem><FormLabel>Capacidade Máxima</FormLabel>
@@ -231,10 +302,30 @@ export function ChurchEventDialog({ open, onOpenChange, event, onSubmit, isLoadi
                   <FormDescription>Deixe vazio para ilimitado</FormDescription>
                 </FormItem>
               )} />
+              <FormField control={form.control} name="registration_deadline" render={({ field }) => (
+                <FormItem><FormLabel>Deadline de Inscrição</FormLabel>
+                  <FormControl><Input type="datetime-local" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value || null)} /></FormControl>
+                  <FormDescription>Após esta data, inscrições encerram</FormDescription>
+                </FormItem>
+              )} />
+            </div>
+
+            <div className="flex flex-col gap-3">
               <FormField control={form.control} name="registration_required" render={({ field }) => (
-                <FormItem className="flex flex-row items-center space-x-3 space-y-0 pt-8">
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                   <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                   <FormLabel>Requer inscrição</FormLabel>
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="enable_waitlist" render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 bg-amber-50 p-3 rounded-md border border-amber-200">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <div>
+                    <FormLabel className="text-amber-800">Ativar lista de espera</FormLabel>
+                    <FormDescription className="text-amber-700">
+                      Quando o evento lotar, novas inscrições serão adicionadas à lista de espera
+                    </FormDescription>
+                  </div>
                 </FormItem>
               )} />
             </div>
@@ -246,11 +337,25 @@ export function ChurchEventDialog({ open, onOpenChange, event, onSubmit, isLoadi
               </FormItem>
             )} />
             {isPaid && (
-              <FormField control={form.control} name="ticket_price" render={({ field }) => (
-                <FormItem><FormLabel>Valor do Ingresso (R$)</FormLabel>
-                  <FormControl><Input type="number" min="0" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} /></FormControl>
-                </FormItem>
-              )} />
+              <>
+                <FormField control={form.control} name="ticket_price" render={({ field }) => (
+                  <FormItem><FormLabel>Valor do Ingresso (R$)</FormLabel>
+                    <FormControl><Input type="number" min="0" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} /></FormControl>
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="auto_register_finance" render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 bg-green-50 p-3 rounded-md border border-green-200">
+                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    <div>
+                      <FormLabel className="text-green-800">Registro automático no financeiro</FormLabel>
+                      <FormDescription className="text-green-700">
+                        Receitas serão registradas automaticamente ao receber pagamento. 
+                        Caso contrário, será necessária autorização manual.
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )} />
+              </>
             )}
 
             <FormField control={form.control} name="tags" render={({ field }) => (

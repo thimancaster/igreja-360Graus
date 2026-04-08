@@ -214,6 +214,54 @@ export function useEventTickets() {
     },
   });
 
+  const manualCheckinMutation = useMutation({
+    mutationFn: async (registrationId: string) => {
+      const { data, error } = await supabase
+        .rpc("process_manual_checkin" as any, {
+          p_registration_id: registrationId,
+        });
+      if (error) throw error;
+      return data as unknown as CheckinResult;
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ["checkin-stats"] });
+        queryClient.invalidateQueries({ queryKey: ["tickets-by-event"] });
+        toast.success(result.message || "Check-in realizado!");
+      } else {
+        toast.error(result.error || "Erro no check-in");
+      }
+      return result;
+    },
+    onError: (error: Error) => {
+      toast.error(`Erro: ${error.message}`);
+    },
+  });
+
+  const manualCheckoutMutation = useMutation({
+    mutationFn: async (registrationId: string) => {
+      const { data, error } = await supabase
+        .rpc("process_manual_checkout" as any, {
+          p_registration_id: registrationId,
+        });
+      if (error) throw error;
+      return data as unknown as CheckinResult;
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ["checkin-stats"] });
+        queryClient.invalidateQueries({ queryKey: ["tickets-by-event"] });
+        toast.success(result.message || "Check-out realizado!");
+      } else {
+        toast.error(result.error || "Erro no check-out");
+      }
+      return result;
+    },
+    onError: (error: Error) => {
+      toast.error(`Erro: ${error.message}`);
+    },
+  });
+
   const updatePaymentStatus = useMutation({
     mutationFn: async ({ 
       registrationId, 
@@ -312,6 +360,8 @@ export function useEventTickets() {
     createRegistration: createRegistration.mutateAsync,
     checkIn: checkIn.mutateAsync,
     checkOut: checkOut.mutateAsync,
+    manualCheckin: manualCheckinMutation,
+    manualCheckout: manualCheckoutMutation,
     updatePaymentStatus: updatePaymentStatus.mutateAsync,
     cancelRegistration: cancelRegistration.mutateAsync,
     generateQRTicketData,

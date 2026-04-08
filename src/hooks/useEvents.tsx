@@ -29,6 +29,10 @@ export interface ChurchEvent {
   created_at: string;
   updated_at: string;
   ministry?: { name: string } | null;
+  auto_register_finance?: boolean;
+  enable_waitlist?: boolean;
+  recurring?: boolean;
+  recurrence_rule?: string | null;
 }
 
 export interface EventFormData {
@@ -43,10 +47,12 @@ export interface EventFormData {
   recurrence_rule?: string;
   max_capacity?: number | null;
   registration_required?: boolean;
+  registration_deadline?: string | null;
   ministry_id?: string | null;
   ticket_price?: number;
   is_paid_event?: boolean;
-  registration_deadline?: string | null;
+  auto_register_finance?: boolean;
+  enable_waitlist?: boolean;
   cover_image_url?: string | null;
   status?: string;
   visibility?: string;
@@ -114,31 +120,36 @@ export function useEvents() {
   const createEvent = useMutation({
     mutationFn: async (data: EventFormData) => {
       if (!churchId || !user?.id) throw new Error("Missing church or user");
+      
+      const eventData = {
+        church_id: churchId,
+        title: data.title,
+        description: data.description || null,
+        event_type: data.event_type,
+        start_datetime: data.start_datetime,
+        end_datetime: data.end_datetime || null,
+        all_day: data.all_day || false,
+        location: data.location || null,
+        recurring: data.recurring || false,
+        recurrence_rule: data.recurrence_rule || null,
+        max_capacity: data.max_capacity || null,
+        registration_required: data.registration_required || false,
+        registration_deadline: data.registration_deadline || null,
+        ministry_id: data.ministry_id || null,
+        ticket_price: data.ticket_price || 0,
+        is_paid_event: data.is_paid_event || false,
+        auto_register_finance: data.auto_register_finance || false,
+        enable_waitlist: data.enable_waitlist || false,
+        cover_image_url: data.cover_image_url || null,
+        status: data.status || "published",
+        visibility: data.visibility || "members",
+        tags: data.tags || [],
+        created_by: user.id,
+      };
+      
       const { data: result, error } = await supabase
         .from("ministry_events")
-        .insert({
-          church_id: churchId,
-          title: data.title,
-          description: data.description || null,
-          event_type: data.event_type,
-          start_datetime: data.start_datetime,
-          end_datetime: data.end_datetime || null,
-          all_day: data.all_day || false,
-          location: data.location || null,
-          recurring: data.recurring || false,
-          recurrence_rule: data.recurrence_rule || null,
-          max_capacity: data.max_capacity || null,
-          registration_required: data.registration_required || false,
-          ministry_id: data.ministry_id || null,
-          ticket_price: data.ticket_price || 0,
-          is_paid_event: data.is_paid_event || false,
-          registration_deadline: data.registration_deadline || null,
-          cover_image_url: data.cover_image_url || null,
-          status: data.status || "published",
-          visibility: data.visibility || "members",
-          tags: data.tags || [],
-          created_by: user.id,
-        })
+        .insert(eventData)
         .select()
         .single();
       if (error) throw error;

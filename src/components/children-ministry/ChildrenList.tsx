@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useChildren, useChildMutations, Child, CLASSROOMS } from "@/hooks/useChildrenMinistry";
+import { useChildren, useChildMutations, Child, CLASSROOMS, useChildRewards } from "@/hooks/useChildrenMinistry";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus, Search, Pencil, Trash2, Baby, AlertTriangle, Trophy } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ChildDialog } from "./ChildDialog";
-import { useChildRewards } from "@/hooks/useChildrenMinistry";
-import { format, differenceInYears, differenceInMonths } from "date-fns";
+import { format } from "date-fns";
+import { calculateFormattedAge } from "@/utils/ageUtils";
 import { ptBR } from "date-fns/locale";
 import {
   AlertDialog,
@@ -45,13 +45,7 @@ export function ChildrenList() {
   );
 
   const getAge = (birthDate: string) => {
-    const birth = new Date(birthDate);
-    const years = differenceInYears(new Date(), birth);
-    if (years < 1) {
-      const months = differenceInMonths(new Date(), birth);
-      return `${months} meses`;
-    }
-    return `${years} anos`;
+    return calculateFormattedAge(birthDate);
   };
 
   const handleEdit = (child: Child) => {

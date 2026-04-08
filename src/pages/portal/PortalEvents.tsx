@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle, Ticket } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle, Ticket, CalendarPlus } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
@@ -69,6 +69,18 @@ export default function PortalEvents() {
                           <Badge variant="outline" className="text-xs">{EVENT_TYPE_LABELS[event.event_type] || event.event_type}</Badge>
                           {event.is_paid_event && <Badge className="text-xs bg-primary">R$ {event.ticket_price?.toFixed(2)}</Badge>}
                         </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="mt-2 text-xs text-blue-600 hover:text-blue-700"
+                          onClick={() => {
+                            const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${new Date(event.start_datetime).toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${event.end_datetime ? new Date(event.end_datetime).toISOString().replace(/[-:]/g, '').split('.')[0] : new Date(event.start_datetime).toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(event.description || '')}&location=${encodeURIComponent(event.location || '')}`;
+                            window.open(url, '_blank');
+                          }}
+                        >
+                          <CalendarPlus className="w-3 h-3 mr-1" />
+                          Adicionar ao Calendário
+                        </Button>
                       </div>
                       <div className="shrink-0">
                         {isRegistered ? (

@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Calendar, List, QrCode, DollarSign } from "lucide-react";
+import { BarChart3, Calendar, List, QrCode, DollarSign, Users, Bell } from "lucide-react";
 import { pageVariants, pageTransition } from "@/lib/pageAnimations";
 import { EventDashboard } from "@/components/events/EventDashboard";
 import { EventCalendar } from "@/components/events/EventCalendar";
 import { EventList } from "@/components/events/EventList";
 import { CheckinPanel } from "@/components/events/CheckinPanel";
+import { WaitlistPanel } from "@/components/events/WaitlistPanel";
+import { ReminderPanel } from "@/components/events/ReminderPanel";
 import { Button } from "@/components/ui/button";
 
 export default function Eventos() {
@@ -32,7 +34,7 @@ export default function Eventos() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
           <TabsTrigger value="dashboard" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -49,6 +51,14 @@ export default function Eventos() {
             <QrCode className="h-4 w-4" />
             <span className="hidden sm:inline">Check-in</span>
           </TabsTrigger>
+          <TabsTrigger value="waitlist" className="gap-2">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Espera</span>
+          </TabsTrigger>
+          <TabsTrigger value="reminders" className="gap-2">
+            <Bell className="h-4 w-4" />
+            <span className="hidden sm:inline">Lembretes</span>
+          </TabsTrigger>
           <TabsTrigger value="payments" className="gap-2">
             <DollarSign className="h-4 w-4" />
             <span className="hidden sm:inline">Pagamentos</span>
@@ -60,6 +70,12 @@ export default function Eventos() {
         <TabsContent value="list"><EventList /></TabsContent>
         <TabsContent value="checkin">
           <CheckinPanelSelect navigate={navigate} />
+        </TabsContent>
+        <TabsContent value="waitlist">
+          <WaitlistPanelSelect />
+        </TabsContent>
+        <TabsContent value="reminders">
+          <RemindersPanelSelect />
         </TabsContent>
         <TabsContent value="payments">
           <PaymentPanelSelect navigate={navigate} />
@@ -103,8 +119,115 @@ function CheckinPanelSelect({ navigate }: { navigate: (path: string) => void }) 
   );
 }
 
+function WaitlistPanelSelect({ navigate }: { navigate: (path: string) => void }) {
+  const { data: events, isLoading } = useEventsList();
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+
+  const selectedEvent = events?.find(e => e.id === selectedEventId);
+
+  if (isLoading) {
+    return <div className="p-8 text-center">Carregando...</div>;
+  }
+
+  const eventsWithWaitlist = events?.filter(e => e.enable_waitlist && e.max_capacity);
+
+  if (selectedEventId && selectedEvent) {
+    return (
+      <div className="space-y-4">
+        <Button variant="ghost" onClick={() => setSelectedEventId(null)}>
+          ← Voltar para lista de eventos
+        </Button>
+        <WaitlistPanel eventId={selectedEventId} eventTitle={selectedEvent.title} />
+      </div>
+  );
+}
+
+function RemindersPanelSelect() {
+  const { data: events, isLoading } = useEventsList();
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+
+  const selectedEvent = events?.find(e => e.id === selectedEventId);
+
+  if (isLoading) {
+    return <div className="p-8 text-center">Carregando...</div>;
+  }
+
+  if (selectedEventId && selectedEvent) {
+    return (
+      <div className="space-y-4">
+        <Button variant="ghost" onClick={() => setSelectedEventId(null)}>
+          ← Voltar para lista de eventos
+        </Button>
+        <ReminderPanel eventId={selectedEventId} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-muted/50 rounded-lg p-6">
+        <h3 className="font-semibold mb-4">Selecione um evento para gerenciar lembretes</h3>
+        {events?.length === 0 ? (
+          <p className="text-muted-foreground">Nenhum evento encontrado</p>
+        ) : (
+          <div className="space-y-2">
+            {events?.map(event => (
+              <Button
+                key={event.id}
+                variant="outline"
+                className="w-full justify-between text-left h-auto py-3"
+                onClick={() => setSelectedEventId(event.id)}
+              >
+                <div>
+                  <p className="font-medium">{event.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(event.start_datetime).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <Bell className="h-5 w-5 text-muted-foreground" />
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-muted/50 rounded-lg p-6">
+        <h3 className="font-semibold mb-4">Selecione um evento com lista de espera</h3>
+        {eventsWithWaitlist?.length === 0 ? (
+          <p className="text-muted-foreground">Nenhum evento com lista de espera ativa</p>
+        ) : (
+          <div className="space-y-2">
+            {eventsWithWaitlist?.map(event => (
+              <Button
+                key={event.id}
+                variant="outline"
+                className="w-full justify-between text-left h-auto py-3"
+                onClick={() => setSelectedEventId(event.id)}
+              >
+                <div>
+                  <p className="font-medium">{event.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {event.max_capacity} vagas • {new Date(event.start_datetime).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <Users className="h-5 w-5 text-muted-foreground" />
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { WaitlistPanel } from "@/components/events/WaitlistPanel";
 
 function useEventsList() {
   return useQuery({

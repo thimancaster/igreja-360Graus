@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Html5Qrcode } from "html5-qrcode";
 import { LeaderOverrideDialog } from "./LeaderOverrideDialog";
 import { FaceVerificationStep } from "./FaceVerificationStep";
+import { ChildEvaluationDialog } from "./ChildEvaluationDialog";
 
 type PickupPerson = {
   id: string;
@@ -42,9 +43,10 @@ export function CheckOutPanel() {
   const [pinError, setPinError] = useState("");
   const [faceVerified, setFaceVerified] = useState<"pending" | "approved" | "rejected" | "skipped">("pending");
   const [scannedViaQR, setScannedViaQR] = useState(false);
-  const [behaviorScore, setBehaviorScore] = useState(5);
-  const [participationScore, setParticipationScore] = useState(5);
-  const [sessionNotes, setSessionNotes] = useState("");
+  
+  const [evaluationDialogOpen, setEvaluationDialogOpen] = useState(false);
+  const [lastCheckOutInfo, setLastCheckOutInfo] = useState<{id: string, name: string, checkInId: string} | null>(null);
+
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   const { isAdmin, isPastor, isTesoureiro, isLider } = useRole();
@@ -174,9 +176,6 @@ export function CheckOutPanel() {
     setPinError("");
     setFaceVerified("pending");
     setScannedViaQR(false);
-    setBehaviorScore(5);
-    setParticipationScore(5);
-    setSessionNotes("");
   };
 
   const handleConfirmCheckOut = async () => {
@@ -225,18 +224,23 @@ export function CheckOutPanel() {
 
       const baseMethod = person.type === "guardian" ? "Responsável" : 
                         person.type === "temporary" ? "Autorização Temporária" : "Autorizado";
-      const verificationSuffix = faceVerified === "approved" ? " (Face ✓)" : 
-                                  faceVerified === "skipped" ? "" : "";
+      const verificationSuffix = faceVerified === "approved" ? " (Face ✓)" : "";
 
       await checkOut.mutateAsync({
         checkInId: selectedCheckIn.id,
         pickupPersonName: person.name,
         pickupMethod: baseMethod + verificationSuffix,
-        behaviorScore,
-        participationScore,
-        sessionNotes,
       });
+
+      // Prepare for evaluation
+      setLastCheckOutInfo({
+        id: selectedCheckIn.child_id,
+        name: selectedCheckIn.children?.full_name || "",
+        checkInId: selectedCheckIn.id
+      });
+      
       resetDialog();
+      setEvaluationDialogOpen(true);
     } catch (err) {
       // Error handled in mutation
     }
@@ -521,54 +525,6 @@ export function CheckOutPanel() {
                 </div>
               )}
 
-              {/* AVALIAÇÃO DA SESSÃO */}
-              <div className="space-y-4 p-4 border rounded-2xl bg-kids-portal/5 border-kids-portal/10 shadow-inner">
-                <p className="text-xs font-black uppercase text-kids-portal/60 tracking-widest flex items-center gap-2">
-                  <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-                  Avaliação da Sessão
-                </p>
-                
-                <div className="flex justify-between items-center bg-white/40 p-2 rounded-xl">
-                  <span className="text-sm font-bold text-gray-700">Comportamento:</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <button 
-                        key={s} 
-                        onClick={() => setBehaviorScore(s)}
-                        className={`transition-all ${behaviorScore >= s ? 'text-amber-500' : 'text-gray-300'} hover:scale-110 active:scale-95`}
-                      >
-                        <Star className={`h-5 w-5 ${behaviorScore >= s ? 'fill-amber-500' : ''}`} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center bg-white/40 p-2 rounded-xl">
-                  <span className="text-sm font-bold text-gray-700">Participação:</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <button 
-                        key={s} 
-                        onClick={() => setParticipationScore(s)}
-                        className={`transition-all ${participationScore >= s ? 'text-amber-500' : 'text-gray-300'} hover:scale-110 active:scale-95`}
-                      >
-                        <Star className={`h-5 w-5 ${participationScore >= s ? 'fill-amber-500' : ''}`} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase text-gray-500 ml-1">Observação para os Pais:</label>
-                  <Input 
-                    value={sessionNotes}
-                    onChange={(e) => setSessionNotes(e.target.value)}
-                    placeholder="Ex: Foi muito participativo hoje!"
-                    className="h-10 rounded-xl bg-white/80 border-none shadow-sm focus-visible:ring-kids-portal"
-                  />
-                </div>
-              </div>
-
               <div className="flex gap-3">
                 <Button
                   variant="outline"
@@ -616,6 +572,17 @@ export function CheckOutPanel() {
           checkInId={selectedCheckIn.id}
           childName={selectedCheckIn.children?.full_name || ""}
           onSuccess={resetDialog}
+        />
+      )}
+
+      {/* Evaluation Dialog */}
+      {lastCheckOutInfo && (
+        <ChildEvaluationDialog
+          open={evaluationDialogOpen}
+          onOpenChange={setEvaluationDialogOpen}
+          childId={lastCheckOutInfo.id}
+          childName={lastCheckOutInfo.name}
+          checkInId={lastCheckOutInfo.checkInId}
         />
       )}
     </>

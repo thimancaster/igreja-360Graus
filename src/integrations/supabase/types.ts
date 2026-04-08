@@ -658,6 +658,77 @@ export type Database = {
         }
         Relationships: []
       }
+      child_evaluations: {
+        Row: {
+          behavior_score: number | null
+          check_in_id: string | null
+          child_id: string
+          church_id: string
+          created_at: string
+          id: string
+          interaction_score: number | null
+          notes: string | null
+          participation_score: number | null
+          points_earned: number | null
+          teacher_id: string | null
+        }
+        Insert: {
+          behavior_score?: number | null
+          check_in_id?: string | null
+          child_id: string
+          church_id: string
+          created_at?: string
+          id?: string
+          interaction_score?: number | null
+          notes?: string | null
+          participation_score?: number | null
+          points_earned?: number | null
+          teacher_id?: string | null
+        }
+        Update: {
+          behavior_score?: number | null
+          check_in_id?: string | null
+          child_id?: string
+          church_id?: string
+          created_at?: string
+          id?: string
+          interaction_score?: number | null
+          notes?: string | null
+          participation_score?: number | null
+          points_earned?: number | null
+          teacher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_evaluations_check_in_id_fkey"
+            columns: ["check_in_id"]
+            isOneToOne: false
+            referencedRelation: "child_check_ins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "child_evaluations_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "child_evaluations_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "child_evaluations_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classroom_reports: {
         Row: {
           church_id: string

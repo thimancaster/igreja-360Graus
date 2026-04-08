@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { 
   Users, 
   UserCheck, 
@@ -10,12 +12,14 @@ import {
   DollarSign,
   Clock,
   Download,
-  Search
+  Search,
+  QrCode,
+  Hand
 } from "lucide-react";
 import { QRScanner } from "./QRScanner";
 import { useEventTickets } from "@/hooks/useEventTickets";
 import type { EventRegistrationExtended, EventCheckinStats } from "@/types/event-checkin";
-import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface CheckinPanelProps {
   eventId: string;
@@ -23,10 +27,23 @@ interface CheckinPanelProps {
 
 export function CheckinPanel({ eventId }: CheckinPanelProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const { ticketsByEvent, checkinStats } = useEventTickets();
+  const [manualSearchOpen, setManualSearchOpen] = useState(false);
+  const [manualSearch, setManualSearch] = useState("");
+  const [manualMode, setManualMode] = useState<"checkin" | "checkout">("checkin");
+  const [selectedTicket, setSelectedTicket] = useState<EventRegistrationExtended | null>(null);
+  const { ticketsByEvent, checkinStats, manualCheckin, manualCheckout } = useEventTickets();
   
   const { data: tickets = [], isLoading: isLoadingTickets } = ticketsByEvent(eventId);
   const { data: stats, isLoading: isLoadingStats } = checkinStats(eventId);
+  
+  const filteredTickets = tickets.filter(ticket => {
+    const search = searchTerm.toLowerCase();
+    return (
+      ticket.attendee_name?.toLowerCase().includes(search) ||
+      ticket.ticket_number?.toLowerCase().includes(search) ||
+      ticket.attendee_email?.toLowerCase().includes(search)
+    );
+  });
   
   const filteredTickets = tickets.filter(ticket => {
     const search = searchTerm.toLowerCase();
@@ -57,6 +74,42 @@ export function CheckinPanel({ eventId }: CheckinPanelProps) {
     a.href = url;
     a.download = `checkin-${eventId}.csv`;
     a.click();
+  };
+
+  const handleManualSearch = () => {
+    const search = manualSearch.toLowerCase();
+    const found = tickets.find(t => 
+      t.ticket_number?.toLowerCase().includes(search) ||
+      t.attendee_name?.toLowerCase().includes(search) ||
+      t.attendee_email?.toLowerCase().includes(search)
+    );
+    setSelectedTicket(found || null);
+  };
+
+  const handleManualCheckin = async () => {
+    if (!selectedTicket) return;
+    try {
+      await checkIn.mutateAsync(selectedTicket.id);
+      toast.success("Check-in realizado com sucesso!");
+      setManualSearchOpen(false);
+      setManualSearch("");
+      setSelectedTicket(null);
+    } catch (error) {
+      toast.error("Erro ao realizar check-in");
+    }
+  };
+
+  const handleManualCheckout = async () => {
+    if (!selectedTicket) return;
+    try {
+      await checkOut.mutateAsync(selectedTicket.id);
+      toast.success("Check-out realizado com sucesso!");
+      setManualSearchOpen(false);
+      setManualSearch("");
+      setSelectedTicket(null);
+    } catch (error) {
+      toast.error("Erro ao realizar check-out");
+    }
   };
 
   const getStatusBadge = (ticket: EventRegistrationExtended) => {
@@ -120,6 +173,12 @@ export function CheckinPanel({ eventId }: CheckinPanelProps) {
         </TabsList>
 
         <TabsContent value="scanner" className="space-y-4">
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={() => setManualSearchOpen(true)}>
+              <Search className="w-4 h-4 mr-2" />
+              Buscar Participante
+            </Button>
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <QRScanner eventId={eventId} mode="checkin" />
             <QRScanner eventId={eventId} mode="checkout" />
@@ -225,6 +284,58 @@ export function CheckinPanel({ eventId }: CheckinPanelProps) {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={manualSearchOpen} onOpenChange={setManualSearchOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Busca Manual de Participante</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <Input 
+                placeholder="Buscar por nome, email ou número do ingresso..." 
+                value={manualSearch}
+                onChange={(e) => setManualSearch(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleManualSearch()}
+              />
+              <Button onClick={handleManualSearch}>Buscar</Button>
+            </div>
+            
+            {selectedTicket && (
+              <div className="border rounded-lg p-4 space-y-2">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium">{selectedTicket.attendee_name || "Sem nome"}</p>
+                    <p className="text-sm text-muted-foreground">Ingresso: {selectedTicket.ticket_number}</p>
+                  </div>
+                  {getStatusBadge(selectedTicket)}
+                </div>
+                <div className="flex gap-2 pt-2">
+                  {!selectedTicket.check_in_at && (
+                    <Button onClick={handleManualCheckin} disabled={manualCheckin.isPending}>
+                      <UserCheck className="w-4 h-4 mr-2" />
+                      Check-in
+                    </Button>
+                  )}
+                  {selectedTicket.check_in_at && !selectedTicket.check_out_at && (
+                    <Button onClick={handleManualCheckout} disabled={manualCheckout.isPending}>
+                      <Hand className="w-4 h-4 mr-2" />
+                      Check-out
+                    </Button>
+                  )}
+                  {selectedTicket.check_in_at && selectedTicket.check_out_at && (
+                    <p className="text-sm text-muted-foreground">Participante já finalizou</p>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {!selectedTicket && manualSearch && (
+              <p className="text-center text-muted-foreground py-4">Nenhum participante encontrado</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

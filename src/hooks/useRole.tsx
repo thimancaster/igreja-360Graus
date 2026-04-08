@@ -98,6 +98,7 @@ export function useRole() {
   const canViewAllTransactions = isAdmin || isTesoureiro || isPastor;
   const canViewMinistryTransactions = isLider;
   const canOnlyViewOwnTransactions = isUser && !isAdmin && !isTesoureiro && !isPastor && !isLider;
+  const canAuthorizeEventRevenue = isAdmin || isTesoureiro;
   
   const isPrivileged = !!user?.id;
 
@@ -129,6 +130,7 @@ export function useRole() {
     canViewAllTransactions,
     canViewMinistryTransactions,
     canOnlyViewOwnTransactions,
+    canAuthorizeEventRevenue,
     canAccessMinistry,
   };
 }
