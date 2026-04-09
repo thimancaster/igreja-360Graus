@@ -145,7 +145,7 @@ export default function PortalChildren() {
 
         <div className={`nav-item ${activeTab === 'events' ? 'active' : ''}`} onClick={() => goToTab("events")}>
           <motion.img 
-            src="/kids/icon_eventos.png" 
+            src="/kids/icon_calendar.png" 
             alt="Eventos" 
             className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
             whileHover={{ scale: 1.2, y: -5 }}
@@ -163,6 +163,17 @@ export default function PortalChildren() {
             animate={activeTab === 'classes' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(139,92,246,0.4))" } : { scale: 1, y: 0 }}
           />
           <span className={`${activeTab === 'classes' ? 'text-purple-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Turmas</span>
+        </div>
+
+        <div className={`nav-item ${activeTab === 'schedules' ? 'active' : ''}`} onClick={() => goToTab("schedules")}>
+          <motion.img 
+            src="/kids/icon_volunteer.png" 
+            alt="Escalas" 
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            whileHover={{ scale: 1.2, y: -5 }}
+            animate={activeTab === 'schedules' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(99,102,241,0.4))" } : { scale: 1, y: 0 }}
+          />
+          <span className={`${activeTab === 'schedules' ? 'text-indigo-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Escalas</span>
         </div>
 
         <div className={`nav-item ${activeTab === 'checkin' ? 'active' : ''}`} onClick={() => goToTab("checkin")}>

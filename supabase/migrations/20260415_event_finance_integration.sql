@@ -38,11 +38,17 @@ DECLARE
   v_transaction_id uuid;
   v_category_id uuid;
 BEGIN
-  -- Buscar dados da inscrição e do evento
-  SELECT r.*, e.title as event_title INTO v_registration, v_event
-  FROM event_registrations r
-  JOIN ministry_events e ON e.id = r.event_id
-  WHERE r.id = p_registration_id;
+  -- Buscar dados da inscrição
+  SELECT * INTO v_registration
+  FROM event_registrations
+  WHERE id = p_registration_id;
+
+  -- Buscar dados do evento
+  IF v_registration.event_id IS NOT NULL THEN
+    SELECT * INTO v_event
+    FROM ministry_events
+    WHERE id = v_registration.event_id;
+  END IF;
 
   IF v_registration IS NULL THEN
     RAISE EXCEPTION 'Inscricao nao encontrada';
@@ -80,7 +86,7 @@ BEGIN
     member_id, created_by
   ) VALUES (
     v_registration.church_id,
-    'Receita de evento: ' || v_event.event_title,
+    'Receita de evento: ' || COALESCE(v_event.title, 'Evento'),
     'Receita',
     v_registration.payment_amount,
     'Pago',

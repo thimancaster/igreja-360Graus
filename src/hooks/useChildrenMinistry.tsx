@@ -76,9 +76,6 @@ export type ChildCheckIn = {
   pickup_person_name: string | null;
   pickup_method: string;
   notes: string | null;
-  behavior_score?: number | null;
-  participation_score?: number | null;
-  session_notes?: string | null;
   created_at: string;
 };
 

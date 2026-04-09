@@ -50,12 +50,12 @@ export function AppHeader() {
   };
 
   return (
-    <header className="min-h-[3.5rem] md:h-14 sticky top-0 z-40 overflow-visible glass-header pt-[env(safe-area-inset-top)] safe-area-pt">
-      <div className="flex h-14 md:h-full items-center justify-between px-4 md:px-6">
+    <header className="h-14 sticky top-0 z-40 overflow-visible glass-header">
+      <div className="flex h-full items-center justify-between px-4 md:px-6">
 
         {/* ── Left: sidebar trigger + breadcrumb ── */}
-        <div className="flex items-center gap-2 md:gap-3">
-          <SidebarTrigger className="h-11 w-11 md:h-7 md:w-7 text-foreground/60 hover:text-foreground hover:bg-accent/10 rounded-xl md:rounded-md p-1.5 transition-colors duration-150" />
+        <div className="flex items-center gap-3">
+          <SidebarTrigger className="text-foreground/60 hover:text-foreground hover:bg-accent/10 rounded-md p-1.5 transition-colors duration-150" />
 
           {/* Breadcrumb — desktop */}
           <div className="hidden md:flex items-center gap-1.5 text-sm">
@@ -65,11 +65,10 @@ export function AppHeader() {
           </div>
 
           {/* Mobile: only page name */}
-          <span className="md:hidden text-base font-bold text-foreground truncate max-w-[150px]">
+          <span className="md:hidden text-sm font-semibold text-foreground">
             {currentLabel}
           </span>
         </div>
-
 
         {/* ── Right: notifications + theme toggle + user ── */}
         <div className="flex items-center gap-1.5 overflow-visible">

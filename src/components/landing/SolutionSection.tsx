@@ -1,40 +1,40 @@
 import { motion } from "framer-motion";
-import { Upload, BarChart3, FileCheck, Clock } from "lucide-react";
+import { Users, Calendar, Wallet, Settings, BarChart3, CheckCircle, Clock } from "lucide-react";
 import { TiltCard } from "@/components/ui/motion-primitives";
 import { Badge } from "@/components/ui/badge";
 
 const solutions = [
   {
-    icon: Upload,
-    badge: "Automação",
-    title: "Importe Automaticamente",
-    description: "Conecte seu Google Sheets ou importe planilhas Excel. O sistema reconhece e categoriza automaticamente suas transações.",
-    image: "/mockups/automate-import.png",
-    color: "from-blue-500 to-cyan-500",
+    icon: Users,
+    badge: "Membros",
+    title: "Gestão Completa de Membros",
+    description: "Cadastre todos os membros da sua igreja com informações detalhadas. Controle de participação, histórico de presença e permissões personalizadas para líderes e tesoureiros.",
+    image: "/mockups/members-management.png",
+    color: "from-orange-500 to-amber-500",
   },
   {
-    icon: BarChart3,
-    badge: "Visualização",
-    title: "Visualize com Clareza",
-    description: "Dashboards interativos com gráficos de receitas, despesas, fluxo de caixa e comparativos mensais em tempo real.",
-    image: "/mockups/visualize-charts.png",
-    color: "from-purple-500 to-pink-500",
+    icon: Wallet,
+    badge: "Finanças",
+    title: "Controle Financeiro Inteligente",
+    description: "Dízimos, ofertas e contribuições organizados em um só lugar. Importe planilhas do Google Sheets ou Excel e tenha dashboards em tempo real com visão clara das finanças.",
+    image: "/mockups/financial-dashboard.png",
+    color: "from-emerald-500 to-green-500",
   },
   {
-    icon: FileCheck,
-    badge: "Decisão",
-    title: "Tome Decisões Informadas",
-    description: "Relatórios personalizados exportáveis em PDF e Excel. Tenha todos os dados para apresentar ao conselho e à congregação.",
-    image: "/mockups/decision-report.png",
-    color: "from-green-500 to-emerald-500",
+    icon: Calendar,
+    badge: "Eventos",
+    title: "Eventos com Check-in QR",
+    description: "Crie eventos, venda ingressos online e faça controle de presença via QR Code. Perfeito para congressos, retreats, cursos e encontros.",
+    image: "/mockups/events-checkin.png",
+    color: "from-violet-500 to-purple-500",
   },
   {
-    icon: Clock,
-    badge: "Eficiência",
-    title: "Ganhe Tempo Precioso",
-    description: "Reduza horas de trabalho manual para minutos. Foque no que realmente importa: o crescimento espiritual da sua comunidade.",
-    image: "/mockups/time-peace.png",
-    color: "from-orange-500 to-yellow-500",
+    icon: Settings,
+    badge: "Ministry",
+    title: "Ministério Infantil & Escalas",
+    description: "Gestão segura de crianças com autorização dos pais. Crie escalas de voluntários e envie notificações automaticamente para toda a equipe.",
+    image: "/mockups/ministry-schedule.png",
+    color: "from-cyan-500 to-teal-500",
   },
 ];
 
@@ -55,7 +55,7 @@ export const SolutionSection = () => {
             <span className="gradient-text">Igreja360</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Uma plataforma completa que transforma a complexidade financeira em simplicidade e clareza.
+            Uma plataforma completa que unifica gestão de membros, finanças, eventos e ministérios em um só lugar.
           </p>
         </motion.div>
 

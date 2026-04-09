@@ -6,24 +6,51 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const testimonials = [
   {
     name: "Pastor João Silva",
-    role: "Igreja Batista Central",
+    role: "Igreja Batista Central - São Paulo",
     avatar: "",
-    content: "Antes gastávamos horas consolidando planilhas. Agora em minutos temos tudo organizado. O Igreja360 transformou nossa gestão financeira.",
+    content: "O Igreja360 transformou completamente nossa gestão. Antes gastávamos horas com planilhas, agora tudo está automatizado. O check-in de eventos via QRCode é incredible!",
     rating: 5,
+    church: "450 membros",
   },
   {
     name: "Maria Santos",
     role: "Tesoureira - Comunidade Cristã",
     avatar: "",
-    content: "A integração com Google Sheets é fantástica! Não precisei mudar minha forma de trabalhar, apenas conectei e pronto. Relatórios automáticos!",
+    content: "A integração com Google Sheets mudou minha vida. Não precisei mudar minha forma de trabalhar, apenas conectei e pronto. Relatórios automáticos toda semana!",
     rating: 5,
+    church: "120 membros",
   },
   {
     name: "Pr. Carlos Oliveira",
-    role: "Igreja Metodista Renovada",
+    role: "Pastor Executivo - Igreja Metodista Renovada",
     avatar: "",
-    content: "Finalmente consigo apresentar relatórios claros para o conselho. A visualização por ministérios ajuda muito nas decisões estratégicas.",
+    content: "Finalmente consigo apresentar relatórios claros para o conselho. A visualização por ministérios e o controle de dízimos me ajuda nas decisões estratégicas.",
     rating: 5,
+    church: "280 membros",
+  },
+  {
+    name: "Ana Paula",
+    role: "Coordenadora - Ministério Infantil",
+    avatar: "",
+    content: "O módulo de ministério infantil é fantastic. Pais amam o check-in seguro das crianças e recebo autorizações digitais. Muito mais prático!",
+    rating: 5,
+    church: "85 crianças",
+  },
+  {
+    name: "Roberto Alves",
+    role: "Líder de Louvor",
+    avatar: "",
+    content: "As escalas de voluntários facilitaram demais nossa vida. Todo mundo recebe a notificação no dia certo e nunca mais esquecemos de alguém.",
+    rating: 5,
+    church: "35 voluntários",
+  },
+  {
+    name: "Pr. Paulo Mendes",
+    role: "Pastor Principal",
+    avatar: "",
+    content: "Começamos com o plano gratuito e em 3 meses migramos para o Pro. O suporte é excelente e a plataforma só melhora. Recomendo para todas as igrejas.",
+    rating: 5,
+    church: "520 membros",
   },
 ];
 
@@ -46,16 +73,16 @@ export const TestimonialsSection = () => {
             <span className="gradient-text">nossos usuários</span>
           </h2>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-2">
-            Igrejas de todo o Brasil já estão transformando sua gestão financeira.
+            Igrejas de todo o Brasil estão transformando sua gestão com o Igreja360.
           </p>
         </motion.div>
 
-        <StaggerContainer className="grid md:grid-cols-3 gap-4 md:gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
           {testimonials.map((testimonial, index) => (
             <StaggerItem key={testimonial.name}>
               <MotionCard
                 hoverLift
-                className="glass-card p-4 md:p-6 h-full border border-border/50 relative overflow-hidden"
+                className="glass-card p-5 md:p-6 h-full border border-border/50 relative overflow-hidden"
               >
                 {/* Quote Icon */}
                 <div className="absolute top-3 right-3 md:top-4 md:right-4 opacity-10">
@@ -70,27 +97,27 @@ export const TestimonialsSection = () => {
                 </div>
 
                 {/* Content */}
-                <p className="text-xs md:text-sm text-muted-foreground leading-relaxed mb-4 md:mb-6 relative z-10">
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4 md:mb-5 relative z-10">
                   "{testimonial.content}"
                 </p>
 
                 {/* Author */}
-                <div className="flex items-center gap-2.5 md:gap-3">
-                  <Avatar className="w-10 h-10 md:w-12 md:h-12 ring-2 ring-primary/20">
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-11 h-11 md:w-12 md:h-12 ring-2 ring-primary/20">
                     <AvatarImage src={testimonial.avatar} />
                     <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground font-semibold text-xs md:text-sm">
                       {testimonial.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-semibold text-xs md:text-sm">{testimonial.name}</p>
-                    <p className="text-[10px] md:text-xs text-muted-foreground">{testimonial.role}</p>
+                    <p className="font-semibold text-sm">{testimonial.name}</p>
+                    <p className="text-xs text-muted-foreground">{testimonial.church}</p>
                   </div>
                 </div>
               </MotionCard>
             </StaggerItem>
           ))}
-        </StaggerContainer>
+        </div>
       </div>
     </section>
   );

@@ -1,28 +1,28 @@
 import { motion } from "framer-motion";
-import { Upload, Settings, BarChart3 } from "lucide-react";
+import { Rocket, CheckCircle, BarChart3 } from "lucide-react";
 import { MotionCard } from "@/components/ui/motion-primitives";
 
 const steps = [
   {
     number: "01",
-    icon: Upload,
-    title: "Conecte ou Importe",
-    description: "Conecte seu Google Sheets ou importe suas planilhas Excel/CSV existentes. O sistema aceita diversos formatos.",
-    color: "from-blue-500 to-cyan-500",
+    icon: Rocket,
+    title: "Comece Gratuitamente",
+    description: "Cadastre sua igreja em segundos. Comece com o plano gratuito e use todas as funcionalidades básicas.",
+    color: "from-primary to-orange-500",
   },
   {
     number: "02",
-    icon: Settings,
-    title: "Mapeie uma vez",
-    description: "Configure o mapeamento de colunas uma única vez. O sistema aprende e aplica automaticamente nas próximas importações.",
-    color: "from-purple-500 to-pink-500",
+    icon: CheckCircle,
+    title: "Importe Seus Dados",
+    description: "Conecte suas planilhas Google Sheets ou importe Excel. O sistema mapeia automaticamente suas transações.",
+    color: "from-emerald-500 to-green-500",
   },
   {
     number: "03",
     icon: BarChart3,
-    title: "Visualize e Gerencie",
-    description: "Acesse dashboards interativos, gere relatórios e tome decisões baseadas em dados claros e organizados.",
-    color: "from-green-500 to-emerald-500",
+    title: "Gerencie Tudo em Um Lugar",
+    description: "Acesse dashboards interativos, gerencie membros, crie eventos e escalas. Tudo integrados e em tempo real.",
+    color: "from-violet-500 to-purple-500",
   },
 ];
 

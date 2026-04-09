@@ -106,9 +106,9 @@ export default function ParentDashboard() {
 
       {/* HEADER */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img src="/kids/kids_logo.png" alt="Logo Kids" className="w-10 h-10 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)]" />
-          <h1 className="font-extrabold text-lg text-[#1a1a1a] tracking-tight">PORTAL KIDS</h1>
+        <div className="flex items-center gap-3">
+          <img src="/kids/kids_logo.png" alt="Logo Kids" className="w-16 h-16 object-contain" />
+          <h1 className="font-black text-2xl text-[#1a1a1a] tracking-tight">PORTAL KIDS</h1>
         </div>
         <button className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center bg-white/20 backdrop-blur-md shadow-sm">
           <Search className="h-5 w-5 text-[#1a1a1a]" />
@@ -143,7 +143,7 @@ export default function ParentDashboard() {
         >
           <div className="relative w-full lg:w-40 shrink-0 h-4 lg:h-0">
             <motion.img 
-              src="/kids/kids_event_v2.png" 
+              src="/kids/kids_event.png" 
               alt="Event" 
               className="absolute -top-28 lg:-top-32 -left-4 lg:-left-6 w-48 lg:w-56 max-w-none pop-out-character z-20" 
               initial={{ y: 20, opacity: 0 }}

@@ -143,6 +143,7 @@ const App: React.FC = () => {
                   <Route path="/portal/contribuicoes" element={<ProtectedRoute><PortalLayout><PortalContributions /></PortalLayout></ProtectedRoute>} />
                   <Route path="/portal/culto-ao-vivo" element={<ProtectedRoute><PortalLayout><PortalLiveService /></PortalLayout></ProtectedRoute>} />
                   <Route path="/portal/reserva" element={<ProtectedRoute><PortalLayout><PortalBooking /></PortalLayout></ProtectedRoute>} />
+                  <Route path="/portal/agendar" element={<ProtectedRoute><PortalLayout><PortalBooking /></PortalLayout></ProtectedRoute>} />
                   <Route path="/portal/meus-ingressos" element={<ProtectedRoute><PortalLayout><MyTickets /></PortalLayout></ProtectedRoute>} />
                   <Route path="/portal/evento/:eventId" element={<ProtectedRoute><PortalLayout><EventRegistration /></PortalLayout></ProtectedRoute>} />
 
