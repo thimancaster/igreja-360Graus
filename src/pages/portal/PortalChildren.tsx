@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Calendar, QrCode, Home as HomeIcon, BookOpen, User, LogOut } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import ParentDashboardContent from "@/pages/parent/ParentDashboard";
 import ParentAuthorizationsContent from "@/pages/parent/ParentAuthorizations";
@@ -136,78 +137,69 @@ export default function PortalChildren() {
           <motion.img 
             src="/kids/icon_home.png" 
             alt="Início" 
-            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            className="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-md mb-0.5"
             whileHover={{ scale: 1.2, y: -5 }}
-            animate={activeTab === 'overview' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(59,130,246,0.4))" } : { scale: 1, y: 0 }}
+            animate={activeTab === 'overview' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(59,130,246,0.3))" } : { scale: 1, y: 0 }}
           />
-          <span className={`${activeTab === 'overview' ? 'text-blue-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Início</span>
+          <span className={cn("transition-all", activeTab === 'overview' ? 'text-blue-600 font-extrabold scale-105' : 'text-gray-500 font-bold')}>Início</span>
         </div>
 
         <div className={`nav-item ${activeTab === 'events' ? 'active' : ''}`} onClick={() => goToTab("events")}>
           <motion.img 
             src="/kids/icon_eventos.png" 
             alt="Eventos" 
-            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            className="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-md mb-0.5"
             whileHover={{ scale: 1.2, y: -5 }}
-            animate={activeTab === 'events' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(16,185,129,0.4))" } : { scale: 1, y: 0 }}
+            animate={activeTab === 'events' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(16,185,129,0.3))" } : { scale: 1, y: 0 }}
           />
-          <span className={`${activeTab === 'events' ? 'text-emerald-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Eventos</span>
+          <span className={cn("transition-all", activeTab === 'events' ? 'text-emerald-600 font-extrabold scale-105' : 'text-gray-500 font-bold')}>Eventos</span>
         </div>
 
         <div className={`nav-item ${activeTab === 'classes' ? 'active' : ''}`} onClick={() => goToTab("classes")}>
           <motion.img 
             src="/kids/icon_bible.png" 
             alt="Turmas" 
-            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            className="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-md mb-0.5"
             whileHover={{ scale: 1.2, y: -5 }}
-            animate={activeTab === 'classes' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(139,92,246,0.4))" } : { scale: 1, y: 0 }}
+            animate={activeTab === 'classes' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(139,92,246,0.3))" } : { scale: 1, y: 0 }}
           />
-          <span className={`${activeTab === 'classes' ? 'text-purple-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Turmas</span>
+          <span className={cn("transition-all", activeTab === 'classes' ? 'text-purple-600 font-extrabold scale-105' : 'text-gray-500 font-bold')}>Turmas</span>
         </div>
 
         <div className={`nav-item ${activeTab === 'checkin' ? 'active' : ''}`} onClick={() => goToTab("checkin")}>
           <motion.img 
             src="/kids/icon_ticket.png" 
             alt="Check-In" 
-            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            className="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-md mb-0.5"
             whileHover={{ scale: 1.2, y: -5 }}
-            animate={activeTab === 'checkin' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(245,158,11,0.4))" } : { scale: 1, y: 0 }}
+            animate={activeTab === 'checkin' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(245,158,11,0.3))" } : { scale: 1, y: 0 }}
           />
-          <span className={`${activeTab === 'checkin' ? 'text-orange-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Check-In</span>
+          <span className={cn("transition-all", activeTab === 'checkin' ? 'text-orange-600 font-extrabold scale-105' : 'text-gray-500 font-bold')}>Check-In</span>
         </div>
 
         <div className={`nav-item ${activeTab === 'rewards' ? 'active' : ''}`} onClick={() => goToTab("rewards")}>
           <motion.img 
             src="/kids/icon_trophy.png" 
             alt="Recompensa" 
-            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            className="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-md mb-0.5"
             whileHover={{ scale: 1.2, y: -5 }}
-            animate={activeTab === 'rewards' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(234,179,8,0.5))" } : { scale: 1, y: 0 }}
+            animate={activeTab === 'rewards' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(234,179,8,0.4))" } : { scale: 1, y: 0 }}
           />
-          <span className={`${activeTab === 'rewards' ? 'text-yellow-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Recompensa</span>
+          <span className={cn("transition-all", activeTab === 'rewards' ? 'text-yellow-600 font-extrabold scale-105' : 'text-gray-500 font-bold')}>Prêmios</span>
         </div>
 
         <div className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => goToTab("profile")}>
           <motion.img 
             src="/kids/kids_avatar.png" 
             alt="Perfil" 
-            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            className="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-md mb-0.5"
             whileHover={{ scale: 1.2, y: -5 }}
-            animate={activeTab === 'profile' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(249,115,22,0.4))" } : { scale: 1, y: 0 }}
+            animate={activeTab === 'profile' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(249,115,22,0.3))" } : { scale: 1, y: 0 }}
           />
-          <span className={`${activeTab === 'profile' ? 'text-orange-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Perfil</span>
-        </div>
-
-        <div className="nav-item group" onClick={() => navigate("/portal")}>
-          <motion.img 
-            src="/kids/icon_sair.png" 
-            alt="Sair" 
-            className="w-10 h-10 object-contain drop-shadow-md mb-0.5 group-hover:opacity-80"
-            whileHover={{ scale: 1.2, y: -5 }}
-          />
-          <span className="text-gray-400 group-hover:text-red-400 font-bold text-[10px] transition-all">Sair</span>
+          <span className={cn("transition-all", activeTab === 'profile' ? 'text-orange-600 font-extrabold scale-105' : 'text-gray-500 font-bold')}>Perfil</span>
         </div>
       </div>
+
     </div>
   );
 }

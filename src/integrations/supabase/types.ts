@@ -444,6 +444,9 @@ export type Database = {
           pickup_method?: string
           pickup_person_name?: string | null
           qr_code?: string
+          behavior_score?: number | null
+          participation_score?: number | null
+          session_notes?: string | null
         }
         Relationships: [
           {

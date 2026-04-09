@@ -100,6 +100,7 @@ export interface CheckinResult {
     ticket_number: string;
     attendee_name: string | null;
     payment_status: string;
+    photo_url?: string | null;
     check_in_at?: string;
   };
   registration_id?: string;
