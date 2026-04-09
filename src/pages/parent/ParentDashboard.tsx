@@ -181,10 +181,7 @@ export default function ParentDashboard() {
           </div>
           
           <button 
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              if (children?.[0]) setViewingEvolutionChild(children[0]); 
-            }}
+            onClick={(e) => { e.stopPropagation(); children?.[0] && setViewingEvolutionChild(children[0]); }}
             className="hidden lg:flex flex-col items-center justify-center p-5 bg-white/30 rounded-3xl border border-white/40 backdrop-blur-md shadow-sm shrink-0 relative z-10 hover:bg-white/50 transition-all hover:scale-105 active:scale-95 group"
           >
              <div className="relative">
@@ -337,50 +334,49 @@ export default function ParentDashboard() {
 
       <div className="space-y-3 pt-8 pb-10">
         <h3 className="font-extrabold text-lg text-[#1a1a1a]">Área dos Pais</h3>
-        <div className="grid grid-cols-2 gap-3 lg:gap-8 mt-2">
+        <div className="grid grid-cols-2 gap-4 lg:gap-8">
           <div 
-            className="glass-card-kids p-4 lg:p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-10 md:mt-8"
+            className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("events")}
           >
-            <div className="relative h-6 md:h-8 w-full mb-1">
+            <div className="relative h-8 w-full mb-2">
               <img 
                 src="/kids/icon_calendar.png" 
                 alt="Calendar" 
-                className="absolute -top-16 md:-top-20 left-1/2 -translate-x-1/2 w-20 h-20 md:w-24 md:h-24 object-contain pop-out-character" 
+                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character" 
               />
             </div>
-            <h4 className="font-extrabold text-[#1a1a1a] text-base lg:text-xl leading-tight">Calendário</h4>
+            <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Calendário</h4>
           </div>
-
+  
            <div 
-            className="glass-card-kids p-4 lg:p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-10 md:mt-8"
+            className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("history")}
           >
-            <div className="relative h-6 md:h-8 w-full mb-1">
+            <div className="relative h-8 w-full mb-2">
               <img 
                 src="/kids/icon_paintbrush.png" 
                 alt="Paintbrush" 
-                className="absolute -top-16 md:-top-20 left-1/2 -translate-x-1/2 w-20 h-20 md:w-24 md:h-24 object-contain pop-out-character" 
+                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character" 
               />
             </div>
-            <h4 className="font-extrabold text-[#1a1a1a] text-base lg:text-xl leading-tight">Histórico</h4>
+            <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Histórico</h4>
           </div>
 
           <div 
-            className="glass-card-kids p-4 lg:p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-10 md:mt-8"
+            className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("schedules")}
           >
-            <div className="relative h-6 md:h-8 w-full mb-1">
+            <div className="relative h-8 w-full mb-2">
               <img 
                 src="/kids/icon_meus_filhos.png" 
                 alt="Schedules" 
-                className="absolute -top-16 md:-top-20 left-1/2 -translate-x-1/2 w-20 h-20 md:w-24 md:h-24 object-contain pop-out-character" 
+                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character" 
               />
             </div>
-            <h4 className="font-extrabold text-[#1a1a1a] text-base lg:text-xl leading-tight">Escalas</h4>
+            <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Escalas</h4>
           </div>
         </div>
-
       </div>
 
       <PortalChildDialog

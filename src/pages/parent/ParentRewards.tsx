@@ -124,7 +124,7 @@ export default function ParentRewards() {
                     />
                     <div>
                       <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Nível Atual</p>
-                      <h2 className="text-4xl font-black text-[#1a1a1a] leading-tight mb-1">{level.name.split(' ')[0]} <span className={`bg-gradient-to-r text-transparent bg-clip-text ${level.color}`}>{level.name.split(' ')[1] || ''}</span></h2>
+                      <h2 className="text-4xl font-black text-[#1a1a1a] leading-tight mb-1">{level.name.split(' ')[0]} <span className="bg-gradient-to-r text-transparent bg-clip-text {level.color}">{level.name.split(' ')[1] || ''}</span></h2>
                       <p className="text-sm font-bold text-gray-700">{level.desc}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <p className="text-xs font-black text-emerald-600 bg-emerald-100/50 inline-block px-3 py-1 rounded-full border border-emerald-200">
