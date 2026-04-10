@@ -1,35 +1,36 @@
 import { motion } from "framer-motion";
-import { FileSpreadsheet, Clock, AlertTriangle, Eye } from "lucide-react";
+import { FileSpreadsheet, Clock, Eye, Users, ArrowRight } from "lucide-react";
 import { MotionCard, StaggerContainer, StaggerItem } from "@/components/ui/motion-primitives";
+import { Button } from "@/components/ui/button";
 
 const problems = [
   {
     icon: FileSpreadsheet,
-    title: "Planilhas Confusas",
-    description: "Múltiplas planilhas desorganizadas, fórmulas quebradas e dados inconsistentes dificultam a gestão.",
+    title: "Planilhas Desorganizadas",
+    description: "Múltiplas planilhas sem integração, fórmulas quebradas e dados inconsistentes.",
     color: "text-destructive",
     bgColor: "bg-destructive/10",
   },
   {
     icon: Clock,
-    title: "Tempo Desperdiçado",
-    description: "Horas gastas consolidando dados manualmente que poderiam ser usadas no ministério.",
+    title: "Tempo Perdido",
+    description: "Horas gastas consolidando dados manualmente que poderiam ser investidas no ministério.",
     color: "text-warning",
     bgColor: "bg-warning/10",
   },
   {
-    icon: AlertTriangle,
-    title: "Erros Frequentes",
-    description: "Lançamentos duplicados, valores incorretos e categorização inconsistente geram retrabalho.",
-    color: "text-orange-500",
-    bgColor: "bg-orange-500/10",
-  },
-  {
     icon: Eye,
     title: "Falta de Visibilidade",
-    description: "Sem dashboards claros, é difícil tomar decisões estratégicas sobre as finanças.",
+    description: "Sem uma visão clara, é difícil tomar decisões estratégicas para a igreja.",
     color: "text-muted-foreground",
     bgColor: "bg-muted/50",
+  },
+  {
+    icon: Users,
+    title: "Gestão Fragmentada",
+    description: "Informações de membros, finanças e eventos em sistemas diferentes e desconectados.",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
   },
 ];
 
@@ -46,14 +47,12 @@ export const ProblemSection = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-10 md:mb-16"
         >
-          <span className="text-xs md:text-sm font-medium text-primary uppercase tracking-wider">O Problema</span>
+          <span className="text-xs md:text-sm font-medium text-primary uppercase tracking-wider">Por Que Escolher</span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-3 md:mt-4 mb-4 md:mb-6">
-            Você ainda gerencia as finanças{" "}
-            <span className="gradient-text">assim?</span>
+            Chega de.planilhas复杂as e gestão manual
           </h2>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-2">
-            Muitas igrejas enfrentam os mesmos desafios na gestão financeira. 
-            Reconhece algum desses problemas?
+            Deixe para trás os métodos antiquados. O Igreja360 resolve os principais desafios da gestão eclesiástica.
           </p>
         </motion.div>
 
@@ -75,6 +74,21 @@ export const ProblemSection = () => {
             </StaggerItem>
           ))}
         </StaggerContainer>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="text-center mt-10 md:mt-14"
+        >
+          <a href="#solucao">
+            <Button variant="outline" className="glass border-border/50">
+              Ver como resolvemos
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </a>
+        </motion.div>
       </div>
     </section>
   );

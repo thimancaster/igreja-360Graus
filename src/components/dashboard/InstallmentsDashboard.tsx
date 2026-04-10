@@ -77,7 +77,7 @@ export function InstallmentsDashboard() {
   const filteredInstallments = useMemo(() => {
     if (!stats) return [];
     
-    let allInstallments = stats.upcomingInstallments;
+    const allInstallments = stats.upcomingInstallments;
     
     // Add paid/overdue to the list for filtering
     const today = new Date();

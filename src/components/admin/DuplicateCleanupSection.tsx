@@ -295,42 +295,89 @@ export function DuplicateCleanupSection() {
     });
   };
 
-  // Delete mutation factory
-  const createDeleteMutation = (tableName: EntityType) => {
-    return useMutation({
-      mutationFn: async (ids: string[]) => {
-        if (!profile?.church_id) throw new Error("Igreja não encontrada");
-        if (ids.length === 0) throw new Error("Nenhum item selecionado");
+  const deleteTransactionsMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      if (!profile?.church_id) throw new Error("Igreja não encontrada");
+      if (ids.length === 0) throw new Error("Nenhum item selecionado");
 
-        const { error } = await supabase
-          .from(tableName)
-          .delete()
-          .in("id", ids);
+      const { error } = await supabase
+        .from("transactions")
+        .delete()
+        .in("id", ids);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        await logAuditAction("DELETE_DUPLICATES", tableName, ids.length, { deleted_ids: ids });
-        return ids.length;
-      },
-      onSuccess: (count) => {
-        queryClient.invalidateQueries({ queryKey: [tableName] });
-        queryClient.invalidateQueries({ queryKey: [`duplicate-${tableName}`] });
-        queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-        queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
-        setSelectedForDeletion(new Set());
-        
-        const labels: Record<EntityType, string> = {
-          transactions: "transação(ões)",
-          members: "membro(s)",
-          contributions: "contribuição(ões)",
-        };
-        toast.success(`${count} ${labels[tableName]} duplicada(s) excluída(s)!`);
-      },
-      onError: (error) => {
-        toast.error("Erro ao excluir duplicatas: " + error.message);
-      },
-    });
-  };
+      await logAuditAction("DELETE_DUPLICATES", "transactions", ids.length, { deleted_ids: ids });
+      return ids.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["duplicate-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
+      setSelectedForDeletion(new Set());
+      toast.success(`${count} transação(ões) duplicada(s) excluída(s)!`);
+    },
+    onError: (error) => {
+      toast.error("Erro ao excluir duplicatas: " + error.message);
+    },
+  });
+
+  const deleteMembersMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      if (!profile?.church_id) throw new Error("Igreja não encontrada");
+      if (ids.length === 0) throw new Error("Nenhum item selecionado");
+
+      const { error } = await supabase
+        .from("members")
+        .delete()
+        .in("id", ids);
+
+      if (error) throw error;
+
+      await logAuditAction("DELETE_DUPLICATES", "members", ids.length, { deleted_ids: ids });
+      return ids.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["duplicate-members"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
+      setSelectedForDeletion(new Set());
+      toast.success(`${count} membro(s) duplicado(s) excluído(s)!`);
+    },
+    onError: (error) => {
+      toast.error("Erro ao excluir duplicatas: " + error.message);
+    },
+  });
+
+  const deleteContributionsMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      if (!profile?.church_id) throw new Error("Igreja não encontrada");
+      if (ids.length === 0) throw new Error("Nenhum item selecionado");
+
+      const { error } = await supabase
+        .from("contributions")
+        .delete()
+        .in("id", ids);
+
+      if (error) throw error;
+
+      await logAuditAction("DELETE_DUPLICATES", "contributions", ids.length, { deleted_ids: ids });
+      return ids.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ["contributions"] });
+      queryClient.invalidateQueries({ queryKey: ["duplicate-contributions"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
+      setSelectedForDeletion(new Set());
+      toast.success(`${count} contribuição(ões) duplicada(s) excluída(s)!`);
+    },
+    onError: (error) => {
+      toast.error("Erro ao excluir duplicatas: " + error.message);
+    },
+  });
 
   // Merge members mutation
   const mergeMembersMutation = useMutation({
@@ -431,9 +478,6 @@ export function DuplicateCleanupSection() {
     },
   });
 
-  const deleteTransactionsMutation = createDeleteMutation("transactions");
-  const deleteMembersMutation = createDeleteMutation("members");
-  const deleteContributionsMutation = createDeleteMutation("contributions");
 
   // Get current data based on active tab
   const getCurrentData = () => {

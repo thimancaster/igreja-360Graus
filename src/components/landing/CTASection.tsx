@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Sparkles, Users, Shield, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const CTASection = () => {
@@ -8,11 +8,11 @@ export const CTASection = () => {
     <section className="py-24 relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20" />
-      <div className="absolute inset-0 mesh-gradient opacity-30" />
+      <div className="absolute inset-0 mesh-gradient opacity-40" />
       
       {/* Decorative Elements */}
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/30 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/30 rounded-full blur-3xl" />
+      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/30 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/30 rounded-full blur-3xl" />
       
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
@@ -38,14 +38,13 @@ export const CTASection = () => {
           </motion.div>
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Pronto para transformar a{" "}
-            <span className="gradient-text">gestão financeira</span>{" "}
-            da sua igreja?
+            Pronto para transformar a gestão da{" "}
+            <span className="gradient-text">sua igreja?</span>
           </h2>
 
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
             Comece gratuitamente hoje mesmo. Sem cartão de crédito, sem compromisso. 
-            Veja na prática como o Igreja360 pode ajudar sua comunidade.
+            Em 5 minutos sua igreja estará completamente organizada.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -63,9 +62,16 @@ export const CTASection = () => {
             </Link>
           </div>
 
-          <p className="text-sm text-muted-foreground mt-6">
-            ✨ Configuração em menos de 5 minutos
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 mt-8">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Shield className="w-4 h-4 text-success" />
+              <span>Dados protegidos</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Clock className="w-4 h-4 text-primary" />
+              <span>Configuração em 5 min</span>
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>

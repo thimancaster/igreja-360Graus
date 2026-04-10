@@ -1,7 +1,25 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { Users, Library, Activity, GraduationCap } from "lucide-react";
-import { useParentChildren } from "@/hooks/useParentData";
+import { Users, Library, Activity, GraduationCap, ShieldCheck } from "lucide-react";
+import { useParentChildren, useClassroomStaff } from "@/hooks/useParentData";
+
+function ClassroomStaffDisplay({ classroom }: { classroom: string }) {
+  const { data: staff, isLoading } = useClassroomStaff(classroom);
+
+  if (isLoading) return <div className="text-[10px] text-gray-400">Consultando equipe...</div>;
+  if (!staff || staff.length === 0) return <div className="text-[10px] text-gray-500 font-medium italic">Aguardando equipe aparecer ⛪</div>;
+
+  return (
+    <div className="mt-2 space-y-1">
+      {staff.map((s: any) => (
+        <div key={s.id} className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 bg-emerald-50/50 px-2 py-1 rounded-lg border border-emerald-100/50">
+          <ShieldCheck className="w-3 h-3 text-emerald-500" />
+          <span className="truncate">{s.role === 'primary' ? 'Líder' : 'Tio(a)'}: {s.staff?.full_name}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function ParentClasses() {
   const { data: children, isLoading } = useParentChildren();
@@ -65,6 +83,11 @@ export default function ParentClasses() {
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shrink-0 shadow-inner border border-white/60 overflow-hidden">
                     <img src="/kids/kids_avatar.png" alt="Avatar" className="w-10 h-10 object-contain rounded-full" />
                   </div>
+                </div>
+                
+                <div className="mt-4 pt-3 border-t border-white/30">
+                  <p className="text-[10px] font-black text-[#1a1a1a]/40 uppercase tracking-widest mb-1 mx-1">Equipe Hoje</p>
+                  <ClassroomStaffDisplay classroom={child.classroom} />
                 </div>
               </div>
             ))

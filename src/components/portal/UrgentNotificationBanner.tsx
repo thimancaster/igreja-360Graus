@@ -93,7 +93,9 @@ export function UrgentNotificationBanner() {
       const startVibration = () => {
         try {
           navigator.vibrate([500, 300, 500, 300, 500]);
-        } catch {}
+        } catch (err) {
+          // ignore
+        }
       };
       startVibration();
       vibrationRef.current = setInterval(startVibration, 2500);
@@ -102,7 +104,7 @@ export function UrgentNotificationBanner() {
         clearInterval(vibrationRef.current);
         vibrationRef.current = null;
       }
-      try { navigator.vibrate?.(0); } catch {}
+      try { navigator.vibrate?.(0); } catch (err) { /* ignore */ }
     }
 
     return () => {
@@ -110,7 +112,7 @@ export function UrgentNotificationBanner() {
         clearInterval(vibrationRef.current);
         vibrationRef.current = null;
       }
-      try { navigator.vibrate?.(0); } catch {}
+      try { navigator.vibrate?.(0); } catch (err) { /* ignore */ }
     };
   }, [urgentNotifications.length]);
 
@@ -127,7 +129,7 @@ export function UrgentNotificationBanner() {
 
       setUrgentNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       queryClient.invalidateQueries({ queryKey: ["notifications", user?.id] });
-    } catch {
+    } catch (err) {
       // Silent fail, user can retry
     } finally {
       setAcknowledging(null);

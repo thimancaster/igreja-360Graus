@@ -16,6 +16,7 @@ import { ChildGuardianLinkSection } from "./ChildGuardianLinkSection";
 import { AuthorizedPickupsPanel } from "./AuthorizedPickupsPanel";
 import { PhotoUpload } from "./PhotoUpload";
 import { User, Users, Shield } from "lucide-react";
+import { calculateFormattedAge } from "@/utils/ageUtils";
 const childSchema = z.object({
   full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   birth_date: z.date({ required_error: "Data de nascimento é obrigatória" }),
@@ -162,6 +163,11 @@ export function ChildDialog({ open, onOpenChange, child }: ChildDialogProps) {
                   toYear={new Date().getFullYear()}
                 />
               </FormControl>
+              {field.value && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Idade: {calculateFormattedAge(field.value)}
+                </p>
+              )}
               <FormMessage />
             </FormItem>
           )}

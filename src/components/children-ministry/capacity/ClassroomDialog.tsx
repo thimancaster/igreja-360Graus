@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ClassroomSettings, useCreateClassroomSettings, useUpdateClassroomSettings } from "@/hooks/useCapacityManagement";
 import { useEffect } from "react";
+import { formatMonthsToAge } from "@/utils/ageUtils";
 
 const formSchema = z.object({
   classroom_name: z.string().min(1, "Nome da sala é obrigatório"),
@@ -158,10 +159,13 @@ export function ClassroomDialog({ open, onOpenChange, classroom }: ClassroomDial
                 name="min_age_months"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Idade Mínima (meses)</FormLabel>
+                    <FormLabel>Idade Mínima</FormLabel>
                     <FormControl>
                       <Input type="number" min={0} {...field} />
                     </FormControl>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Equivale a: {formatMonthsToAge(field.value)}
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -172,10 +176,13 @@ export function ClassroomDialog({ open, onOpenChange, classroom }: ClassroomDial
                 name="max_age_months"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Idade Máxima (meses)</FormLabel>
+                    <FormLabel>Idade Máxima</FormLabel>
                     <FormControl>
                       <Input type="number" min={0} {...field} />
                     </FormControl>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Equivale a: {formatMonthsToAge(field.value)}
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}

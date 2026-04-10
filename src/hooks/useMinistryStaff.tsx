@@ -303,20 +303,56 @@ export function useCheckScheduleConflicts() {
     }) => {
       if (!churchId) return [];
 
-      let query = supabase
+      // Check staff_schedules
+      let staffQuery = supabase
         .from("staff_schedules")
         .select("*, staff:ministry_staff(full_name)")
         .eq("staff_id", staffId)
         .or(`and(shift_start.lte.${shiftEnd},shift_end.gte.${shiftStart})`);
 
       if (excludeId) {
-        query = query.neq("id", excludeId);
+        staffQuery = staffQuery.neq("id", excludeId);
       }
 
-      const { data, error } = await query;
+      const { data: staffConflicts, error: staffError } = await staffQuery;
+      if (staffError) throw staffError;
 
-      if (error) throw error;
-      return data;
+      // Check volunteer_schedules
+      // First find profile_id for this staff
+      const { data: staffInfo } = await supabase
+        .from("ministry_staff")
+        .select("profile_id")
+        .eq("id", staffId)
+        .single();
+
+      let volunteerConflicts: any[] = [];
+      if (staffInfo?.profile_id) {
+        // Find volunteer_ids for this profile
+        const { data: volData } = await supabase
+          .from("department_volunteers")
+          .select("id")
+          .eq("profile_id", staffInfo.profile_id);
+        
+        if (volData && volData.length > 0) {
+          const volIds = volData.map(v => v.id);
+          const { data, error: volError } = await supabase
+            .from("volunteer_schedules")
+            .select("*, ministry:ministries(name)")
+            .in("volunteer_id", volIds)
+            .gte("schedule_date", shiftStart.split("T")[0])
+            .lte("schedule_date", shiftEnd.split("T")[0])
+            .or(`and(shift_start.lte.${shiftEnd.split("T")[1]},shift_end.gte.${shiftStart.split("T")[1]})`);
+          
+          if (volError) throw volError;
+          volunteerConflicts = (data || []).map(v => ({
+            ...v,
+            is_general_volunteer: true,
+            conflict_ministry: (v.ministry as any)?.name
+          }));
+        }
+      }
+
+      return [...(staffConflicts || []), ...volunteerConflicts];
     },
   });
 }

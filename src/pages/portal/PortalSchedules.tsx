@@ -6,10 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Check, Clock, BellRing, ClipboardList, AlertTriangle, MessageCircle, Loader2, Baby, Users } from "lucide-react";
 import { useMyUnifiedSchedules, UnifiedSchedule } from "@/hooks/useMyUnifiedSchedules";
-import { VolunteerAvailabilityManager } from "@/components/schedules/VolunteerAvailabilityManager";
-import { ScheduleSwapManager } from "@/components/schedules/ScheduleSwapManager";
-import { StaffLessonView } from "@/components/schedules/StaffLessonView";
-import { ScheduleChatDrawer } from "@/components/schedules/ScheduleChatDrawer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -29,6 +25,9 @@ export default function PortalSchedules() {
     isConfirming,
   } = useMyUnifiedSchedules(currentMonth);
 
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [confirmedSchedule, setConfirmedSchedule] = useState<UnifiedSchedule | null>(null);
+
   const isTodayOrFuture = (dateStr: string) => {
     const d = parseISO(dateStr);
     const today = new Date();
@@ -41,6 +40,8 @@ export default function PortalSchedules() {
 
   const handleConfirm = async (schedule: UnifiedSchedule) => {
     await confirmSchedule(schedule);
+    setConfirmedSchedule(schedule);
+    setShowSuccess(true);
   };
 
   const handleCancelConfirm = async (schedule: UnifiedSchedule) => {
@@ -321,7 +322,7 @@ function ScheduleCard({
     >
       <Card
         className={`relative overflow-hidden rounded-3xl border transition-all duration-300 cursor-pointer backdrop-blur-xl shadow-sm hover:shadow-lg
-          ${isSelected ? "bg-primary/10 border-primary/30 ring-2 ring-primary/20" : "bg-white/40 dark:bg-black/40 border-white/20 dark:border-white/10 hover:-translate-y-0.5"}
+          ${isSelected ? "bg-primary/10 border-primary/30 ring-2 ring-primary/20" : "bg-white/40 dark:bg-black/40 border-white/20 dark:border-white/10 hover:-translate-y-0.5" }
           ${isInfantil ? "border-l-4 border-l-purple-400" : ""}
         `}
         onClick={onSelect}

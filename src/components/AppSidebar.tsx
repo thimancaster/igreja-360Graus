@@ -22,7 +22,8 @@ const baseMenuItems = [
   { title: "Membros",         url: "/app/membros",               icon: UserCircle,      group: "Principal" },
   { title: "Contribuições",   url: "/app/contribuicoes",         icon: Heart,           group: "Principal" },
   { title: "Min. Infantil",   url: "/app/ministerio-infantil",   icon: Baby,            group: "Ministério" },
-  { title: "Eventos",         url: "/app/eventos",               icon: CalendarDays,    group: "Ministério" },
+  { title: "Eventos",        url: "/app/eventos",               icon: CalendarDays,    group: "Ministério" },
+  { title: "Autorizações",    url: "/app/eventos/autorizacoes",  icon: CalendarDays,    group: "Ministério" },
   { title: "Escalas",         url: "/app/escalas",               icon: Calendar,        group: "Ministério" },
   { title: "Importação",      url: "/app/importacao",            icon: Upload,          group: "Ferramentas" },
   { title: "Integrações",     url: "/app/integracoes",           icon: Sheet,           group: "Ferramentas" },
@@ -36,19 +37,20 @@ const adminMenuItem = {
 
 // Icon background accent per item (uses CSS classes from index.css)
 const iconAccentMap: Record<string, string> = {
+  "Meu Portal":    "icon-aurora",
   "Dashboard":     "icon-primary",
   "Transações":    "icon-cyan",
-  "Membros":       "icon-violet",
+  "Membros":       "icon-indigo",
   "Contribuições": "icon-success",
   "Min. Infantil": "icon-secondary",
-  "Eventos":       "icon-primary",
-  "Escalas":       "icon-primary",
+  "Eventos":       "icon-pink",
+  "Autorizações":  "icon-indigo",
+  "Escalas":       "icon-amber",
   "Importação":    "icon-violet",
   "Integrações":   "icon-cyan",
   "Relatórios":    "icon-violet",
-  "Configurações": "icon-muted",
-  "Meu Portal":    "icon-primary",
   "Administração": "icon-danger",
+  "Configurações": "icon-muted",
 };
 
 export function AppSidebar() {
@@ -133,8 +135,9 @@ export function AppSidebar() {
                       >
                         {/* Icon */}
                         <span className={cn(
-                          "flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition-all duration-200",
-                          isActive ? iconClass : iconClass || "text-sidebar-foreground/50"
+                          "flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition-all duration-200 group-hover/menu-item:scale-110",
+                          isActive ? iconClass : iconClass || "text-sidebar-foreground/50",
+                          isActive && "glow-primary shadow-lg"
                         )}>
                           <item.icon className="h-4 w-4" />
                         </span>

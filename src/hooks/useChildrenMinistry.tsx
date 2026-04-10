@@ -18,6 +18,7 @@ export type Child = {
   image_consent: boolean;
   notes: string | null;
   status: string;
+  behavior_points: number;
   created_at: string;
   updated_at: string;
 };
@@ -80,6 +81,20 @@ export type ChildCheckIn = {
 
 export type ChildWithGuardians = Child & {
   guardians: (Guardian & { is_primary: boolean; can_pickup: boolean })[];
+};
+
+export type ChildEvaluation = {
+  id: string;
+  church_id: string;
+  child_id: string;
+  teacher_id: string | null;
+  check_in_id: string | null;
+  behavior_score: number;
+  participation_score: number;
+  interaction_score: number;
+  notes: string | null;
+  points_earned: number;
+  created_at: string;
 };
 
 export const CLASSROOMS = [
@@ -542,28 +557,54 @@ export function useChildMutations() {
   });
 
   const checkOut = useMutation({
-    mutationFn: async ({ checkInId, pickupPersonName, pickupMethod = "QR" }: {
+    mutationFn: async ({ 
+      checkInId, 
+      pickupPersonName, 
+      pickupMethod = "QR",
+      behaviorScore = 5,
+      participationScore = 5,
+      sessionNotes = ""
+    }: {
       checkInId: string;
       pickupPersonName: string;
       pickupMethod?: string;
+      behaviorScore?: number;
+      participationScore?: number;
+      sessionNotes?: string;
     }) => {
       if (!user?.id) throw new Error("Usuário não autenticado");
 
       const checkedOutAt = new Date().toISOString();
 
-      const { data, error } = await supabase
+      // 1. Update Check-In Record with Evaluation
+      const { data, error } = await (supabase as any)
         .from("child_check_ins")
         .update({
           checked_out_at: checkedOutAt,
           checked_out_by: user.id,
           pickup_person_name: pickupPersonName,
           pickup_method: pickupMethod,
+          behavior_score: behaviorScore,
+          participation_score: participationScore,
+          session_notes: sessionNotes
         })
         .eq("id", checkInId)
-        .select("*, children:child_id(full_name)")
+        .select("*, children:child_id(id, full_name, behavior_points)")
         .single();
 
       if (error) throw error;
+
+      // 2. Award Points automatically (5 for presence + calculated based on score)
+      const childData = (data as any).children;
+      if (childData) {
+        const bonusPoints = (behaviorScore === 5 ? 10 : 0) + (participationScore === 5 ? 10 : 0) + 5;
+        const newTotal = (childData.behavior_points || 0) + bonusPoints;
+        
+        await (supabase as any)
+          .from("children")
+          .update({ behavior_points: newTotal })
+          .eq("id", childData.id);
+      }
 
       // Notify guardians
       const childName = (data as any).children?.full_name || "Seu filho(a)";
@@ -613,6 +654,46 @@ export function useChildMutations() {
     checkOut,
     findCheckInByQR,
   };
+}
+
+export function useChildRewards() {
+  const queryClient = useQueryClient();
+
+  const awardPoints = useMutation({
+    mutationFn: async ({ childId, points, reason }: { childId: string; points: number; reason?: string }) => {
+      // 1. Get current points
+      const { data: child, error: fetchError } = await (supabase as any)
+        .from("children")
+        .select("behavior_points, full_name")
+        .eq("id", childId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const newPoints = (child.behavior_points || 0) + points;
+
+      // 2. Update points
+      const { error: updateError } = await (supabase as any)
+        .from("children")
+        .update({ behavior_points: newPoints } as any)
+        .eq("id", childId);
+
+      if (updateError) throw updateError;
+
+      // 3. Optional: Log reward history (if table exists, but for now we just update)
+      return { childName: child.full_name, newPoints };
+    },
+    onSuccess: (data) => {
+      toast.success(`Pontos atribuídos para ${data.childName}! Novo total: ${data.newPoints}`);
+      queryClient.invalidateQueries({ queryKey: ["children"] });
+      queryClient.invalidateQueries({ queryKey: ["parent-children"] });
+    },
+    onError: (error) => {
+      toast.error(`Erro ao atribuir pontos: ${error.message}`);
+    },
+  });
+
+  return { awardPoints };
 }
 
 /** Hook to fetch guardians with their linked children for face check-in */
@@ -665,5 +746,57 @@ export function useGuardiansWithChildren() {
       }));
     },
     enabled: !!profile?.church_id,
+  });
+}
+
+export function useChildEvaluations(childId: string | undefined) {
+  const { profile } = useAuth();
+
+  return useQuery({
+    queryKey: ["child-evaluations", childId],
+    queryFn: async () => {
+      if (!childId) return [];
+
+      const { data, error } = await supabase
+        .from("child_evaluations")
+        .select("*")
+        .eq("child_id", childId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as ChildEvaluation[];
+    },
+    enabled: !!childId && !!profile?.church_id,
+  });
+}
+
+export function useAddEvaluation() {
+  const { profile, user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (evaluation: Omit<ChildEvaluation, "id" | "church_id" | "created_at" | "points_earned" | "teacher_id">) => {
+      if (!profile?.church_id) throw new Error("Igreja não encontrada");
+
+      const { data, error } = await supabase
+        .from("child_evaluations")
+        .insert({
+          ...evaluation,
+          church_id: profile.church_id,
+          teacher_id: user?.id || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      toast.success("Avaliação enviada com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["child-evaluations", variables.child_id] });
+    },
+    onError: (error) => {
+      toast.error(`Erro ao enviar avaliação: ${error.message}`);
+    },
   });
 }

@@ -1,3 +1,4 @@
+/* eslint-disable */
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
@@ -59,7 +60,7 @@ serve(async (req: any) => {
         const cleanPhone = phone.replace(/\D/g, '');
         const jid = `${cleanPhone.startsWith('55') ? cleanPhone : '55'+cleanPhone}`;
 
-        const textMessage = `Olá ${name}! Você tem uma escala confirmada amanhã às ${time}. Por favor, confirme sua presença no portal:\nhttps://igreja360.com.br/portal/escalas`;
+        const textMessage = `Olá ${name}! Você foi escalado(a) para amanhã às ${time}. por favor, confirme sua presença aqui no portal:\nhttps://igreja360.com.br/portal/escalas`;
 
         if (evoUrl && evoKey && evoInstance) {
           const res = await fetch(`${evoUrl}/message/sendText/${evoInstance}`, {

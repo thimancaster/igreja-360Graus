@@ -25,7 +25,7 @@ import {
 import { useAnnouncements } from "@/hooks/useAnnouncements";
 
 export default function ParentAnnouncements() {
-  const { parentAnnouncements, isLoadingParent, markAsRead, unreadCount } =
+  const { parentAnnouncements, isLoadingParent, markAsRead, unreadCount, markAllAsRead } =
     useAnnouncements();
   const [activeTab, setActiveTab] = useState<"unread" | "all">("unread");
 
@@ -113,9 +113,15 @@ export default function ParentAnnouncements() {
           </div>
         </div>
         {unreadCount > 0 && (
-          <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black border-0 shadow-sm px-3 py-1 text-xs">
-            {unreadCount} NÃO LIDO{unreadCount > 1 ? "S" : ""}
-          </Badge>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => markAllAsRead()}
+            className="rounded-2xl text-blue-600 font-black text-[10px] hover:bg-blue-50/50 flex items-center gap-1.5 border border-blue-100/50 shadow-sm"
+          >
+            <CheckCheck className="h-3.5 w-3.5" />
+            MARCAR TODOS COMO LIDOS
+          </Button>
         )}
       </div>
 

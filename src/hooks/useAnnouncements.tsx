@@ -19,6 +19,10 @@ export interface Announcement {
   created_at: string;
   updated_at: string;
   is_read?: boolean;
+  response_status?: "waiting" | "on_my_way" | "confirmed";
+  responded_at?: string | null;
+  confirmed_by_staff_at?: string | null;
+  last_alert_sent_at?: string;
 }
 
 export interface AnnouncementFormData {
@@ -165,15 +169,26 @@ export function useAnnouncements() {
     },
   });
 
-  // Publish announcement
+  // Publish announcement + trigger WhatsApp if urgent
   const publishMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from("announcements")
-        .update({ published_at: new Date().toISOString() })
+        .update({ 
+          published_at: new Date().toISOString(),
+          last_alert_sent_at: new Date().toISOString(),
+        })
         .eq("id", id);
 
       if (error) throw error;
+
+      // Find if this is an urgent call and fire WhatsApp (fire-and-forget)
+      const ann = announcements.find(a => a.id === id);
+      if (ann?.priority === "urgent") {
+        supabase.functions.invoke("send-whatsapp-urgent", {
+          body: { announcement_id: id, is_resend: !!ann.last_alert_sent_at },
+        }).catch(err => console.warn("WhatsApp dispatch failed (non-blocking):", err));
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["announcements"] });
@@ -223,6 +238,72 @@ export function useAnnouncements() {
       queryClient.invalidateQueries({ queryKey: ["parent-announcements"] });
     },
   });
+  
+  // Respond to urgent call
+  const respondToCallMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string, status: "on_my_way" | "confirmed" }) => {
+       const { error } = await supabase
+        .from("announcements")
+        .update({ 
+           response_status: status,
+           responded_at: new Date().toISOString()
+        })
+        .eq("id", id);
+       if (error) throw error;
+    },
+    onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ["parent-announcements"] });
+       queryClient.invalidateQueries({ queryKey: ["announcements"] });
+       toast.success("Resposta enviada ao setor Kids!");
+    },
+    onError: (err) => {
+       console.error("Error responding to call:", err);
+       toast.error("Erro ao enviar resposta");
+    }
+  });
+
+  // Confirm urgent call (Staff side)
+  const confirmCallMutation = useMutation({
+    mutationFn: async (id: string) => {
+       const { error } = await supabase
+        .from("announcements")
+        .update({ 
+           response_status: "confirmed",
+           confirmed_by_staff_at: new Date().toISOString()
+        })
+        .eq("id", id);
+       if (error) throw error;
+    },
+    onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ["announcements"] });
+       toast.success("Chegada do responsável confirmada!");
+    },
+    onError: (err) => {
+       console.error("Error confirming call:", err);
+       toast.error("Erro ao confirmar chegada");
+    }
+  });
+
+  // Cancel urgent call (Staff can stop the loop)
+  const cancelCallMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("announcements")
+        .update({ 
+          response_status: "confirmed",
+          confirmed_by_staff_at: new Date().toISOString()
+        })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+       queryClient.invalidateQueries({ queryKey: ["announcements"] });
+       toast.info("Chamado urgente encerrado manualmente.");
+    },
+    onError: (err) => {
+       toast.error("Erro ao cancelar chamado: " + (err as Error).message);
+    }
+  });
 
   return {
     // Staff data
@@ -241,11 +322,40 @@ export function useAnnouncements() {
     publishAnnouncement: publishMutation.mutate,
     deleteAnnouncement: deleteMutation.mutate,
     markAsRead: markAsReadMutation.mutate,
+    markAllAsRead: async () => {
+      if (!user?.id || parentAnnouncements.length === 0) return;
+      const unreadIds = parentAnnouncements.filter(a => !a.is_read).map(a => a.id);
+      if (unreadIds.length === 0) return;
+
+      const { error } = await supabase
+        .from("announcement_reads")
+        .upsert(
+          unreadIds.map(id => ({
+            announcement_id: id,
+            user_id: user.id
+          }))
+        );
+
+      if (error) {
+        toast.error("Erro ao marcar todos como lidos");
+        throw error;
+      }
+      queryClient.invalidateQueries({ queryKey: ["parent-announcements"] });
+      toast.success("Todos os comunicados foram marcados como lidos!");
+    },
 
     // Loading states
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isPublishing: publishMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    
+    // Urgent Call actions
+    respondToCall: respondToCallMutation.mutate,
+    confirmCall: confirmCallMutation.mutate,
+    cancelCall: cancelCallMutation.mutate,
+    
+    // Indicators
+    activeUrgentCall: parentAnnouncements.find(a => a.priority === "urgent" && a.response_status !== "confirmed") ?? null
   };
 }

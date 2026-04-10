@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Church } from "lucide-react";
+import { Church, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const LandingHeader = () => {
@@ -25,13 +25,16 @@ export const LandingHeader = () => {
 
         <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
           <a href="#problema" className="text-sm text-muted-foreground hover:text-foreground transition-colors story-link">
-            <span>O Problema</span>
+            <span>Por Que Escolher</span>
+          </a>
+          <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors story-link">
+            <span>Recursos</span>
           </a>
           <a href="#solucao" className="text-sm text-muted-foreground hover:text-foreground transition-colors story-link">
-            <span>Solução</span>
+            <span>Como Funciona</span>
           </a>
           <a href="#precos" className="text-sm text-muted-foreground hover:text-foreground transition-colors story-link">
-            <span>Preços</span>
+            <span>Planos</span>
           </a>
           <Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors story-link">
             <span>FAQ</span>

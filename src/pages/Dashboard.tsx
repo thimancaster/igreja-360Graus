@@ -28,6 +28,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { useAutoUpdateOverdue } from "@/hooks/useAutoUpdateOverdue";
 import { useTransactionsRealtime } from "@/hooks/useTransactionsRealtime";
 import { TiltCard, StaggerContainer, StaggerItem } from "@/components/ui/motion-primitives";
+import { EventFinanceAuthorization } from "@/components/events/EventFinanceAuthorization";
 
 export default function Dashboard() {
   // Hook para atualização automática de status vencidos
@@ -115,6 +116,9 @@ export default function Dashboard() {
 
       {/* Quick Actions Bar */}
       <QuickActionsBar />
+
+      {/* Autorizações de Receitas de Eventos */}
+      <EventFinanceAuthorization />
 
       {/* Banner de Vencimentos */}
       <DueTransactionsBanner />

@@ -12,6 +12,7 @@ import ParentAnnouncementsContent from "@/pages/parent/ParentAnnouncements";
 import ParentClassesContent from "@/pages/parent/ParentClasses";
 import ParentCheckInContent from "@/pages/parent/ParentCheckIn";
 import ParentRewardsContent from "@/pages/parent/ParentRewards";
+import ParentSchedulesContent from "@/pages/parent/ParentSchedules";
 
 export default function PortalChildren() {
   const [searchParams] = useSearchParams();
@@ -90,6 +91,20 @@ export default function PortalChildren() {
                   </motion.div>
                 </TabsContent>
               )}
+              {activeTab === "schedules" && (
+                <TabsContent value="schedules" className="mt-0 outline-none" forceMount>
+                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentSchedulesContent />
+                  </motion.div>
+                </TabsContent>
+              )}
+              {activeTab === "rewards" && (
+                <TabsContent value="rewards" className="mt-0 outline-none" forceMount>
+                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    <ParentRewardsContent />
+                  </motion.div>
+                </TabsContent>
+              )}
               {activeTab === "profile" && (
                 <TabsContent value="profile" className="mt-0 outline-none" forceMount>
                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
@@ -110,14 +125,6 @@ export default function PortalChildren() {
                   </motion.div>
                 </TabsContent>
               )}
-              {activeTab === "rewards" && (
-                <TabsContent value="rewards" className="mt-0 outline-none" forceMount>
-                   <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
-                    <ParentRewardsContent />
-                  </motion.div>
-                </TabsContent>
-              )}
-
             </AnimatePresence>
           </div>
         </Tabs>
@@ -138,7 +145,7 @@ export default function PortalChildren() {
 
         <div className={`nav-item ${activeTab === 'events' ? 'active' : ''}`} onClick={() => goToTab("events")}>
           <motion.img 
-            src="/kids/icon_eventos.png" 
+            src="/kids/icon_calendar.png" 
             alt="Eventos" 
             className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
             whileHover={{ scale: 1.2, y: -5 }}
@@ -156,6 +163,17 @@ export default function PortalChildren() {
             animate={activeTab === 'classes' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(139,92,246,0.4))" } : { scale: 1, y: 0 }}
           />
           <span className={`${activeTab === 'classes' ? 'text-purple-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Turmas</span>
+        </div>
+
+        <div className={`nav-item ${activeTab === 'schedules' ? 'active' : ''}`} onClick={() => goToTab("schedules")}>
+          <motion.img 
+            src="/kids/icon_volunteer.png" 
+            alt="Escalas" 
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            whileHover={{ scale: 1.2, y: -5 }}
+            animate={activeTab === 'schedules' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(99,102,241,0.4))" } : { scale: 1, y: 0 }}
+          />
+          <span className={`${activeTab === 'schedules' ? 'text-indigo-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Escalas</span>
         </div>
 
         <div className={`nav-item ${activeTab === 'checkin' ? 'active' : ''}`} onClick={() => goToTab("checkin")}>
@@ -178,6 +196,17 @@ export default function PortalChildren() {
             animate={activeTab === 'rewards' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(234,179,8,0.5))" } : { scale: 1, y: 0 }}
           />
           <span className={`${activeTab === 'rewards' ? 'text-yellow-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Recompensa</span>
+        </div>
+
+        <div className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => goToTab("profile")}>
+          <motion.img 
+            src="/kids/kids_avatar.png" 
+            alt="Perfil" 
+            className="w-10 h-10 object-contain drop-shadow-md mb-0.5"
+            whileHover={{ scale: 1.2, y: -5 }}
+            animate={activeTab === 'profile' ? { scale: 1.15, y: -3, filter: "brightness(1.1) drop-shadow(0 5px 15px rgba(249,115,22,0.4))" } : { scale: 1, y: 0 }}
+          />
+          <span className={`${activeTab === 'profile' ? 'text-orange-600 font-black scale-105' : 'text-gray-500 font-bold'} text-[10px] transition-all`}>Perfil</span>
         </div>
 
         <div className="nav-item group" onClick={() => navigate("/portal")}>

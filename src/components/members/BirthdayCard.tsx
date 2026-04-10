@@ -28,7 +28,9 @@ function loadConfig(): MsgConfig {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch (err) {
+    // skip
+  }
   return { template: DEFAULT_MESSAGE, senderName: '' };
 }
 

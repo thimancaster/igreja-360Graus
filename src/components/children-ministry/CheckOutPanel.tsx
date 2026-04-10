@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, Search, Camera, AlertTriangle, Check, Shield, Users, Key, UserX } from "lucide-react";
+import { LogOut, Search, Camera, AlertTriangle, Check, Shield, Users, Key, UserX, Star } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Html5Qrcode } from "html5-qrcode";
 import { LeaderOverrideDialog } from "./LeaderOverrideDialog";
 import { FaceVerificationStep } from "./FaceVerificationStep";
+import { ChildEvaluationDialog } from "./ChildEvaluationDialog";
 
 type PickupPerson = {
   id: string;
@@ -42,6 +43,10 @@ export function CheckOutPanel() {
   const [pinError, setPinError] = useState("");
   const [faceVerified, setFaceVerified] = useState<"pending" | "approved" | "rejected" | "skipped">("pending");
   const [scannedViaQR, setScannedViaQR] = useState(false);
+  
+  const [evaluationDialogOpen, setEvaluationDialogOpen] = useState(false);
+  const [lastCheckOutInfo, setLastCheckOutInfo] = useState<{id: string, name: string, checkInId: string} | null>(null);
+
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   const { isAdmin, isPastor, isTesoureiro, isLider } = useRole();
@@ -219,15 +224,23 @@ export function CheckOutPanel() {
 
       const baseMethod = person.type === "guardian" ? "Responsável" : 
                         person.type === "temporary" ? "Autorização Temporária" : "Autorizado";
-      const verificationSuffix = faceVerified === "approved" ? " (Face ✓)" : 
-                                  faceVerified === "skipped" ? "" : "";
+      const verificationSuffix = faceVerified === "approved" ? " (Face ✓)" : "";
 
       await checkOut.mutateAsync({
         checkInId: selectedCheckIn.id,
         pickupPersonName: person.name,
         pickupMethod: baseMethod + verificationSuffix,
       });
+
+      // Prepare for evaluation
+      setLastCheckOutInfo({
+        id: selectedCheckIn.child_id,
+        name: selectedCheckIn.children?.full_name || "",
+        checkInId: selectedCheckIn.id
+      });
+      
       resetDialog();
+      setEvaluationDialogOpen(true);
     } catch (err) {
       // Error handled in mutation
     }
@@ -559,6 +572,17 @@ export function CheckOutPanel() {
           checkInId={selectedCheckIn.id}
           childName={selectedCheckIn.children?.full_name || ""}
           onSuccess={resetDialog}
+        />
+      )}
+
+      {/* Evaluation Dialog */}
+      {lastCheckOutInfo && (
+        <ChildEvaluationDialog
+          open={evaluationDialogOpen}
+          onOpenChange={setEvaluationDialogOpen}
+          childId={lastCheckOutInfo.id}
+          childName={lastCheckOutInfo.name}
+          checkInId={lastCheckOutInfo.checkInId}
         />
       )}
     </>

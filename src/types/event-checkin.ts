@@ -31,6 +31,11 @@ export interface EventRegistrationExtended {
   attendee_name: string | null;
   attendee_email: string | null;
   attendee_phone: string | null;
+  origin?: string;
+  source_reference?: string;
+  finance_registered?: boolean;
+  finance_registered_by?: string;
+  finance_registered_at?: string;
   event?: {
     id: string;
     title: string;
@@ -95,6 +100,7 @@ export interface CheckinResult {
     ticket_number: string;
     attendee_name: string | null;
     payment_status: string;
+    photo_url?: string | null;
     check_in_at?: string;
   };
   registration_id?: string;
@@ -138,4 +144,30 @@ export interface CreatePaymentInput {
   external_payment_id?: string;
   pix_qr_code?: string;
   pix_expiration?: string;
+}
+
+export interface EventRevenueAuthorization {
+  id: string;
+  church_id: string;
+  registration_id: string;
+  event_id: string;
+  amount: number;
+  member_id?: string;
+  status: 'pending' | 'authorized' | 'rejected';
+  authorized_by?: string;
+  authorized_at?: string;
+  created_at: string;
+  event?: {
+    title: string;
+  };
+  member?: {
+    full_name: string;
+  };
+}
+
+export interface EventWithFinanceSettings {
+  id: string;
+  title: string;
+  start_datetime: string;
+  auto_register_finance: boolean;
 }

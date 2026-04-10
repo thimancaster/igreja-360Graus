@@ -24,6 +24,7 @@ import {
 import { useClassroomSettings, useDeleteClassroomSettings, ClassroomSettings } from "@/hooks/useCapacityManagement";
 import { ClassroomDialog } from "./ClassroomDialog";
 import { CapacityIndicator } from "./CapacityIndicator";
+import { formatMonthsToAge } from "@/utils/ageUtils";
 
 export function ClassroomCapacityManager() {
   const { data: classrooms, isLoading } = useClassroomSettings();
@@ -53,11 +54,7 @@ export function ClassroomCapacityManager() {
   };
 
   const formatAge = (months: number | null) => {
-    if (months === null) return "-";
-    if (months < 12) return `${months}m`;
-    const years = Math.floor(months / 12);
-    const remainingMonths = months % 12;
-    return remainingMonths > 0 ? `${years}a ${remainingMonths}m` : `${years}a`;
+    return formatMonthsToAge(months);
   };
 
   return (

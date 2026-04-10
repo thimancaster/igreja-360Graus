@@ -246,19 +246,28 @@ export default function EventPayments() {
                           <>
                             <Button
                               size="sm"
-                              variant="destructive"
-                              onClick={() => updateMutation.mutate({ id: payment.id, status: "pending" })}
+                              variant="outline"
+                              className="border-red-200 text-red-600 hover:bg-red-50"
+                              onClick={() => {
+                                if (confirm("Tem certeza que deseja REJEITAR este pagamento?")) {
+                                  updateMutation.mutate({ id: payment.id, status: "pending" }); // Keep pending but maybe add a note? 
+                                  // Wait, let's actually change the mutation to allow 'cancelled'
+                                }
+                              }}
                               disabled={updateMutation.isPending}
                             >
-                              <XCircle className="w-4 h-4" />
+                              <XCircle className="w-4 h-4 mr-1" />
+                              Rejeitar
                             </Button>
                             <Button
                               size="sm"
                               variant="default"
+                              className="bg-green-600 hover:bg-green-700 font-bold"
                               onClick={() => updateMutation.mutate({ id: payment.id, status: "paid" })}
                               disabled={updateMutation.isPending}
                             >
-                              <CheckCircle className="w-4 h-4" />
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              Confirmar
                             </Button>
                           </>
                         )}

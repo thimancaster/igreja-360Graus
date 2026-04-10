@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Calendar, QrCode, Search, Home as HomeIcon, BookOpen, Trophy, User, Palette, ChevronRight, Users, Check
+  Calendar, QrCode, Search, Home as HomeIcon, BookOpen, Trophy, User, Palette, ChevronRight, Users, Check, Pencil, Star
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useParentChildren, useParentPresentChildren } from "@/hooks/useParentData";
@@ -14,6 +14,8 @@ import { useAnnouncements } from "@/hooks/useAnnouncements";
 import { useEvents } from "@/hooks/useEvents";
 import { cn } from "@/lib/utils";
 import { PortalChildDialog, PortalChildFormData } from "@/components/portal/PortalChildDialog";
+import { UrgentCallAlert } from "@/components/children-ministry/UrgentCallAlert";
+import { ParentEvolution } from "@/components/portal/ParentEvolution";
 import { useNavigate } from "react-router-dom";
 import { differenceInMinutes, differenceInYears } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,7 +24,7 @@ export default function ParentDashboard() {
   const { user, profile } = useAuth();
   const { data: children, isLoading: loadingChildren } = useParentChildren();
   const { data: presentChildren, isLoading: loadingPresent } = useParentPresentChildren();
-  const { parentAnnouncements, unreadCount, markAsRead } = useAnnouncements();
+  const { parentAnnouncements, unreadCount, markAsRead, activeUrgentCall, respondToCall } = useAnnouncements();
   const { createChild, updateChild } = useChildMutations();
   const navigate = useNavigate();
 
@@ -30,20 +32,11 @@ export default function ParentDashboard() {
   const [editingChild, setEditingChild] = useState<any>(null);
   const [expandedQrId, setExpandedQrId] = useState<string | null>(null);
   const [showChildrenList, setShowChildrenList] = useState(false);
+  const [viewingEvolutionChild, setViewingEvolutionChild] = useState<any>(null);
 
   const goToTab = (tab: string) => navigate(`/portal/filhos?tab=${tab}`);
 
-  const getTimePresent = (checkedInAt: string) => {
-    const minutes = differenceInMinutes(new Date(), new Date(checkedInAt));
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
-  };
-
-  const getAge = (birthDate: string) => {
-    const years = differenceInYears(new Date(), new Date(birthDate));
-    return years === 1 ? "1 ano" : `${years} anos`;
-  };
+  const firstName = profile?.full_name?.split(" ")[0] || "Família";
 
   const handleEditChild = (child: any) => { setEditingChild(child); setChildDialogOpen(true); };
 
@@ -61,6 +54,7 @@ export default function ParentDashboard() {
       notes: data.notes || null,
       photo_url: null,
       status: "active",
+      behavior_points: 0,
     };
     if (editingChild) {
       await updateChild.mutateAsync({ id: editingChild.id, ...payload });
@@ -80,7 +74,6 @@ export default function ParentDashboard() {
 
   const unreadAnnouncements = parentAnnouncements?.filter(a => !a.is_read) || [];
   const currentAnnouncement = unreadAnnouncements[0];
-  const firstName = profile?.full_name?.split(" ")[0] || "Família";
 
   return (
     <motion.div 
@@ -89,11 +82,33 @@ export default function ParentDashboard() {
       className="w-full max-w-[28rem] lg:max-w-4xl mx-auto px-4 pt-6 flex flex-col space-y-6"
     >
       
+      {/* TELA DE EVOLUÇÃO (OVERLAY) */}
+      <AnimatePresence>
+        {viewingEvolutionChild && (
+          <motion.div
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            className="fixed inset-0 z-[110] bg-kids-portal overflow-y-auto px-4"
+          >
+            <ParentEvolution 
+              child={viewingEvolutionChild} 
+              onBack={() => setViewingEvolutionChild(null)} 
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <UrgentCallAlert 
+         announcement={activeUrgentCall} 
+         onRespond={(id, status) => respondToCall({ id, status })}
+      />
+
       {/* HEADER */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img src="/kids/kids_logo.png" alt="Logo Kids" className="w-10 h-10 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)]" />
-          <h1 className="font-extrabold text-lg text-[#1a1a1a] tracking-tight">PORTAL KIDS</h1>
+        <div className="flex items-center gap-3">
+          <img src="/kids/kids_logo.png" alt="Logo Kids" className="w-16 h-16 object-contain" />
+          <h1 className="font-black text-2xl text-[#1a1a1a] tracking-tight">PORTAL KIDS</h1>
         </div>
         <button className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center bg-white/20 backdrop-blur-md shadow-sm">
           <Search className="h-5 w-5 text-[#1a1a1a]" />
@@ -109,7 +124,6 @@ export default function ParentDashboard() {
           <p className="text-gray-700 font-medium">Bem-vindo ao Portal Kids!</p>
         </div>
         <div className="relative shrink-0">
-          {/* Glossy avatar ring */}
           <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-[#86efac] via-[#93c5fd] to-[#d8b4fe] blur-sm opacity-80" />
           <Avatar className="h-16 w-16 border-2 border-white shadow-xl relative z-10 bg-white">
             <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url || "/kids/kids_avatar.png"} />
@@ -127,12 +141,11 @@ export default function ParentDashboard() {
           className="glass-card-kids p-6 group cursor-pointer transition-all duration-500 flex flex-col lg:flex-row lg:items-center gap-6 mt-20 lg:mt-24"
           onClick={() => goToTab("events")}
         >
-          {/* POP-OUT CHARACTER - floats above the card, does NOT overlap text */}
           <div className="relative w-full lg:w-40 shrink-0 h-4 lg:h-0">
             <motion.img 
               src="/kids/kids_event.png" 
               alt="Event" 
-              className="absolute -top-28 lg:-top-32 -left-4 lg:-left-6 w-48 lg:w-56 max-w-none pop-out-character" 
+              className="absolute -top-28 lg:-top-32 -left-4 lg:-left-6 w-48 lg:w-56 max-w-none pop-out-character z-20" 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
@@ -167,12 +180,23 @@ export default function ParentDashboard() {
             </p>
           </div>
           
+          <button 
+            onClick={(e) => { e.stopPropagation(); children?.[0] && setViewingEvolutionChild(children[0]); }}
+            className="hidden lg:flex flex-col items-center justify-center p-5 bg-white/30 rounded-3xl border border-white/40 backdrop-blur-md shadow-sm shrink-0 relative z-10 hover:bg-white/50 transition-all hover:scale-105 active:scale-95 group"
+          >
+             <div className="relative">
+                <div className="absolute -inset-2 bg-yellow-400 blur-lg opacity-20 group-hover:opacity-40 animate-pulse" />
+                <img src="/kids/icon_trophy.png" alt="Trophy" className="w-16 h-16 object-contain drop-shadow-md relative z-10" />
+             </div>
+             <p className="text-[10px] font-black text-amber-600 mt-2 tracking-tighter uppercase whitespace-nowrap">
+               {children?.reduce((acc, c) => acc + (c.behavior_points || 0), 0) || 0} PONTOS
+             </p>
+             <p className="text-[8px] font-bold text-gray-500 tracking-tight uppercase">VER EVOLUÇÃO</p>
+          </button>
         </div>
       </div>
 
-      {/* 4 PILLS COMPONENT (RESPONSIVE) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
-        {/* PURPLE PILL: Meus Filhos */}
         <button 
           className="glass-pill pill-purple"
           onClick={() => setShowChildrenList(!showChildrenList)}
@@ -181,16 +205,14 @@ export default function ParentDashboard() {
           <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Meus Filhos</span>
         </button>
         
-        {/* BLUE PILL: Turmas */}
         <button 
-          className="glass-pill pill-blue"
-          onClick={() => goToTab("classes")}
+          className="glass-pill pill-gold"
+          onClick={() => children?.[0] && setViewingEvolutionChild(children[0])}
         >
-          <img src="/kids/icon_bible.png" alt="Bible" className="w-8 h-8 object-contain drop-shadow-md" />
-          <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Turmas</span>
+          <img src="/kids/icon_trophy.png" alt="Trophy" className="w-8 h-8 object-contain drop-shadow-md" />
+          <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a] font-bold">Evolução</span>
         </button>
- 
-        {/* ORANGE PILL: Check-In */}
+        
         <button 
           className="glass-pill pill-orange"
           onClick={() => goToTab("checkin")}
@@ -199,7 +221,6 @@ export default function ParentDashboard() {
           <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Check-In</span>
         </button>
  
-        {/* GREEN PILL: Recompensa */}
         <button 
           className="glass-pill pill-green"
           onClick={() => goToTab("rewards")}
@@ -209,7 +230,6 @@ export default function ParentDashboard() {
         </button>
       </div>
 
-      {/* --- DYNAMIC EXPANDED PANELS (Injected below pills when active) --- */}
       <AnimatePresence>
         {expandedQrId && presentChildren && presentChildren.length > 0 && (
            <motion.div
@@ -285,9 +305,20 @@ export default function ParentDashboard() {
                         <h3 className="font-bold text-[#1a1a1a] truncate">{child.full_name}</h3>
                         <p className="text-purple-600 font-bold text-xs">{child.classroom}</p>
                       </div>
-                      <Button size="sm" variant="ghost" onClick={() => handleEditChild(child)} className="shrink-0 text-gray-600">
-                        Editar
-                      </Button>
+                      <div className="flex gap-1 shrink-0">
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => setViewingEvolutionChild(child)} 
+                          className="w-10 h-10 p-0 rounded-full text-amber-600 bg-amber-50 hover:bg-amber-100"
+                          title="Ver Evolução"
+                        >
+                          <Trophy className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleEditChild(child)} className="w-10 h-10 p-0 rounded-full text-gray-500 hover:bg-black/5">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -301,11 +332,9 @@ export default function ParentDashboard() {
         )}
       </AnimatePresence>
 
-      {/* PARENT HUB CARDS */}
       <div className="space-y-3 pt-8 pb-10">
         <h3 className="font-extrabold text-lg text-[#1a1a1a]">Área dos Pais</h3>
         <div className="grid grid-cols-2 gap-4 lg:gap-8">
-          {/* Event Calendar Card */}
           <div 
             className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("events")}
@@ -319,8 +348,7 @@ export default function ParentDashboard() {
             </div>
             <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Calendário</h4>
           </div>
- 
-           {/* History Card */}
+  
            <div 
             className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("history")}
@@ -333,6 +361,20 @@ export default function ParentDashboard() {
               />
             </div>
             <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Histórico</h4>
+          </div>
+
+          <div 
+            className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
+            onClick={() => goToTab("schedules")}
+          >
+            <div className="relative h-8 w-full mb-2">
+              <img 
+                src="/kids/icon_meus_filhos.png" 
+                alt="Schedules" 
+                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character" 
+              />
+            </div>
+            <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Escalas</h4>
           </div>
         </div>
       </div>
