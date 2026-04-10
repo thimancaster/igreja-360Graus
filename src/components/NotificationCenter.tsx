@@ -21,16 +21,31 @@ export function NotificationCenter() {
     }
   };
 
-  const getNotificationVariant = (type: string): "default" | "destructive" | "outline" | "secondary" => {
-    switch (type) {
-      case "Aviso":
+  const getNotificationVariant = (type: string): "default" | "destructive" | "outline" | "secondary" | "success" | "warning" | "brand" => {
+    switch (type.toLowerCase()) {
+      case "aviso":
         return "secondary";
-      case "Erro":
+      case "erro":
         return "destructive";
-      case "Sucesso":
-        return "default";
+      case "sucesso":
+        return "success";
+      case "checkin":
+        return "success";
+      case "checkout":
+        return "warning";
       default:
         return "outline";
+    }
+  };
+
+  const getNotificationLabel = (type: string) => {
+    switch (type.toLowerCase()) {
+      case "checkin":
+        return "Entrada";
+      case "checkout":
+        return "Saída";
+      default:
+        return type;
     }
   };
 
@@ -78,7 +93,7 @@ export function NotificationCenter() {
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center gap-2">
                         <Badge variant={getNotificationVariant(notification.type)}>
-                          {notification.type}
+                          {getNotificationLabel(notification.type)}
                         </Badge>
                         {!notification.is_read && (
                           <div className="h-2 w-2 rounded-full bg-primary" />

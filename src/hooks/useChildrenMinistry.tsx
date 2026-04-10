@@ -476,7 +476,8 @@ export function useChildMutations() {
   });
 
   // Helper to notify guardians linked to a child
-  const notifyGuardians = async (childId: string, title: string, message: string, link?: string) => {
+  // Helper to notify guardians linked to a child
+  const notifyGuardians = async (childId: string, title: string, message: string, type: string = "checkin", link?: string) => {
     try {
       // Get guardians with profile_id for this child
       const { data: links } = await supabase
@@ -492,7 +493,7 @@ export function useChildMutations() {
           user_id: l.guardians.profile_id,
           title,
           message,
-          type: "checkin",
+          type,
           link: link || "/parent/history",
         }));
 
@@ -533,16 +534,6 @@ export function useChildMutations() {
         .single();
 
       if (error) throw error;
-
-      // Notify guardians
-      const childName = (data as any).children?.full_name || "Seu filho(a)";
-      const timeStr = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-      await notifyGuardians(
-        childId,
-        "✅ Check-in realizado",
-        `${childName} fez check-in às ${timeStr} no evento "${eventName}", sala ${classroom}. Etiqueta #${labelNumber}.`,
-        "/parent/history"
-      );
 
       return data;
     },
@@ -605,17 +596,6 @@ export function useChildMutations() {
           .update({ behavior_points: newTotal })
           .eq("id", childData.id);
       }
-
-      // Notify guardians
-      const childName = (data as any).children?.full_name || "Seu filho(a)";
-      const timeStr = new Date(checkedOutAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-      const checkinTime = new Date((data as any).checked_in_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-      await notifyGuardians(
-        (data as any).child_id,
-        "🚪 Check-out realizado",
-        `${childName} saiu às ${timeStr} (entrada às ${checkinTime}). Retirado por: ${pickupPersonName} (${pickupMethod}).`,
-        "/parent/history"
-      );
 
       return data;
     },

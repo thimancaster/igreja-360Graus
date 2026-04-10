@@ -1,23 +1,58 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
+// ── Golden Particle Burst ──────────────────────────────────
+function GoldenParticleBurst({ show }: { show: boolean }) {
+  const particles = Array.from({ length: 10 }, (_, i) => {
+    const angle = (i / 10) * 360;
+    const distance = 48 + Math.random() * 24;
+    const rad = (angle * Math.PI) / 180;
+    return {
+      tx: Math.cos(rad) * distance,
+      ty: Math.sin(rad) * distance,
+      size: 4 + Math.floor(Math.random() * 5),
+      color: ["#f59e0b", "#fde68a", "#fbbf24", "#fef08a", "#f97316"][i % 5],
+      key: i,
+    };
+  });
+  return (
+    <AnimatePresence>
+      {show &&
+        particles.map((p) => (
+          <motion.div
+            key={p.key}
+            className="pointer-events-none absolute rounded-full"
+            style={{
+              width: p.size,
+              height: p.size,
+              backgroundColor: p.color,
+              top: "50%",
+              left: "50%",
+              marginTop: -p.size / 2,
+              marginLeft: -p.size / 2,
+              zIndex: 50,
+            }}
+            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+            animate={{ x: p.tx, y: p.ty, opacity: 0, scale: 0.3 }}
+            exit={{}}
+            transition={{ duration: 0.55, ease: "easeOut", delay: p.key * 0.01 }}
+          />
+        ))}
+    </AnimatePresence>
+  );
+}
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Calendar, QrCode, Search, Home as HomeIcon, BookOpen, Trophy, User, Palette, ChevronRight, Users, Check, Pencil, Star
-} from "lucide-react";
+import { Check, Pencil, Trophy } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useParentChildren, useParentPresentChildren } from "@/hooks/useParentData";
 import { useChildMutations } from "@/hooks/useChildrenMinistry";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
-import { useEvents } from "@/hooks/useEvents";
-import { cn } from "@/lib/utils";
 import { PortalChildDialog, PortalChildFormData } from "@/components/portal/PortalChildDialog";
 import { UrgentCallAlert } from "@/components/children-ministry/UrgentCallAlert";
-import { ParentEvolution } from "@/components/portal/ParentEvolution";
 import { useNavigate } from "react-router-dom";
-import { differenceInMinutes, differenceInYears } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function ParentDashboard() {
@@ -32,7 +67,7 @@ export default function ParentDashboard() {
   const [editingChild, setEditingChild] = useState<any>(null);
   const [expandedQrId, setExpandedQrId] = useState<string | null>(null);
   const [showChildrenList, setShowChildrenList] = useState(false);
-  const [viewingEvolutionChild, setViewingEvolutionChild] = useState<any>(null);
+  const [journeyBurst, setJourneyBurst] = useState(false);
 
   const goToTab = (tab: string) => navigate(`/portal/filhos?tab=${tab}`);
 
@@ -75,59 +110,81 @@ export default function ParentDashboard() {
   const unreadAnnouncements = parentAnnouncements?.filter(a => !a.is_read) || [];
   const currentAnnouncement = unreadAnnouncements[0];
 
+  // Quick action pills config
+  const pills = [
+    {
+      label: "Meus Filhos",
+      icon: "/kids/portal-kids-icon-children-v2.png",
+      color: "pill-purple",
+      delay: 0,
+      onClick: () => setShowChildrenList(!showChildrenList),
+    },
+    {
+      label: "Minha Jornada",
+      icon: "/kids/portal-kids-nav-journey-v2.png",
+      color: "pill-gold",
+      delay: 0.3,
+      onClick: () => {
+        setJourneyBurst(true);
+        setTimeout(() => setJourneyBurst(false), 700);
+        goToTab("journey");
+      },
+    },
+    {
+      label: "Check-In",
+      icon: "/kids/portal-kids-icon-ticket-v2.png",
+      color: "pill-orange",
+      delay: 0.6,
+      onClick: () => goToTab("checkin"),
+    },
+    {
+      label: "Aventuras",
+      icon: "/kids/portal-kids-nav-classes-v2.png",
+      color: "pill-blue",
+      delay: 0.9,
+      onClick: () => goToTab("classes"),
+    },
+  ];
+
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       className="w-full max-w-[28rem] lg:max-w-4xl mx-auto px-4 pt-6 flex flex-col space-y-6"
     >
-      
-      {/* TELA DE EVOLUÇÃO (OVERLAY) */}
-      <AnimatePresence>
-        {viewingEvolutionChild && (
-          <motion.div
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
-            className="fixed inset-0 z-[110] bg-kids-portal overflow-y-auto px-4"
-          >
-            <ParentEvolution 
-              child={viewingEvolutionChild} 
-              onBack={() => setViewingEvolutionChild(null)} 
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <UrgentCallAlert 
-         announcement={activeUrgentCall} 
-         onRespond={(id, status) => respondToCall({ id, status })}
+      <UrgentCallAlert
+        announcement={activeUrgentCall}
+        onRespond={(id, status) => respondToCall({ id, status })}
       />
 
-      {/* HEADER */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img src="/kids/kids_logo.png" alt="Logo Kids" className="w-16 h-16 object-contain" />
-          <h1 className="font-black text-2xl text-[#1a1a1a] tracking-tight">PORTAL KIDS</h1>
-        </div>
-        <button className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center bg-white/20 backdrop-blur-md shadow-sm">
-          <Search className="h-5 w-5 text-[#1a1a1a]" />
-        </button>
-      </div>
-
-      {/* GREETING */}
-      <div className="flex items-center justify-between pt-2">
-        <div className="space-y-1">
-          <h2 className="text-4xl font-extrabold text-[#1a1a1a] tracking-tighter">
+      {/* HEADER — Logo centralizado */}
+      <div className="flex flex-col items-center justify-center gap-2">
+        <motion.img
+          src="/kids/portal-kids-logo-transparent.png"
+          alt="Portal Kids"
+          className="w-24 h-24 md:w-32 md:h-32 object-contain"
+          style={{
+            filter: "drop-shadow(0 16px 32px rgba(0,0,0,0.20)) drop-shadow(0 6px 12px rgba(0,0,0,0.15))",
+          }}
+          initial={{ scale: 0.8, opacity: 0, y: 0 }}
+          animate={{ scale: 1, opacity: 1, y: [0, -8, 0] }}
+          transition={{
+            scale: { type: "spring", stiffness: 120, delay: 0.1, duration: 0.6 },
+            opacity: { duration: 0.4, delay: 0.1 },
+            y: { duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.7 },
+          }}
+        />
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-[#1a1a1a] tracking-tighter">
             Olá, {firstName}! <motion.span animate={{ rotate: [0, 20, 0] }} transition={{ duration: 0.6, repeat: 2, repeatDelay: 2 }} className="inline-block">👋</motion.span>
           </h2>
-          <p className="text-gray-700 font-medium">Bem-vindo ao Portal Kids!</p>
+          <p className="text-gray-700 font-medium text-sm">Bem-vindo ao Portal Kids!</p>
         </div>
-        <div className="relative shrink-0">
+        <div className="relative shrink-0 mt-1">
           <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-[#86efac] via-[#93c5fd] to-[#d8b4fe] blur-sm opacity-80" />
-          <Avatar className="h-16 w-16 border-2 border-white shadow-xl relative z-10 bg-white">
+          <Avatar className="h-14 w-14 border-2 border-white shadow-xl relative z-10 bg-white">
             <AvatarImage src={profile?.avatar_url || user?.user_metadata?.avatar_url || "/kids/kids_avatar.png"} />
-            <AvatarFallback className="bg-gradient-to-br from-magenta-400 to-indigo-500 text-white font-bold text-xl">
+            <AvatarFallback className="bg-gradient-to-br from-purple-400 to-indigo-500 text-white font-bold text-xl">
               {firstName[0]}
             </AvatarFallback>
           </Avatar>
@@ -137,15 +194,15 @@ export default function ParentDashboard() {
       {/* UPCOMING FUN CARD */}
       <div className="space-y-3 pt-4">
         <h3 className="font-extrabold text-lg text-[#1a1a1a]">Nossos Eventos</h3>
-        <div 
+        <div
           className="glass-card-kids p-6 group cursor-pointer transition-all duration-500 flex flex-col lg:flex-row lg:items-center gap-6 mt-20 lg:mt-24"
           onClick={() => goToTab("events")}
         >
           <div className="relative w-full lg:w-40 shrink-0 h-4 lg:h-0">
-            <motion.img 
-              src="/kids/kids_event.png" 
-              alt="Event" 
-              className="absolute -top-28 lg:-top-32 -left-4 lg:-left-6 w-48 lg:w-56 max-w-none pop-out-character z-20" 
+            <motion.img
+              src="/kids/kids_event.png"
+              alt="Event"
+              className="absolute -top-28 lg:-top-32 -left-4 lg:-left-6 w-48 lg:w-56 max-w-none pop-out-character z-20"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
@@ -158,9 +215,9 @@ export default function ParentDashboard() {
                 {currentAnnouncement ? currentAnnouncement.title : "Tudo limpo por aqui! 🎉"}
               </h4>
               {currentAnnouncement && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={(e) => { e.stopPropagation(); markAsRead(currentAnnouncement.id); }}
                   className="rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200 shrink-0 w-10 h-10 p-0"
                   title="Limpar aviso"
@@ -170,107 +227,84 @@ export default function ParentDashboard() {
               )}
             </div>
             <div className="flex flex-wrap gap-2 mb-3">
-               <Badge className="bg-emerald-500 text-white font-bold border-0 shadow-md px-3 py-1 rounded-full">
+              <Badge className="bg-emerald-500 text-white font-bold border-0 shadow-md px-3 py-1 rounded-full">
                 {currentAnnouncement ? new Date(currentAnnouncement.created_at).toLocaleDateString("pt-BR") : "Aventuras de Domingo!"}
-               </Badge>
-               <Badge className="bg-sky-500 text-white font-bold border-0 shadow-md px-3 py-1 rounded-full text-xs">Sede Central</Badge>
+              </Badge>
+              <Badge className="bg-sky-500 text-white font-bold border-0 shadow-md px-3 py-1 rounded-full text-xs">Sede Central</Badge>
             </div>
             <p className="text-sm text-gray-700 font-bold leading-relaxed">
               {currentAnnouncement ? currentAnnouncement.content : "Fique atento para as novas histórias e atividades especiais!"}
             </p>
           </div>
-          
-          <button 
-            onClick={(e) => { e.stopPropagation(); children?.[0] && setViewingEvolutionChild(children[0]); }}
-            className="hidden lg:flex flex-col items-center justify-center p-5 bg-white/30 rounded-3xl border border-white/40 backdrop-blur-md shadow-sm shrink-0 relative z-10 hover:bg-white/50 transition-all hover:scale-105 active:scale-95 group"
-          >
-             <div className="relative">
-                <div className="absolute -inset-2 bg-yellow-400 blur-lg opacity-20 group-hover:opacity-40 animate-pulse" />
-                <img src="/kids/icon_trophy.png" alt="Trophy" className="w-16 h-16 object-contain drop-shadow-md relative z-10" />
-             </div>
-             <p className="text-[10px] font-black text-amber-600 mt-2 tracking-tighter uppercase whitespace-nowrap">
-               {children?.reduce((acc, c) => acc + (c.behavior_points || 0), 0) || 0} PONTOS
-             </p>
-             <p className="text-[8px] font-bold text-gray-500 tracking-tight uppercase">VER EVOLUÇÃO</p>
-          </button>
         </div>
       </div>
 
+      {/* QUICK ACTION PILLS — 4 botões com ícones flutuantes */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
-        <button 
-          className="glass-pill pill-purple"
-          onClick={() => setShowChildrenList(!showChildrenList)}
-        >
-          <img src="/kids/icon_meus_filhos.png" alt="Filhos" className="w-9 h-9 object-contain drop-shadow-md" />
-          <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Meus Filhos</span>
-        </button>
-        
-        <button 
-          className="glass-pill pill-gold"
-          onClick={() => children?.[0] && setViewingEvolutionChild(children[0])}
-        >
-          <img src="/kids/icon_trophy.png" alt="Trophy" className="w-8 h-8 object-contain drop-shadow-md" />
-          <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a] font-bold">Evolução</span>
-        </button>
-        
-        <button 
-          className="glass-pill pill-orange"
-          onClick={() => goToTab("checkin")}
-        >
-          <img src="/kids/icon_ticket.png" alt="Ticket" className="w-8 h-8 object-contain drop-shadow-md" />
-          <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Check-In</span>
-        </button>
- 
-        <button 
-          className="glass-pill pill-green"
-          onClick={() => goToTab("rewards")}
-        >
-          <img src="/kids/icon_trophy.png" alt="Trophy" className="w-8 h-8 object-contain drop-shadow-md" />
-          <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a]">Recompensa</span>
-        </button>
+        {pills.map((pill) => (
+          <button
+            key={pill.label}
+            className={`glass-pill ${pill.color} relative overflow-visible`}
+            onClick={pill.onClick}
+          >
+            <motion.img
+              src={pill.icon}
+              alt={pill.label}
+              className="w-9 h-9 object-contain drop-shadow-md"
+              animate={{ y: [0, -6, 0] }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: pill.delay,
+              }}
+            />
+            <span className="flex-1 text-left text-sm lg:text-base text-[#1a1a1a] font-bold">{pill.label}</span>
+          </button>
+        ))}
       </div>
 
       <AnimatePresence>
         {expandedQrId && presentChildren && presentChildren.length > 0 && (
-           <motion.div
-             initial={{ opacity: 0, height: 0 }}
-             animate={{ opacity: 1, height: "auto" }}
-             exit={{ opacity: 0, height: 0 }}
-             className="overflow-hidden"
-           >
-             <div className="glass-card-kids p-5 bg-white/60 backdrop-blur-xl border border-white/40 mt-2 mb-2">
-               <div className="flex items-center justify-between mb-4">
-                 <h2 className="font-extrabold text-lg text-[#1a1a1a]">🎟️ Check-In VIP</h2>
-                 <Button variant="ghost" size="sm" onClick={() => setExpandedQrId(null)} className="rounded-full text-gray-700">
-                   Fechar
-                 </Button>
-               </div>
-               <div className="grid gap-4">
-                 {presentChildren.map((checkIn: any) => (
-                   <div key={checkIn.id} className="bg-white/80 p-4 rounded-3xl shadow-sm border border-black/5">
-                     <div className="flex items-center justify-between mb-4">
-                       <div className="flex items-center gap-3">
-                         <Avatar className="h-10 w-10 border-2 border-white">
-                           <AvatarImage src={checkIn.children?.photo_url || undefined} />
-                           <AvatarFallback className="bg-orange-400 text-white font-bold">{(checkIn.children?.full_name || "C")[0]}</AvatarFallback>
-                         </Avatar>
-                         <div>
-                           <p className="font-bold text-[#1a1a1a]">{checkIn.children?.full_name}</p>
-                           <p className="text-xs text-orange-500 font-bold">{checkIn.children?.classroom}</p>
-                         </div>
-                       </div>
-                     </div>
-                     <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl mx-auto shadow-md">
-                       <QRCodeSVG value={checkIn.qr_code} size={150} level="H" includeMargin={false} />
-                       <p className="mt-2 font-mono font-bold text-gray-600 text-sm">
-                         {checkIn.label_number || checkIn.qr_code.slice(-8)}
-                       </p>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             </div>
-           </motion.div>
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="glass-card-kids p-5 bg-white/60 backdrop-blur-xl border border-white/40 mt-2 mb-2">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-extrabold text-lg text-[#1a1a1a]">🎟️ Check-In VIP</h2>
+                <Button variant="ghost" size="sm" onClick={() => setExpandedQrId(null)} className="rounded-full text-gray-700">
+                  Fechar
+                </Button>
+              </div>
+              <div className="grid gap-4">
+                {presentChildren.map((checkIn: any) => (
+                  <div key={checkIn.id} className="bg-white/80 p-4 rounded-3xl shadow-sm border border-black/5">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10 border-2 border-white">
+                          <AvatarImage src={checkIn.children?.photo_url || undefined} />
+                          <AvatarFallback className="bg-orange-400 text-white font-bold">{(checkIn.children?.full_name || "C")[0]}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-bold text-[#1a1a1a]">{checkIn.children?.full_name}</p>
+                          <p className="text-xs text-orange-500 font-bold">{checkIn.children?.classroom}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl mx-auto shadow-md">
+                      <QRCodeSVG value={checkIn.qr_code} size={150} level="H" includeMargin={false} />
+                      <p className="mt-2 font-mono font-bold text-gray-600 text-sm">
+                        {checkIn.label_number || checkIn.qr_code.slice(-8)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         )}
 
         {showChildrenList && (
@@ -306,12 +340,12 @@ export default function ParentDashboard() {
                         <p className="text-purple-600 font-bold text-xs">{child.classroom}</p>
                       </div>
                       <div className="flex gap-1 shrink-0">
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => setViewingEvolutionChild(child)} 
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => goToTab("journey")}
                           className="w-10 h-10 p-0 rounded-full text-amber-600 bg-amber-50 hover:bg-amber-100"
-                          title="Ver Evolução"
+                          title="Ver Jornada"
                         >
                           <Trophy className="h-4 w-4" />
                         </Button>
@@ -332,46 +366,47 @@ export default function ParentDashboard() {
         )}
       </AnimatePresence>
 
+      {/* ÁREA DOS PAIS — cards com novos ícones v2 */}
       <div className="space-y-3 pt-8 pb-10">
         <h3 className="font-extrabold text-lg text-[#1a1a1a]">Área dos Pais</h3>
         <div className="grid grid-cols-2 gap-4 lg:gap-8">
-          <div 
+          <div
             className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("events")}
           >
             <div className="relative h-8 w-full mb-2">
-              <img 
-                src="/kids/icon_calendar.png" 
-                alt="Calendar" 
-                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character" 
+              <img
+                src="/kids/portal-kids-icon-calendar-v2.png"
+                alt="Calendário"
+                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character"
               />
             </div>
             <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Calendário</h4>
           </div>
-  
-           <div 
+
+          <div
             className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("history")}
           >
             <div className="relative h-8 w-full mb-2">
-              <img 
-                src="/kids/icon_paintbrush.png" 
-                alt="Paintbrush" 
-                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character" 
+              <img
+                src="/kids/portal-kids-icon-children-v2.png"
+                alt="Histórico"
+                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character"
               />
             </div>
             <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Histórico</h4>
           </div>
 
-          <div 
+          <div
             className="glass-card-kids p-8 flex flex-col justify-center items-center text-center cursor-pointer group mt-8"
             onClick={() => goToTab("schedules")}
           >
             <div className="relative h-8 w-full mb-2">
-              <img 
-                src="/kids/icon_meus_filhos.png" 
-                alt="Schedules" 
-                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character" 
+              <img
+                src="/kids/portal-kids-nav-schedules-v2.png"
+                alt="Escalas"
+                className="absolute -top-20 left-1/2 -translate-x-1/2 w-24 h-24 object-contain pop-out-character"
               />
             </div>
             <h4 className="font-extrabold text-[#1a1a1a] text-lg lg:text-xl leading-tight">Escalas</h4>

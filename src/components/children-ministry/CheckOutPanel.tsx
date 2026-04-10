@@ -178,6 +178,13 @@ export function CheckOutPanel() {
     setScannedViaQR(false);
   };
 
+  // Auto-select if only one person is available
+  useEffect(() => {
+    if (confirmDialogOpen && pickupPeople.length === 1 && !pickupPersonId) {
+      setPickupPersonId(pickupPeople[0].id);
+    }
+  }, [confirmDialogOpen, pickupPeople.length, pickupPersonId]);
+
   const handleConfirmCheckOut = async () => {
     if (!selectedCheckIn || !pickupPersonId) {
       toast.error("Selecione quem está retirando");
@@ -434,41 +441,86 @@ export function CheckOutPanel() {
               )}
 
               {/* Pickup Person Selection */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Quem está retirando? *
                 </label>
-                {pickupPeople.length > 0 ? (
-                  <Select value={pickupPersonId} onValueChange={setPickupPersonId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma pessoa autorizada" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {pickupPeople.map((person) => (
-                        <SelectItem key={person.id} value={person.id}>
-                          <div className="flex items-center gap-2">
-                            {person.type === "guardian" ? (
-                              <Users className="h-4 w-4 text-primary" />
-                            ) : person.type === "temporary" ? (
-                              <Shield className="h-4 w-4 text-green-500" />
-                            ) : (
-                              <Shield className="h-4 w-4 text-amber-500" />
-                            )}
-                            <span>{person.name}</span>
-                            {person.relationship && (
-                              <span className="text-muted-foreground text-xs">
-                                ({person.relationship})
-                              </span>
-                            )}
-                            {person.type === "temporary" && (
-                              <Badge variant="outline" className="text-xs ml-1">Temporário</Badge>
+
+                {/* Visual Selector for Quick Access */}
+                {pickupPeople.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {pickupPeople.map((person) => {
+                      const isSelected = pickupPersonId === person.id;
+                      return (
+                        <button
+                          key={person.id}
+                          type="button"
+                          onClick={() => setPickupPersonId(person.id)}
+                          className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all duration-200 group ${
+                            isSelected 
+                              ? "border-primary bg-primary/5 ring-2 ring-primary/20" 
+                              : "border-transparent bg-muted/50 hover:bg-muted hover:border-muted-foreground/20"
+                          }`}
+                        >
+                          <div className="relative">
+                            <Avatar className={`h-14 w-14 transition-transform duration-200 ${isSelected ? 'scale-110' : 'group-hover:scale-105'}`}>
+                              <AvatarImage src={person.photoUrl || undefined} className="object-cover" />
+                              <AvatarFallback className={isSelected ? 'bg-primary text-primary-foreground' : ''}>
+                                {person.name.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            {isSelected && (
+                              <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full p-0.5">
+                                <Check className="h-4 w-4" />
+                              </div>
                             )}
                           </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                          <span className={`mt-2 text-xs font-semibold text-center line-clamp-1 ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                            {person.name.split(' ')[0]}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {person.relationship || (person.type === "temporary" ? "Temp" : "Autorizado")}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {pickupPeople.length > 0 ? (
+                  <div className="pt-2">
+                    <p className="text-[10px] text-muted-foreground mb-1">Ou selecione na lista:</p>
+                    <Select value={pickupPersonId} onValueChange={setPickupPersonId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma pessoa autorizada" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pickupPeople.map((person) => (
+                          <SelectItem key={person.id} value={person.id}>
+                            <div className="flex items-center gap-2">
+                              {person.type === "guardian" ? (
+                                <Users className="h-4 w-4 text-primary" />
+                              ) : person.type === "temporary" ? (
+                                <Shield className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <Shield className="h-4 w-4 text-amber-500" />
+                              )}
+                              <span>{person.name}</span>
+                              {person.relationship && (
+                                <span className="text-muted-foreground text-xs">
+                                  ({person.relationship})
+                                </span>
+                              )}
+                              {person.type === "temporary" && (
+                                <Badge variant="outline" className="text-xs ml-1">Temporário</Badge>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 ) : (
                   <div className="text-center py-4 text-muted-foreground border rounded-lg">
                     <p className="text-sm">Nenhum responsável ou autorizado cadastrado</p>

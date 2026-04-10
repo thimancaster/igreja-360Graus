@@ -163,29 +163,6 @@
 .pill-green  { border-left: 4px solid #22c55e; }
 .pill-gold   { border-left: 4px solid #f59e0b; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 20px rgba(245,158,11,0.15); }
 
-/* Bottom Nav Refinement */
-.glass-bottom-nav {
-  @apply fixed bottom-6 left-1/2 -translate-x-1/2 h-20 px-6 rounded-[2.5rem] flex items-center justify-between gap-6 z-50;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-  width: calc(100% - 2rem);
-  max-width: 500px;
-}
-
-.nav-item {
-  @apply flex flex-col items-center justify-center cursor-pointer transition-all duration-300;
-}
-
-.nav-item.active span {
-  @apply text-[11px] font-black tracking-tight mt-1;
-}
-
-.nav-item span {
-  @apply text-[10px] font-bold text-gray-400 mt-1;
-}
     --gradient-aurora:   var(--gradient-brand);
     --gradient-aurora-soft: var(--gradient-brand-soft);
     --gradient-primary:  var(--gradient-brand);
@@ -820,22 +797,18 @@
    Estilo Lúdico "Balões Coloridos" Orgânicos
 ═══════════════════════════════════════ */
 @layer components {
-  /* Fundo principal da área kids (esconde a malha global) */
+  /* Fundo principal da área kids — Aurora Light suave estilo Pixar/V2 */
   .bg-kids-portal {
-    background: radial-gradient(ellipse at 15% 20%, rgba(0, 255, 255, 0.12) 0%, transparent 40%),
-                radial-gradient(ellipse at 85% 15%, rgba(255, 0, 255, 0.12) 0%, transparent 40%),
-                radial-gradient(ellipse at 50% 85%, rgba(255, 255, 0, 0.08) 0%, transparent 50%),
-                hsl(var(--background)) !important;
+    background: linear-gradient(135deg, #fdf2f8 0%, #f0f9ff 50%, #f0fdf4 100%) !important;
     background-attachment: fixed;
     min-height: 100vh;
   }
 
-  .light .bg-kids-portal {
-    background: radial-gradient(ellipse at 15% 20%, rgba(0, 200, 255, 0.20) 0%, transparent 40%),
-                radial-gradient(ellipse at 85% 15%, rgba(255, 0, 200, 0.15) 0%, transparent 40%),
-                radial-gradient(ellipse at 50% 85%, rgba(255, 200, 0, 0.15) 0%, transparent 50%),
-                hsl(var(--background)) !important;
+  /* Dark mode: mantém a magia com tons mais suaves */
+  .dark .bg-kids-portal {
+    background: linear-gradient(135deg, #cf6a6e 0%, #c49eb7 40%, #6882ab 70%, #7da9b8 100%) !important;
     background-attachment: fixed;
+    min-height: 100vh;
   }
 
   /* Card base para Kids — Ultra translúcido com brilho forte, radius de balão */
@@ -888,20 +861,6 @@
   .bubble-yellow { filter: saturate(200%); }
   .bubble-orange { filter: hue-rotate(340deg) saturate(200%); }
 
-  /* Corrigindo a mistura do BG para ficar vibrante igual Imagem 2 */
-  .bg-kids-portal {
-    background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 40%, #A1C4FD 70%, #C2E9FB 100%) !important;
-    background-attachment: fixed;
-    min-height: 100vh;
-  }
-  
-  .dark .bg-kids-portal {
-    /* Mesmo em dark, mantem a magia (pode escurecer levemente) */
-    background: linear-gradient(135deg, #cf6a6e 0%, #c49eb7 40%, #6882ab 70%, #7da9b8 100%) !important;
-    background-attachment: fixed;
-    min-height: 100vh;
-  }
-
   /* ── 3D GLASS PILL BUTTONS (PARTY BALLOON EFFECT) ── */
   .glass-pill {
     display: flex;
@@ -939,6 +898,20 @@
     z-index: 0;
   }
   
+  /* Ponto especular de brilho de balão — pequeno círculo no canto superior esquerdo */
+  .glass-pill::after {
+    content: '';
+    position: absolute;
+    top: 18%;
+    left: 14%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
   /* Put text and icons above the glossy shine */
   .glass-pill > * {
     position: relative;
@@ -947,13 +920,24 @@
 
   .glass-pill:hover {
     transform: translateY(-6px) scale(1.02);
-    box-shadow: 
-      0 16px 32px -4px rgba(0,0,0,0.35), 
+    box-shadow:
+      0 16px 32px -4px rgba(0,0,0,0.35),
       inset 0 -8px 16px rgba(0,0,0,0.2),
       inset 0 6px 12px rgba(255,255,255,0.8),
       inset 0 1px 2px rgba(255,255,255,1);
   }
-  
+
+  /* Squish tátil ao pressionar — efeito borracha */
+  .glass-pill:active {
+    transform: scale(0.95) translateY(2px);
+    transition: transform 0.1s ease-in, box-shadow 0.1s ease-in;
+    box-shadow:
+      0 4px 8px -2px rgba(0,0,0,0.20),
+      inset 0 -4px 8px rgba(0,0,0,0.10),
+      inset 0 4px 8px rgba(255,255,255,0.5),
+      inset 0 1px 2px rgba(255,255,255,0.8);
+  }
+
   /* Gradientes vivos das pílulas */
   .pill-purple { background: linear-gradient(135deg, #d8b4fe 0%, #c084fc 100%); }
   .pill-blue   { background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%); }
@@ -961,59 +945,128 @@
   .pill-green  { background: linear-gradient(135deg, #86efac 0%, #4ade80 100%); }
   .pill-gold   { background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%); color: #78350f; }
 
-  /* ── BOTTOM NAV GLASS — PILL RESPONSIVE ── */
+  /* ── BOTTOM NAV GLASS — PILL RESPONSIVO (mobile e desktop) ── */
   .glass-bottom-nav {
     position: fixed;
-    bottom: 1rem; /* Flutua em mobile por padrão */
+    bottom: 0.75rem;
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 2rem);
-    max-width: 25rem; /* Compacto no mobile */
-    background: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(24px) saturate(200%);
-    -webkit-backdrop-filter: blur(24px) saturate(200%);
-    border-radius: 2.5rem; /* Pill completo */
+    /* Mobile: largura total menos margens, pill compacto */
+    width: calc(100% - 1rem);
+    max-width: 100%;
+    background: rgba(255, 255, 255, 0.60) !important;
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border-radius: 2rem;
     border: 1px solid rgba(255, 255, 255, 0.84);
     box-shadow: 0 15px 45px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.5);
     display: flex;
+    align-items: center;
     justify-content: space-around;
-    padding: 0.85rem 1.25rem;
+    padding: 0.55rem 0.25rem;
     z-index: 100;
     transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  /* Desktop Expansion */
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0.2rem 0.3rem;
+    border-radius: 1rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .nav-item span {
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: #6b7280;
+    margin-top: 2px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .nav-item.active span {
+    font-weight: 900;
+  }
+
+  /* Mobile: pílula de balão para item ativo */
+  .nav-item.active {
+    background: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.55) 100%);
+    border-radius: 9999px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+
+  /* Desktop: espaçamento confortável e ícones maiores */
   @media (min-width: 768px) {
     .glass-bottom-nav {
-      max-width: 900px; /* Expandi para caber todos os 8 itens */
-      bottom: 2rem;
-      padding: 0.75rem 2rem;
-      gap: 1.25rem; /* Ajuste fino do gap para harmonia */
+      width: calc(100% - 3rem);
+      max-width: 860px;
+      bottom: 1.5rem;
+      border-radius: 2.5rem;
+      padding: 0.7rem 1.25rem;
+      gap: 0.25rem;
+      justify-content: space-around;
     }
-    
+
     .nav-item {
-      flex-direction: row !important;
-      gap: 0.75rem !important;
-      padding: 0.6rem 1.25rem;
-      border-radius: 1.5rem;
-      transition: all 0.3s ease;
+      flex-direction: column;
+      padding: 0.45rem 0.75rem;
+      border-radius: 1.25rem;
+      flex: 0 0 auto;
     }
-    
+
     .nav-item:hover {
-      background: rgba(255,255,255,0.4);
+      background: rgba(255, 255, 255, 0.45);
       transform: translateY(-2px);
     }
-    
+
     .nav-item.active {
-      background: rgba(255, 255, 255, 0.6);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.60) 100%);
+      border-radius: 9999px;
+      box-shadow:
+        0 4px 16px rgba(0,0,0,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.95),
+        inset 0 -1px 0 rgba(0,0,0,0.04);
+      padding: 0.45rem 0.9rem;
     }
-    
+
     .nav-item span {
-      font-size: 0.95rem !important;
+      font-size: 0.7rem !important;
       font-weight: 700;
-      white-space: nowrap; /* Prevent text wrapping */
+      white-space: nowrap;
+      margin-top: 3px;
     }
+  }
+
+  /* ── XP BAR LIQUID GLASS ── */
+  .xp-bar-liquid {
+    height: 1.25rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    overflow: hidden;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  .xp-bar-liquid-fill {
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #f59e0b 0%, #fde68a 50%, #f59e0b 100%);
+    background-size: 200% 100%;
+    animation: xp-shimmer 2s ease-in-out infinite;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  @keyframes xp-shimmer {
+    0%   { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
   }
 
   /* ── 3D POP-OUT CHARACTER UTILITY ── */
@@ -1026,21 +1079,6 @@
   
   .glass-card-kids:hover .pop-out-character {
     transform: translateY(-8px) scale(1.08);
-  }
-
-  .nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    color: #6b7280;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .nav-item.active {
-    color: #3b82f6; /* Blue active */
   }
 
   /* Specular Highlight Elements (Brilho de Balão original) */
